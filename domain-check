@@ -1,1 +1,538 @@
 #!/bin/bash
+
+# _______           _        _______  _______  ______   _        _______
+# (  ____ \|\     /|( (    /|(  ____ \(  ____ \(  ___ \ ( \      (  ____ \
+# | (    \/| )   ( ||  \  ( || (    \/| (    \/| (   ) )| (      | (    \/
+# | (__    | |   | ||   \ | || |      | (__    | (__/ / | |      | (__
+# |  __)   | |   | || (\ \) || |      |  __)   |  __ (  | |      |  __)
+# | (      | |   | || | \   || |      | (      | (  \ \ | |      | (
+# | )      | (___) || )  \  || (____/\| (____/\| )___) )| (____/\| (____/\
+# |/       (_______)|/    )_)(_______/(_______/|/ \___/ (_______/(_______/
+
+# Written by: Nissar Chababy (@Funilrys) <contact at funilrys dot com>
+
+################################ Contributors ##################################
+# Direct Contributors: None
+# Indirect Contributors:
+#    - Chris Down (@cdown) <chris@chrisdown.name>
+#        - urlEncode() + urlDecode()
+################################################################################
+
+
+################################# Temporary ####################################
+# Path to temporary file
+whoIs="/var/tmp/whois.$$"
+# Date of execution (start) ===> Unused now
+execDate=$(date +"-%F-%T")
+################################################################################
+################################### Files ######################################
+# IANA Root Zone Database file.
+# The file is a dump of the extensions this script can accept.
+# Source: https://www.iana.org/domains/root/db
+ianaDB="iana-domains-db"
+################################################################################
+###############################  Text Format ###################################
+# Red Color
+red=$(tput setaf 1)
+# White Color
+white=$(tput setaf 7)
+# Bold
+bold=$(tput bold)
+# Disable formating
+normal=$(tput sgr0)
+################################################################################
+############################## Default Values ##################################
+# If quiet="True" ==> We don't print anything
+quiet=false
+
+# IANA whois server. The following is there to give use the whois
+# host we have to call to get a (valid) response.
+# Note: Whois Server are different for each extensions.
+whoisServer="whois.iana.org"
+################################################################################
+
+# _______           _        _______ __________________ _______  _        _______
+# (  ____ \|\     /|( (    /|(  ____ \\__   __/\__   __/(  ___  )( (    /|(  ____ \
+# | (    \/| )   ( ||  \  ( || (    \/   ) (      ) (   | (   ) ||  \  ( || (    \/
+# | (__    | |   | ||   \ | || |         | |      | |   | |   | ||   \ | || (_____
+# |  __)   | |   | || (\ \) || |         | |      | |   | |   | || (\ \) |(_____  )
+# | (      | |   | || | \   || |         | |      | |   | |   | || | \   |      ) |
+# | )      | (___) || )  \  || (____/\   | |   ___) (___| (___) || )  \  |/\____) |
+# |/       (_______)|/    )_)(_______/   )_(   \_______/(_______)|/    )_)\_______)
+
+
+############################### Print Header ###################################
+# Used to print header for quiet="False" and in files
+# @CalledBy getReferer
+################################################################################
+printHeader()
+{
+    # type <string>
+    local type=${1}
+
+    if [[ ${type} == 'Invalid' ]]
+    then
+        # Generation of header for invalid.txt
+        printf "\n%-35s %-17s %-8s\n" "Domain" "Status" "Analyse Date"
+        echo "----------------------------------- ----------------- ----------------------------"
+    elif [[ ${type} == 'Error' ]]
+    then
+        # Generation of header for error.txt
+        printf "\n%-35s %-35s %-17s %-50s\n" "Domain" "WHOIS Server" "Status" "Analyse Date"
+        echo "----------------------------------- ----------------------------------- ----------------- ----------------------------"
+    elif [[ ${type} == 'Valid' ]]
+    then
+        # Generation of header for valid.txt
+        printf "\n%-50s %-8s %-18s %-20s\n" "Domain" "Status" "Expiration Date" "Analyse Date"
+        echo "-------------------------------------------------- -------- ----------------- -------------------------------"
+    fi
+}
+
+################################# Prints #######################################
+# Come with printHeader(). In charge to print data
+#
+# @CalledBy getReferer
+################################################################################
+prints()
+{
+    # type <string>
+    local type=${1}
+
+    if [[ ${type} == 'Invalid' ]]
+    then
+        # Print data for invalid.txt
+        printf "%-35s %-17s %-8s\n" "$2" "$1" "$3"
+    elif [[ ${type} == 'Error' ]]
+    then
+        # Print data for error.txt
+        printf "%-35s %-35s %-17s %-50s\n" "$2" "$3" "$1" "$4"
+    elif [[ $type == 'Valid' ]]
+    then
+        # Print data for valid.txt
+        printf "%-50s %-8s %-18s %-20s\n" "$2" "$1" "$3" "$4"
+    fi
+}
+
+################################ URL Encode ####################################
+# Function used to generate URL
+#
+# @Source #TODO Add source
+# @CalledBy urlConstruct
+################################################################################
+urlEncode() {
+    # urlencode <string>
+    old_lc_collate=$LC_COLLATE
+    LC_COLLATE=C
+
+    local length="${#1}"
+
+    for (( i = 0; i < length; i++ )); do
+        local c="${1:i:1}"
+        case $c in
+            [a-zA-Z0-9.~_-])
+            printf "$c" ;;
+            *)
+                printf '%%%02X' "'$c"
+        esac
+    done
+
+    LC_COLLATE=$old_lc_collate
+}
+
+################################ URL Decode ####################################
+# Come with urlEncode() in case we have to reverse engine in the future.
+#
+# @CalledBy None
+################################################################################
+urlDecode() {
+    # urldecode <string>
+    local url_encoded="${1//+/ }"
+
+    printf '%b' "${url_encoded//%/\\x}"
+}
+
+############################## URL Construct ###################################
+# Used to generate the report issue url
+#
+# @CalledBy getReferer
+################################################################################
+urlConstruct()
+{
+    # We encode the first argument and save it into title
+    local title=$(urlEncode "${1}")
+    # We encode the second argument and save it into body
+    local body=$(urlEncode "${2}")
+
+    # We generate the issue URL
+    url=$(printf "https://github.com/funilrys/funceble/issues/new?title=%s&body=%s" "${title}" "${body}")
+}
+
+############################### Get Referer ####################################
+# Used to generate the report issue url
+#
+# @CalledBy getExpirationDate
+################################################################################
+
+getReferer(){
+    # initialDomain <string>
+    initialDomain=${1}
+
+    # We get the extension of the given domain
+    domainExtension=${initialDomain##*.}
+    # We get the list of allowed extensions
+    validExtension=$(cat ${ianaDB})
+
+    # We check if the given domain extension is in our database file
+    if [[ ${validExtension} =~ ${domainExtension} ]]
+    then
+        # Special case for '.ga' domains which don't have their whois server
+        # registered to IANA. (cf. https://github.com/funilrys/funceble/issues/1)
+        if [[ ${domainExtension} == "ga" ]]
+        then
+
+            domain=${initialDomain}
+
+            referer="whois.my.ga"
+
+            # The Following is used to stop the execution of getExpirationDate
+            # in case the domain is not valid.
+            notSupported='False'
+        elif [[ ${domainExtension} == "za" ]]
+        then
+            domain=${initialDomain}
+
+            referer="whois.registry.net.za"
+
+            # The Following is used to stop the execution of getExpirationDate
+            # in case the domain is not valid.
+            notSupported='False'
+        elif [[ ${domainExtension} == "bz" ]]
+        then
+            domain=${initialDomain}
+
+            referer="whois.afilias-grs.info"
+
+            # The Following is used to stop the execution of getExpirationDate
+            # in case the domain is not valid.
+            notSupported='False'
+        else
+            # We get the host to call.
+            # If extension have a host assigned, it's written if format
+            # refer: whois.hello.world for example
+            referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
+            # We check if the format is valid
+            if [[ ${referer} =~ (.*)whois(.*) ]]
+            then
+                domain=${initialDomain}
+
+                # The Following is used to stop the execution of getExpirationDate
+                # in case the domain is not valid.
+                notSupported='False'
+            else
+                # If quiet != false, we don't print anything
+                if [[ ${quiet} == false ]]
+                then
+                    # We generate issue title
+                    local issueTitle=$(printf "[Not Supported] Please review/add suport for %s" "${initialDomain}")
+                    # We generate issue body
+                    local issueBody=$(printf "> The domain **%s** return an error" "${initialDomain}")
+
+                    # We get the full issue URL
+                    urlConstruct "${issueTitle}" "${issueBody}"
+
+                    # We print error message ===> Have to be reviewed
+                    printf "The domain %s return an error. Please report issue to: %s \n" "${red}${bold}${initialDomain}${normal}" "${bold}${url}${normal}"
+                fi
+
+                if [[ ${referer} == '' ]]
+                then
+                    # We assign "Not Found" to prevent empty column in files
+                    referer='Not Found'
+                fi
+
+                if [[ -f 'error.txt' ]]
+                then
+                    # We save the domain and his data
+                    prints "Error" "${domain}" "${referer}" "$(date)" >> error-${execDate}.txt
+                else
+                    # We create header into the newly created file
+                    printHeader "Error" > error.txt
+
+                    # We save the domain and his data
+                    prints "Error"  "${domain}" "${referer}" "$(date)" >> error.txt
+                fi
+            fi
+        fi
+    else
+        # If quiet != false, we don't print anything
+        if [[ ${quiet} == false ]]
+        then
+            # We generate issue title
+            local issueTitle=$(printf "[Invalid] Please review/add suport for %s" "${domain}")
+            # We generate issue body
+            local issueBody=$(printf "> The domain **%s** is invalid" "${domain}")
+
+            # We get the full url
+            urlConstruct "${issueTitle}" "${issueBody}"
+
+            # We print error message ===> Have to be reviewed
+            printf "The domain %s is invalid. If you think it's a mistake please report issue to: %s \n" "${red}${bold}${domain}${normal}" "${bold}${url}${normal}"
+        fi
+
+        if [[ -f 'invalid.txt' ]]
+        then
+            # We save the domain and his data
+            prints "Invalid" ${domain} "$(date)" >> invalid.txt
+        else
+            # We create header into the newly created file
+            printHeader 'Invalid' > invalid.txt
+            # We save the domain and his data
+            prints "Invalid" ${domain} "$(date)" >> invalid.txt
+        fi
+
+    fi
+}
+
+####################### Get (Domain) Expiration Date ###########################
+# Used to get the expiration date of a given domain.
+#
+# @CalledBy None
+################################################################################
+getExpirationDate(){
+    # domain <string>
+    # Domain given by user
+    domain=${1}
+
+    # We get the whois server referenced for the given domain
+    getReferer ${domain}
+
+    # Ensure that it's supported and not empty
+    if [[ ${notSupported} == 'False' && ${domain} != "" ]]
+    then
+        # We call the whois server and save the result into ${whoIs}
+        # cf. Default Values Section
+        whois -h ${referer} "${domain}" > ${whoIs}
+        # We get the content of the previously saved file
+        local content=$(cat ${whoIs})
+
+        # Here's a list of words the ${content} have to match to get the
+        # expiration date from the whois record of domain
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:')
+
+        # Here's a list of regex to extract the expiration date part of the
+        # whois record
+        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}")
+
+        for i in ${!toMatch[*]}
+        do
+            if [[ ${content} =~ ${toMatch[${i}]} ]]
+            then
+                # We get the expiration date
+                expirationDate=$(cat ${whoIs} | awk "${ifMatched[${i}]}")
+
+                if [[ ${expirationDate} =~ [0-9] ]]
+                then
+                    # If it contain numbers, we format it
+                    formatDate
+
+                    # If ${quiet} != false, we don't print anything
+                    if [[ ${quiet} == false ]]
+                    then
+                        # We print domain and its data
+                        prints "Valid" ${domain} ${expirationDate} "$(date)"
+                    fi
+
+                    if [[ -f 'valid.txt' ]]
+                    then
+                        # We save domain and its data
+                        prints "Valid" ${domain} ${expirationDate} "$(date)" >> valid.txt
+                    else
+                        # We create a file and add header
+                        printHeader 'Valid' > valid.txt
+
+                        # We add domain and its data to file
+                        prints "Valid" ${domain}  ${expirationDate} "$(date)" >> valid.txt
+                    fi
+                elif [[ ${expirationDate} == '' ]]
+                then
+                    # In case expiration Date is empty we save the record so we
+                    # can debug it.
+                    # In case this happen please report issue to
+                    # https://github.com/funilrys/funceble/issues/new
+                    # So it can be fixed for everyone using this script
+                    cat ${whoIs} >> ${referer}
+                    # echo "heloo"
+
+                    # TODO: Add print data
+                fi
+            fi
+        done
+    fi
+}
+
+################################ Date to Lower #################################
+# Used to convert date to lower case
+#
+# @CalledBy formatDate
+################################################################################
+dateToLower(){
+    expirationDate=$(echo "${expirationDate}" | awk '{print tolower($0)}')
+}
+
+################################ Format Date ###################################
+# Used to format date. We have to work with multiple date format from WHOIS
+# records so this function is in charge to create an unified format.
+#
+# @CalledBy getExpirationDate
+################################################################################
+formatDate()
+{
+    if [[ ${expirationDate} =~ 'Domain Expiration Date:' ]]
+    then
+        # We split the date
+        local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c2)
+        local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c4)
+        local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | tail -c6 | head -c3)
+
+        # We assign the expiration date
+        expirationDate=${day}'-'${month}-${year}
+
+        # We convert it to lower case
+        dateToLower
+    elif [[ ${expirationDate} =~ 'Expiration Date:' || ${expirationDate} =~ 'expire on:' ]]
+    then
+        # We split the string to get the date
+        expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
+
+        if [[ ${expirationDate} =~  ( |\') ]]
+        then
+            # We get the final date
+            expirationDate=$(echo "${expirationDate}" |head -c12)
+        fi
+
+        # We convrt it to lower case
+        dateToLower
+u
+    elif [[ ${expirationDate} =~ 'expire:' ]]
+    then
+        # We split the string to get the date
+        expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
+
+        if [[ ${expirationDate} =~  ( |\') ]]
+        then
+            # We get the final date
+            expirationDate=$(echo "${expirationDate}" |tail -c12)
+        fi
+
+        # We convrt it to lower case
+        dateToLower
+    elif [[ ${expirationDate} =~ 'Expiry Date:' ]]
+    then
+        # We split the string to get the date
+        expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2 | cut -d 'T' -f1)
+
+        if [[ ${expirationDate} =~  ( |\') ]]
+        then
+            # We get the final date
+            expirationDate=$(echo "${expirationDate}" |tail -c12)
+        fi
+
+        # We convrt it to lower case
+        dateToLower
+    fi
+}
+
+################################## Main ########################################
+# Main function used to call other function
+#
+# @CalledBy getExpirationDate
+################################################################################
+main()
+{
+  # domain <string>
+    domain=${1}
+    # file <string>
+    file=${2}
+
+    if [[ "${domain}" != "" ]]
+    then
+        # We only print message if ${quiet} == false
+        if [[ ${quiet} == false ]]
+        then
+            printHeader "Valid"
+        fi
+
+        # We execute the getExpirationDate function
+        getExpirationDate "${domain}"
+    elif [ -f "${file}" ]
+    then
+      # We only print message if ${quiet} == false
+        if [[ ${quiet} == false ]]
+        then
+            printHeader "Valid"
+        fi
+
+        # We read the list of the file and pass the domain (1 line = 1 domain)
+        # to getExpirationDate
+        while read domain
+        do
+            getExpirationDate "${domain}"
+        done < ${file}
+    else
+        # If domain is empty & file file don't exist we print usage
+        usage
+    fi
+}
+
+################################## Usage #######################################
+# Help function
+#
+# @CalledBy getExpirationDate, main
+################################################################################
+usage()
+{
+    echo "Usage: ${0} [ -h ] [ -q ]"
+    echo ""
+    echo "       {[ -d domain-name.com ]} || {[ -f listOfDomainInAFile ]}"
+    echo ""
+    echo "  --domain    -d              Domain to analyze"
+    echo "  --file      -f              File with a list of domains"
+    echo "  --help      -h              Print this screen"
+    echo "  --quiet     -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo ""
+}
+
+
+############################### Arguments Handle ###############################
+# We use this part to get arguments from command line.
+#
+# @Requiredby All
+################################################################################
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+        # Activate the quied mode
+        -q|--quiet)
+            quiet=true
+        ;;
+        # Use domain function
+        -d|--domain)
+            main "$2" ''
+            shift
+        ;;
+        # File to read
+        -f|--file)
+            shift # past the key and to the value
+            main '' "$1"
+        ;;
+        # Show usage
+        -h|--help)
+            usage
+        ;;
+        # Show usage on everything else
+        *)
+            usage
+        ;;
+    esac
+    shift
+done
