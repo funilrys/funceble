@@ -59,7 +59,7 @@ whoisServer="whois.iana.org"
 noFiles=false
 
 # Valid domain status
-validStatus="${bold}ACTIVE${normal}"
+validStatus="ACTIVE"
 ################################################################################
 ################################### Github #####################################
 # Github issue URL
@@ -268,7 +268,7 @@ validationHandle(){
             printHeader 'Valid' > valid.txt
             
             # We add domain and its data to file
-            prints "Valid" ${domain}  ${exp} "$(date)" >> valid.txt
+            prints "Valid" ${domain} ${exp} "$(date)" >> valid.txt
         fi
     fi
 }
@@ -366,7 +366,7 @@ getReferer(){
                     if [[ ${quiet} == false ]]
                     then
                         # We print domain and its data
-                        prints "Generic" "${domain}" "Valid" ${expirationDate} "$(date)"
+                        prints "Generic" "${domain}" "${validStatus}" ${expirationDate} "$(date)"
                     fi
                     
                     validationHandle ${expirationDate}
@@ -439,7 +439,7 @@ getExpirationDate(){
                     if [[ ${quiet} == false ]]
                     then
                         # We print domain and its data
-                        prints "Generic" "${domain}" "Valid" ${expirationDate} "$(date)"
+                        prints "Generic" "${domain}" "${validStatus}" ${expirationDate} "$(date)"
                     fi
                     
                     validationHandle ${expirationDate}
