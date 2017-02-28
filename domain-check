@@ -23,6 +23,7 @@
 ################################# Temporary ####################################
 # Path to temporary file
 whoIs="/var/tmp/whois.$$"
+
 # Date of execution (start) ===> Unused now
 execDate=$(date +"-%F-%T")
 ################################################################################
@@ -35,27 +36,35 @@ ianaDB="iana-domains-db"
 ###############################  Text Format ###################################
 # Red Color
 red=$(tput setaf 1)
+
 # White Color
 white=$(tput setaf 7)
+
 # Bold
 bold=$(tput bold)
+
 # Disable formating
 normal=$(tput sgr0)
 ################################################################################
 ############################## Default Values ##################################
-# If quiet="True" ==> We don't print anything
+# If quiet=true ==> We don't print anything
 quiet=false
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
 # Note: Whois Server are different for each extensions.
 whoisServer="whois.iana.org"
+
+# If noFiles=true ==> We don't any files
+noFiles=false
 ################################################################################
 ################################### Github #####################################
 # Github issue URL
 issueURL="https://github.com/funilrys/funceble/issues/"
+
 # Known issues file name
 knownIssuesFile="known-issues"
+
 # known-issues file URL
 knownIssuesURL="https://raw.githubusercontent.com/funilrys/funceble/dev/known-issues"
 ################################################################################
@@ -306,33 +315,38 @@ getReferer(){
                 
                 errorHandle ${domainExtension} 'Error'
                 
-                if [[ -f 'error.txt' ]]
+                if [[ ${noFiles} == false ]]
                 then
-                    # We save the domain and his data
-                    prints "Error" "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
-                else
-                    # We create header into the newly created file
-                    printHeader "Error" > error.txt
-                    
-                    # We save the domain and his data
-                    prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
+                    if [[ -f 'error.txt' ]]
+                    then
+                        # We save the domain and his data
+                        prints "Error" "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
+                    else
+                        # We create header into the newly created file
+                        printHeader "Error" > error.txt
+                        
+                        # We save the domain and his data
+                        prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
+                    fi
                 fi
             fi
         fi
     else
         errorHandle ${domainExtension} 'Invalid'
         
-        if [[ -f 'invalid.txt' ]]
+        if [[ ${noFiles} == false ]]
         then
-            # We save the domain and his data
-            prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> invalid.txt
-        else
-            # We create header into the newly created file
-            printHeader 'Invalid' > invalid.txt
-            # We save the domain and his data
-            prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> invalid.txt
+            if [[ -f 'invalid.txt' ]]
+            then
+                # We save the domain and his data
+                prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> invalid.txt
+            else
+                # We create header into the newly created file
+                printHeader 'Invalid' > invalid.txt
+                # We save the domain and his data
+                prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> invalid.txt
+            fi
         fi
-        
     fi
 }
 
@@ -385,16 +399,19 @@ getExpirationDate(){
                         prints "Generic" "${domain}" "Valid" ${expirationDate} "$(date)"
                     fi
                     
-                    if [[ -f 'valid.txt' ]]
+                    if [[ ${noFiles} == false ]]
                     then
-                        # We save domain and its data
-                        prints "Valid" ${domain} ${expirationDate} "$(date)" >> valid.txt
-                    else
-                        # We create a file and add header
-                        printHeader 'Valid' > valid.txt
-                        
-                        # We add domain and its data to file
-                        prints "Valid" ${domain}  ${expirationDate} "$(date)" >> valid.txt
+                        if [[ -f 'valid.txt' ]]
+                        then
+                            # We save domain and its data
+                            prints "Valid" ${domain} ${expirationDate} "$(date)" >> valid.txt
+                        else
+                            # We create a file and add header
+                            printHeader 'Valid' > valid.txt
+                            
+                            # We add domain and its data to file
+                            prints "Valid" ${domain}  ${expirationDate} "$(date)" >> valid.txt
+                        fi
                     fi
                 elif [[ ${expirationDate} == '' ]]
                 then
@@ -602,14 +619,15 @@ main()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ -h ] [ -q ]"
+    echo "Usage: ${0} [ -h ] [ -q ] [ -n ]"
     echo ""
     echo "       {[ -d domain-name.com ]} || {[ -f listOfDomainInAFile ]}"
     echo ""
-    echo "  --domain    -d              Domain to analyze"
-    echo "  --file      -f              File with a list of domains"
-    echo "  --help      -h              Print this screen"
-    echo "  --quiet     -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --domain                   -d              Domain to analyze"
+    echo "  --file                     -f              File with a list of domains"
+    echo "  --help                     -h              Print this screen"
+    echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --noFiles                  -n              Desactivate the production of output files"
     echo ""
 }
 
@@ -625,6 +643,11 @@ while [[ $# -gt 0 ]]; do
         # Activate the quied mode
         -q|--quiet)
             quiet=true
+            noFiles=false
+        ;;
+        -n|--noFiles)
+            noFiles=true
+            quiet=false
         ;;
         # Use domain function
         -d|--domain)
