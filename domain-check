@@ -54,6 +54,8 @@ whoisServer="whois.iana.org"
 ################################### Github #####################################
 # Github issue URL
 issueURL="https://github.com/funilrys/funceble/issues/"
+# Known issues file name
+knownIssuesFile="known-issues"
 # known-issues file URL
 knownIssuesURL="https://raw.githubusercontent.com/funilrys/funceble/dev/known-issues"
 ################################################################################
@@ -69,14 +71,14 @@ knownIssuesURL="https://raw.githubusercontent.com/funilrys/funceble/dev/known-is
 
 
 ############################### Print Header ###################################
-# Used to print header for quiet="False" and in files
+# Used to print header if quiet=false and in files
 # @CalledBy getReferer
 ################################################################################
 printHeader()
 {
     # type <string>
     local type=${1}
-
+    
     if [[ ${type} == 'Invalid' ]]
     then
         # Generation of header for invalid.txt
@@ -109,7 +111,7 @@ prints()
 {
     # type <string>
     local type=${1}
-
+    
     if [[ ${type} == 'Invalid' ]]
     then
         # Print data for invalid.txt
@@ -139,9 +141,9 @@ urlEncode() {
     # urlencode <string>
     old_lc_collate=$LC_COLLATE
     LC_COLLATE=C
-
+    
     local length="${#1}"
-
+    
     for (( i = 0; i < length; i++ )); do
         local c="${1:i:1}"
         case $c in
@@ -151,7 +153,7 @@ urlEncode() {
                 printf '%%%02X' "'$c"
         esac
     done
-
+    
     LC_COLLATE=$old_lc_collate
 }
 
@@ -163,7 +165,7 @@ urlEncode() {
 urlDecode() {
     # urldecode <string>
     local url_encoded="${1//+/ }"
-
+    
     printf '%b' "${url_encoded//%/\\x}"
 }
 
@@ -178,7 +180,7 @@ unknownIssueUrl()
     local title=$(urlEncode "${1}")
     # We encode the second argument and save it into body
     local body=$(urlEncode "${2}")
-
+    
     # We generate the issue URL
     url=$(printf "%snew?title=%s&body=%s" "${issueURL}" "${title}" "${body}")
 }
@@ -192,17 +194,17 @@ errorHandle()
 {
     domainExtension=${1}
     type=${2}
-    if cat known-issues | grep -Fq ${domainExtension} || curl -v -silent ${knownIssuesURL} 2>&1 | grep -Fq ${domainExtension}
+    if cat ${knownIssuesFile} | grep -Fq ${domainExtension} || curl -v -silent ${knownIssuesURL} 2>&1 | grep -Fq ${domainExtension}
     then
         # If domain extension has a known issue, we simply get his
         # number and generate issue url
-        local issueNumber=$(cat known-issues | grep -F ${domainExtension} | cut -d ' ' -f2)
+        local issueNumber=$(cat ${knownIssuesFile} | grep -F ${domainExtension} | cut -d ' ' -f2)
         issueStatus='Known Issue'
         issueUniqueUrl=${issueURL}${issueNumber}
     else
         # We set issue status
         issueStatus='Unknown'
-
+        
         if [[ ${type} == 'Error' ]]
         then
             # We generate issue title
@@ -220,7 +222,7 @@ errorHandle()
         unknownIssueUrl "${issueTitle}" "${issueBody}"
         issueUniqueUrl=${url}
     fi
-
+    
     # If quiet != false, we don't print anything
     if [[ ${quiet} == false ]]
     then
@@ -242,12 +244,12 @@ errorHandle()
 getReferer(){
     # initialDomain <string>
     initialDomain=${1}
-
+    
     # We get the extension of the given domain
     domainExtension=${initialDomain##*.}
     # We get the list of allowed extensions
     validExtension=$(cat ${ianaDB})
-
+    
     # We check if the given domain extension is in our database file
     if [[ ${validExtension} =~ ${domainExtension} ]]
     then
@@ -255,55 +257,55 @@ getReferer(){
         # registered to IANA. (cf. https://github.com/funilrys/funceble/issues/1)
         if [[ ${domainExtension} == "ga" ]]
         then
-
+            
             domain=${initialDomain}
-
+            
             referer="whois.my.ga"
-
+            
             # The Following is used to stop the execution of getExpirationDate
             # in case the domain is not valid.
-            notSupported='False'
+            notSupported=false
         elif [[ ${domainExtension} == "za" ]]
         then
             domain=${initialDomain}
-
+            
             referer="whois.registry.net.za"
-
+            
             # The Following is used to stop the execution of getExpirationDate
             # in case the domain is not valid.
-            notSupported='False'
+            notSupported=false
         elif [[ ${domainExtension} == "bz" ]]
         then
             domain=${initialDomain}
-
+            
             referer="whois.afilias-grs.info"
-
+            
             # The Following is used to stop the execution of getExpirationDate
             # in case the domain is not valid.
-            notSupported='False'
+            notSupported=false
         else
             # We get the host to call.
             # If extension have a host assigned, it's written if format
             # refer: whois.hello.world for example
             referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
-
+            
             # We check if the format is valid
             if [[ ${referer} =~ (.*)whois(.*) ]]
             then
                 domain=${initialDomain}
-
+                
                 # The Following is used to stop the execution of getExpirationDate
                 # in case the domain is not valid.
-                notSupported='False'
+                notSupported=false
             else
                 if [[ ${referer} == '' ]]
                 then
                     # We assign "Not Found" to prevent empty column in files
                     referer='Not Found'
                 fi
-
+                
                 errorHandle ${domainExtension} 'Error'
-
+                
                 if [[ -f 'error.txt' ]]
                 then
                     # We save the domain and his data
@@ -311,7 +313,7 @@ getReferer(){
                 else
                     # We create header into the newly created file
                     printHeader "Error" > error.txt
-
+                    
                     # We save the domain and his data
                     prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
                 fi
@@ -319,7 +321,7 @@ getReferer(){
         fi
     else
         errorHandle ${domainExtension} 'Invalid'
-
+        
         if [[ -f 'invalid.txt' ]]
         then
             # We save the domain and his data
@@ -330,7 +332,7 @@ getReferer(){
             # We save the domain and his data
             prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> invalid.txt
         fi
-
+        
     fi
 }
 
@@ -343,46 +345,46 @@ getExpirationDate(){
     # domain <string>
     # Domain given by user
     domain=${1}
-
+    
     # We get the whois server referenced for the given domain
     getReferer ${domain}
-
+    
     # Ensure that it's supported and not empty
-    if [[ ${notSupported} == 'False' && ${domain} != "" ]]
+    if [[ ${notSupported} == false && ${domain} != "" ]]
     then
         # We call the whois server and save the result into ${whoIs}
         # cf. Default Values Section
         whois -h ${referer} "${domain}" > ${whoIs}
         # We get the content of the previously saved file
         local content=$(cat ${whoIs})
-
+        
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
         local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:')
-
+        
         # Here's a list of regex to extract the expiration date part of the
         # whois record
         local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}")
-
+        
         for i in ${!toMatch[*]}
         do
             if [[ ${content} =~ ${toMatch[${i}]} ]]
             then
                 # We get the expiration date
                 expirationDate=$(cat ${whoIs} | awk "${ifMatched[${i}]}")
-
+                
                 if [[ ${expirationDate} =~ [0-9] ]]
                 then
                     # If it contain numbers, we format it
                     formatDate
-
+                    
                     # If ${quiet} != false, we don't print anything
                     if [[ ${quiet} == false ]]
                     then
                         # We print domain and its data
                         prints "Generic" "${domain}" "Valid" ${expirationDate} "$(date)"
                     fi
-
+                    
                     if [[ -f 'valid.txt' ]]
                     then
                         # We save domain and its data
@@ -390,7 +392,7 @@ getExpirationDate(){
                     else
                         # We create a file and add header
                         printHeader 'Valid' > valid.txt
-
+                        
                         # We add domain and its data to file
                         prints "Valid" ${domain}  ${expirationDate} "$(date)" >> valid.txt
                     fi
@@ -431,56 +433,56 @@ formatDate()
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c2)
         local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c4)
         local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | tail -c6 | head -c3)
-
+        
         # We assign the expiration date
         expirationDate=${day}'-'${month}-${year}
-
+        
         # We convert it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ 'Expiration Date:' || ${expirationDate} =~ 'expire on:' ]]
     then
-
+        
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
-
+        
         if [[ ${expirationDate} =~  ( |\') ]]
         then
             # We split the date
             local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c2)
             local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c4)
             local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | tail -c6 | head -c3)
-
+            
             # We assign the expiration date
             expirationDate=${day}'-'${month}-${year}
-
+            
         fi
-
+        
         # We convrt it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ 'expire:' ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
-
+        
         if [[ ${expirationDate} =~  ( |\') ]]
         then
             # We get the final date
             expirationDate=$(echo "${expirationDate}" |tail -c12)
         fi
-
+        
         # We convrt it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ 'Expiry Date:' ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2 | cut -d 'T' -f1)
-
+        
         if [[ ${expirationDate} =~  ( |\') ]]
         then
             # We get the final date
             expirationDate=$(echo "${expirationDate}" |tail -c12)
         fi
-
+        
         # We convrt it to lower case
         dateToLower
     fi
@@ -497,7 +499,7 @@ main()
     domain=${1}
     # file <string>
     file=${2}
-
+    
     if [[ "${domain}" != "" ]]
     then
         # We only print message if ${quiet} == false
@@ -505,7 +507,7 @@ main()
         then
             printHeader "Generic"
         fi
-
+        
         # We execute the getExpirationDate function
         getExpirationDate "${domain}"
     elif [ -f "${file}" ]
@@ -515,7 +517,7 @@ main()
         then
             printHeader "Generic"
         fi
-
+        
         # We read the list of the file and pass the domain (1 line = 1 domain)
         # to getExpirationDate
         while read domain
