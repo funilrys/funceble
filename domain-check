@@ -16,6 +16,7 @@
 # Indirect Contributors:
 #    - Chris Down (@cdown) <chris@chrisdown.name>
 #        - urlEncode() + urlDecode()
+#
 ################################################################################
 
 
@@ -50,6 +51,10 @@ quiet=false
 # Note: Whois Server are different for each extensions.
 whoisServer="whois.iana.org"
 ################################################################################
+################################### Github #####################################
+# Github issue url
+issueURL="https://github.com/funilrys/funceble/issues/"
+################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
 # (  ____ \|\     /|( (    /|(  ____ \\__   __/\__   __/(  ___  )( (    /|(  ____ \
@@ -73,18 +78,23 @@ printHeader()
     if [[ ${type} == 'Invalid' ]]
     then
         # Generation of header for invalid.txt
-        printf "\n%-35s %-17s %-8s\n" "Domain" "Status" "Analyse Date"
-        echo "----------------------------------- ----------------- ----------------------------"
+        printf "\n%-100s %-17s %-17s %-180s %-8s\n" "Domain" "Status" "Issue Status" "Issue Url" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------------- ----------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ ----------------------------"
     elif [[ ${type} == 'Error' ]]
     then
         # Generation of header for error.txt
-        printf "\n%-35s %-35s %-17s %-50s\n" "Domain" "WHOIS Server" "Status" "Analyse Date"
-        echo "----------------------------------- ----------------------------------- ----------------- ----------------------------"
+        printf "\n%-100s %-35s %-17s %-17s %-180s %-50s\n" "Domain" "WHOIS Server" "Status" "Issue Status" "Issue Url" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------------- ----------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ ----------------------------"
     elif [[ ${type} == 'Valid' ]]
     then
         # Generation of header for valid.txt
         printf "\n%-50s %-8s %-18s %-20s\n" "Domain" "Status" "Expiration Date" "Analyse Date"
         echo "-------------------------------------------------- -------- ----------------- -------------------------------"
+    elif [[ ${type} == 'Generic' ]]
+    then
+        # Generation of header
+        printf "\n%-50s %-11s %-18s %-20s\n" "Domain" "Status" "Expiration Date" "Analyse Date"
+        echo "-------------------------------------------------- ----------- ----------------- -------------------------------"
     fi
 }
 
@@ -101,15 +111,19 @@ prints()
     if [[ ${type} == 'Invalid' ]]
     then
         # Print data for invalid.txt
-        printf "%-35s %-17s %-8s\n" "$2" "$1" "$3"
+        printf "%-100s %-17s %-17s %-180s %-8s\n" "$2" "$1" "$3" "$4" "$5"
     elif [[ ${type} == 'Error' ]]
     then
         # Print data for error.txt
-        printf "%-35s %-35s %-17s %-50s\n" "$2" "$3" "$1" "$4"
+        printf "%-100s %-35s %-17s %-17s %-180s %-50s\n" "$2" "$3" "$1" "$4" "$5" "$6"
     elif [[ $type == 'Valid' ]]
     then
         # Print data for valid.txt
         printf "%-50s %-8s %-18s %-20s\n" "$2" "$1" "$3" "$4"
+    elif [[ $type == 'Generic' ]]
+    then
+        # Print data
+        printf "%-50s %-11s %-18s %-20s\n" "$2" "$3" "$4" "$5"
     fi
 }
 
@@ -117,7 +131,7 @@ prints()
 # Function used to generate URL
 #
 # @Source #TODO Add source
-# @CalledBy urlConstruct
+# @CalledBy unknownIssueUrl
 ################################################################################
 urlEncode() {
     # urlencode <string>
@@ -156,7 +170,7 @@ urlDecode() {
 #
 # @CalledBy getReferer
 ################################################################################
-urlConstruct()
+unknownIssueUrl()
 {
     # We encode the first argument and save it into title
     local title=$(urlEncode "${1}")
@@ -164,7 +178,58 @@ urlConstruct()
     local body=$(urlEncode "${2}")
 
     # We generate the issue URL
-    url=$(printf "https://github.com/funilrys/funceble/issues/new?title=%s&body=%s" "${title}" "${body}")
+    url=$(printf "%snew?title=%s&body=%s" "${issueURL}" "${title}" "${body}")
+}
+
+############################## Error Handle ####################################
+# Used to return issue status and issue url
+#
+# @CalledBy getReferer
+################################################################################
+errorHandle()
+{
+    domainExtension=${1}
+    type=${2}
+    if cat known-issues | grep -Fq ${domainExtension}
+    then
+        # If domain extension has a known issue, we simply get his
+        # number and generate issue url
+        local issueNumber=$(cat known-issues | grep -F ${domainExtension} | cut -d ' ' -f2)
+        issueStatus='Known Issue'
+        issueUniqueUrl=${issueURL}${issueNumber}
+    else
+        # We set issue status
+        issueStatus='Unknown'
+
+        if [[ ${type} == 'Error' ]]
+        then
+            # We generate issue title
+            local issueTitle=$(printf "[Not Found] .%s domains" "${domainExtension}")
+            # We generate issue body
+            local issueBody=$(printf "> **.%s** extensions returns error" "${domainExtension}")
+        elif [[ ${type} == 'Invalid' ]]
+        then
+            # We generate issue title
+            local issueTitle=$(printf "[Not Supported] .%s domains" "${domainExtension}")
+            # We generate issue body
+            local issueBody=$(printf "> **.%s** extensions are not supported" "${domainExtension}")
+        fi
+        # We get the full issue URL
+        unknownIssueUrl "${issueTitle}" "${issueBody}"
+        issueUniqueUrl=${url}
+    fi
+
+    # If quiet != false, we don't print anything
+    if [[ ${quiet} == false ]]
+    then
+        if [[ ${issueStatus} == 'Unknown' ]]
+        then
+            local status="Error"
+        else
+            local status=${issueStatus}
+        fi
+        prints "Generic" "${domain}" "${status}" "Unknown" "$(date)"
+    fi
 }
 
 ############################### Get Referer ####################################
@@ -172,7 +237,6 @@ urlConstruct()
 #
 # @CalledBy getExpirationDate
 ################################################################################
-
 getReferer(){
     # initialDomain <string>
     initialDomain=${1}
@@ -220,6 +284,7 @@ getReferer(){
             # If extension have a host assigned, it's written if format
             # refer: whois.hello.world for example
             referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
+
             # We check if the format is valid
             if [[ ${referer} =~ (.*)whois(.*) ]]
             then
@@ -229,65 +294,39 @@ getReferer(){
                 # in case the domain is not valid.
                 notSupported='False'
             else
-                # If quiet != false, we don't print anything
-                if [[ ${quiet} == false ]]
-                then
-                    # We generate issue title
-                    local issueTitle=$(printf "[Not Supported] Please review/add suport for %s" "${initialDomain}")
-                    # We generate issue body
-                    local issueBody=$(printf "> The domain **%s** return an error" "${initialDomain}")
-
-                    # We get the full issue URL
-                    urlConstruct "${issueTitle}" "${issueBody}"
-
-                    # We print error message ===> Have to be reviewed
-                    printf "The domain %s return an error. Please report issue to: %s \n" "${red}${bold}${initialDomain}${normal}" "${bold}${url}${normal}"
-                fi
-
                 if [[ ${referer} == '' ]]
                 then
                     # We assign "Not Found" to prevent empty column in files
                     referer='Not Found'
                 fi
 
+                errorHandle ${domainExtension} 'Error'
+
                 if [[ -f 'error.txt' ]]
                 then
                     # We save the domain and his data
-                    prints "Error" "${domain}" "${referer}" "$(date)" >> error-${execDate}.txt
+                    prints "Error" "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
                 else
                     # We create header into the newly created file
                     printHeader "Error" > error.txt
 
                     # We save the domain and his data
-                    prints "Error"  "${domain}" "${referer}" "$(date)" >> error.txt
+                    prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
                 fi
             fi
         fi
     else
-        # If quiet != false, we don't print anything
-        if [[ ${quiet} == false ]]
-        then
-            # We generate issue title
-            local issueTitle=$(printf "[Invalid] Please review/add suport for %s" "${domain}")
-            # We generate issue body
-            local issueBody=$(printf "> The domain **%s** is invalid" "${domain}")
-
-            # We get the full url
-            urlConstruct "${issueTitle}" "${issueBody}"
-
-            # We print error message ===> Have to be reviewed
-            printf "The domain %s is invalid. If you think it's a mistake please report issue to: %s \n" "${red}${bold}${domain}${normal}" "${bold}${url}${normal}"
-        fi
+        errorHandle ${domainExtension} 'Invalid'
 
         if [[ -f 'invalid.txt' ]]
         then
             # We save the domain and his data
-            prints "Invalid" ${domain} "$(date)" >> invalid.txt
+            prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> invalid.txt
         else
             # We create header into the newly created file
             printHeader 'Invalid' > invalid.txt
             # We save the domain and his data
-            prints "Invalid" ${domain} "$(date)" >> invalid.txt
+            prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> invalid.txt
         fi
 
     fi
@@ -339,7 +378,7 @@ getExpirationDate(){
                     if [[ ${quiet} == false ]]
                     then
                         # We print domain and its data
-                        prints "Valid" ${domain} ${expirationDate} "$(date)"
+                        prints "Generic" "${domain}" "Valid" ${expirationDate} "$(date)"
                     fi
 
                     if [[ -f 'valid.txt' ]]
@@ -361,9 +400,6 @@ getExpirationDate(){
                     # https://github.com/funilrys/funceble/issues/new
                     # So it can be fixed for everyone using this script
                     cat ${whoIs} >> ${referer}
-                    # echo "heloo"
-
-                    # TODO: Add print data
                 fi
             fi
         done
@@ -401,18 +437,24 @@ formatDate()
         dateToLower
     elif [[ ${expirationDate} =~ 'Expiration Date:' || ${expirationDate} =~ 'expire on:' ]]
     then
+
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
 
         if [[ ${expirationDate} =~  ( |\') ]]
         then
-            # We get the final date
-            expirationDate=$(echo "${expirationDate}" |head -c12)
+            # We split the date
+            local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c2)
+            local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c4)
+            local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | tail -c6 | head -c3)
+
+            # We assign the expiration date
+            expirationDate=${day}'-'${month}-${year}
+
         fi
 
         # We convrt it to lower case
         dateToLower
-u
     elif [[ ${expirationDate} =~ 'expire:' ]]
     then
         # We split the string to get the date
@@ -449,7 +491,7 @@ u
 ################################################################################
 main()
 {
-  # domain <string>
+    # domain <string>
     domain=${1}
     # file <string>
     file=${2}
@@ -459,17 +501,17 @@ main()
         # We only print message if ${quiet} == false
         if [[ ${quiet} == false ]]
         then
-            printHeader "Valid"
+            printHeader "Generic"
         fi
 
         # We execute the getExpirationDate function
         getExpirationDate "${domain}"
     elif [ -f "${file}" ]
     then
-      # We only print message if ${quiet} == false
+        # We only print message if ${quiet} == false
         if [[ ${quiet} == false ]]
         then
-            printHeader "Valid"
+            printHeader "Generic"
         fi
 
         # We read the list of the file and pass the domain (1 line = 1 domain)
@@ -522,7 +564,7 @@ while [[ $# -gt 0 ]]; do
         ;;
         # File to read
         -f|--file)
-            shift # past the key and to the value
+            shift
             main '' "$1"
         ;;
         # Show usage
