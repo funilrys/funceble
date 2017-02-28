@@ -190,7 +190,7 @@ errorHandle()
 {
     domainExtension=${1}
     type=${2}
-    if cat known-issues | grep -Fq ${domainExtension}
+    if cat known-issues | grep -Fq ${domainExtension} || curl -v -silent https://raw.githubusercontent.com/funilrys/funceble/dev/known-issues 2>&1 | grep -Fq ${domainExtension}
     then
         # If domain extension has a known issue, we simply get his
         # number and generate issue url
