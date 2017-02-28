@@ -60,6 +60,9 @@ noFiles=false
 
 # Valid domain status
 validStatus="ACTIVE"
+
+# Invalid domain status
+invalidStatus="INVALID"
 ################################################################################
 ################################### Github #####################################
 # Github issue URL
@@ -127,7 +130,7 @@ prints()
     if [[ ${type} == 'Invalid' ]]
     then
         # Print data for invalid.txt
-        printf "%-100s %-17s %-17s %-180s %-8s\n" "${2}" "${1}" "${3}" "${4}" "${5}"
+        printf "%-100s %-17s %-17s %-180s %-8s\n" "${2}" "${invalidStatus}" "${3}" "${4}" "${5}"
     elif [[ ${type} == 'Error' ]]
     then
         # Print data for error.txt
@@ -211,7 +214,7 @@ errorHandle()
         # If domain extension has a known issue, we simply get his
         # number and generate issue url
         local issueNumber=$(cat ${knownIssuesFile} | grep -F ${domainExtension} | cut -d ' ' -f2)
-        issueStatus='Known Issue'
+        issueStatus='Known'
         issueUniqueUrl=${issueURL}${issueNumber}
     else
         # We set issue status
@@ -240,6 +243,10 @@ errorHandle()
     then
         if [[ ${issueStatus} == 'Unknown' ]]
         then
+            if [[ ${type} == 'Invalid' ]]
+            then
+                type="${invalidStatus}"
+            fi
             local status=${type}
         else
             local status=${issueStatus}
