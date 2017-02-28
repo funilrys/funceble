@@ -419,6 +419,57 @@ dateToLower(){
     expirationDate=$(echo "${expirationDate}" | awk '{print tolower($0)}')
 }
 
+############################# Get Month In English #############################
+# Used to convert month from numeric to alphabetic
+#
+# @CalledBy formatDate
+################################################################################
+getMonthInEnglish(){
+    local numericMonth=${1}
+    
+    case ${numericMonth} in
+        1|01)
+            month='jan'
+        ;;
+        2|01)
+            month='feb'
+        ;;
+        3|03)
+            month='mar'
+        ;;
+        4|04)
+            month='apr'
+        ;;
+        5|05)
+            month='may'
+        ;;
+        6|06)
+            month='jun'
+        ;;
+        7|07)
+            month='jul'
+        ;;
+        8|08)
+            month='aug'
+        ;;
+        9|09)
+            month='sep'
+        ;;
+        10)
+            month='oct'
+        ;;
+        11)
+            month='nov'
+        ;;
+        12)
+            month='dec'
+        ;;
+        *)
+            month='0'
+        ;;
+    esac
+}
+
 ################################ Format Date ###################################
 # Used to format date. We have to work with multiple date format from WHOIS
 # records so this function is in charge to create an unified format.
@@ -427,6 +478,7 @@ dateToLower(){
 ################################################################################
 formatDate()
 {
+    echo ${expirationDate}
     if [[ ${expirationDate} =~ 'Domain Expiration Date:' ]]
     then
         # We split the date
@@ -454,7 +506,6 @@ formatDate()
             
             # We assign the expiration date
             expirationDate=${day}'-'${month}-${year}
-            
         fi
         
         # We convrt it to lower case
@@ -480,7 +531,21 @@ formatDate()
         if [[ ${expirationDate} =~  ( |\') ]]
         then
             # We get the final date
-            expirationDate=$(echo "${expirationDate}" |tail -c12)
+            expirationDate=$(echo "${expirationDate}" |tail -c11)
+        fi
+        
+        if [[ ${expirationDate} =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2} ]]
+        then
+            # We split the date
+            local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c4)
+            local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c2)
+            local month=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4 | head -c2)
+            
+            # We convert the month
+            getMonthInEnglish ${month}
+            
+            # We assign the expiration date
+            expirationDate=${day}'-'${month}-${year}
         fi
         
         # We convrt it to lower case
