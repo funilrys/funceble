@@ -87,7 +87,7 @@ printHeader()
 {
     # type <string>
     local type=${1}
-    
+
     if [[ ${type} == 'Invalid' ]]
     then
         # Generation of header for invalid.txt
@@ -120,7 +120,7 @@ prints()
 {
     # type <string>
     local type=${1}
-    
+
     if [[ ${type} == 'Invalid' ]]
     then
         # Print data for invalid.txt
@@ -150,9 +150,9 @@ urlEncode() {
     # urlencode <string>
     old_lc_collate=$LC_COLLATE
     LC_COLLATE=C
-    
+
     local length="${#1}"
-    
+
     for (( i = 0; i < length; i++ )); do
         local c="${1:i:1}"
         case $c in
@@ -162,7 +162,7 @@ urlEncode() {
                 printf '%%%02X' "'$c"
         esac
     done
-    
+
     LC_COLLATE=$old_lc_collate
 }
 
@@ -174,7 +174,7 @@ urlEncode() {
 urlDecode() {
     # urldecode <string>
     local url_encoded="${1//+/ }"
-    
+
     printf '%b' "${url_encoded//%/\\x}"
 }
 
@@ -189,7 +189,7 @@ unknownIssueUrl()
     local title=$(urlEncode "${1}")
     # We encode the second argument and save it into body
     local body=$(urlEncode "${2}")
-    
+
     # We generate the issue URL
     url=$(printf "%snew?title=%s&body=%s" "${issueURL}" "${title}" "${body}")
 }
@@ -213,7 +213,7 @@ errorHandle()
     else
         # We set issue status
         issueStatus='Unknown'
-        
+
         if [[ ${type} == 'Error' ]]
         then
             # We generate issue title
@@ -231,7 +231,7 @@ errorHandle()
         unknownIssueUrl "${issueTitle}" "${issueBody}"
         issueUniqueUrl=${url}
     fi
-    
+
     # If quiet != false, we don't print anything
     if [[ ${quiet} == false ]]
     then
@@ -253,12 +253,12 @@ errorHandle()
 getReferer(){
     # initialDomain <string>
     initialDomain=${1}
-    
+
     # We get the extension of the given domain
     domainExtension=${initialDomain##*.}
     # We get the list of allowed extensions
     validExtension=$(cat ${ianaDB})
-    
+
     # We check if the given domain extension is in our database file
     if [[ ${validExtension} =~ ${domainExtension} ]]
     then
@@ -266,29 +266,29 @@ getReferer(){
         # registered to IANA. (cf. https://github.com/funilrys/funceble/issues/1)
         if [[ ${domainExtension} == "ga" ]]
         then
-            
+
             domain=${initialDomain}
-            
+
             referer="whois.my.ga"
-            
+
             # The Following is used to stop the execution of getExpirationDate
             # in case the domain is not valid.
             notSupported=false
         elif [[ ${domainExtension} == "za" ]]
         then
             domain=${initialDomain}
-            
+
             referer="whois.registry.net.za"
-            
+
             # The Following is used to stop the execution of getExpirationDate
             # in case the domain is not valid.
             notSupported=false
         elif [[ ${domainExtension} == "bz" ]]
         then
             domain=${initialDomain}
-            
+
             referer="whois.afilias-grs.info"
-            
+
             # The Following is used to stop the execution of getExpirationDate
             # in case the domain is not valid.
             notSupported=false
@@ -297,12 +297,12 @@ getReferer(){
             # If extension have a host assigned, it's written if format
             # refer: whois.hello.world for example
             referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
-            
+
             # We check if the format is valid
             if [[ ${referer} =~ (.*)whois(.*) ]]
             then
                 domain=${initialDomain}
-                
+
                 # The Following is used to stop the execution of getExpirationDate
                 # in case the domain is not valid.
                 notSupported=false
@@ -312,9 +312,9 @@ getReferer(){
                     # We assign "Not Found" to prevent empty column in files
                     referer='Not Found'
                 fi
-                
+
                 errorHandle ${domainExtension} 'Error'
-                
+
                 if [[ ${noFiles} == false ]]
                 then
                     if [[ -f 'error.txt' ]]
@@ -324,7 +324,7 @@ getReferer(){
                     else
                         # We create header into the newly created file
                         printHeader "Error" > error.txt
-                        
+
                         # We save the domain and his data
                         prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
                     fi
@@ -333,7 +333,7 @@ getReferer(){
         fi
     else
         errorHandle ${domainExtension} 'Invalid'
-        
+
         if [[ ${noFiles} == false ]]
         then
             if [[ -f 'invalid.txt' ]]
@@ -359,10 +359,10 @@ getExpirationDate(){
     # domain <string>
     # Domain given by user
     domain=${1}
-    
+
     # We get the whois server referenced for the given domain
     getReferer ${domain}
-    
+
     # Ensure that it's supported and not empty
     if [[ ${notSupported} == false && ${domain} != "" ]]
     then
@@ -371,34 +371,34 @@ getExpirationDate(){
         whois -h ${referer} "${domain}" > ${whoIs}
         # We get the content of the previously saved file
         local content=$(cat ${whoIs})
-        
+
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
         local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:')
-        
+
         # Here's a list of regex to extract the expiration date part of the
         # whois record
         local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}")
-        
+
         for i in ${!toMatch[*]}
         do
             if [[ ${content} =~ ${toMatch[${i}]} ]]
             then
                 # We get the expiration date
                 expirationDate=$(cat ${whoIs} | awk "${ifMatched[${i}]}")
-                
+
                 if [[ ${expirationDate} =~ [0-9] ]]
                 then
                     # If it contain numbers, we format it
                     formatDate
-                    
+
                     # If ${quiet} != false, we don't print anything
                     if [[ ${quiet} == false ]]
                     then
                         # We print domain and its data
                         prints "Generic" "${domain}" "Valid" ${expirationDate} "$(date)"
                     fi
-                    
+
                     if [[ ${noFiles} == false ]]
                     then
                         if [[ -f 'valid.txt' ]]
@@ -408,7 +408,7 @@ getExpirationDate(){
                         else
                             # We create a file and add header
                             printHeader 'Valid' > valid.txt
-                            
+
                             # We add domain and its data to file
                             prints "Valid" ${domain}  ${expirationDate} "$(date)" >> valid.txt
                         fi
@@ -443,12 +443,12 @@ dateToLower(){
 ################################################################################
 getMonthInEnglish(){
     local numericMonth=${1}
-    
+
     case ${numericMonth} in
         1|01)
             month='jan'
         ;;
-        2|01)
+        2|02)
             month='feb'
         ;;
         3|03)
@@ -487,6 +487,77 @@ getMonthInEnglish(){
     esac
 }
 
+############################# Convert Day to 2 Digits ##########################
+# Used to convert one digit day to two Digits
+# e.g -> 1 ==> 01
+#
+# @CalledBy formatDate
+################################################################################
+convertDayTo2digits(){
+    oneDigitDay="${1}"
+    if [[ ${oneDigitDay} =~ (?<!\S)\d(?!\S) ]]
+    then
+        case ${oneDigitDay} in
+            1)
+                day='0'
+            ;;
+            2)
+                day='01'
+            ;;
+            3)
+                day='03'
+            ;;
+            4)
+                day='04'
+            ;;
+            5)
+                day='05'
+            ;;
+            6)
+                day='06'
+            ;;
+            7)
+                day='07'
+            ;;
+            8)
+                day='08'
+            ;;
+            9)
+                day='09'
+            ;;
+            *)
+                day='00'
+            ;;
+        esac
+    else
+        day=${oneDigitDay}
+    fi
+}
+
+####################### Split Compose Date With Only Digits ####################
+# Used to convert split and compose date in format 2017-06-25
+#
+# @CalledBy formatDate
+################################################################################
+splitComposeDateWithOnlyDigits(){
+    if [[ ${expirationDate} =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2} ]]
+    then
+        # We split the date
+        local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c4)
+        local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c2)
+        local month=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4 | head -c2)
+
+        # We convert the day
+        convertDayTo2digits ${day}
+
+        # We convert the month
+        getMonthInEnglish ${month}
+
+        # We assign the expiration date
+        expirationDate=${day}'-'${month}-${year}
+    fi
+}
+
 ################################ Format Date ###################################
 # Used to format date. We have to work with multiple date format from WHOIS
 # records so this function is in charge to create an unified format.
@@ -496,84 +567,67 @@ getMonthInEnglish(){
 formatDate()
 {
     # echo ${expirationDate} # ==> ONLY FOR DEBUG
-    
+
     if [[ ${expirationDate} =~ 'Domain Expiration Date:' ]]
     then
         # We split the date
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c2)
         local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c4)
         local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | tail -c6 | head -c3)
-        
+
+        # We convert the day
+        convertDayTo2digits "${day}"
+
         # We assign the expiration date
-        expirationDate=${day}'-'${month}-${year}
-        
+        expirationDate=${day}'-'${month}'-'${year}
+
         # We convert it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ 'Expiration Date:' || ${expirationDate} =~ 'expire on:' ]]
     then
-        
+
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
-        
+
         if [[ ${expirationDate} =~  ( |\') ]]
         then
-            expirationDate=$(echo "${expirationDate}" |tail -c11)
+            expirationDate=$(echo "${expirationDate}" |head -c12 |  sed -e 's/^[[:space:]]*//')
         fi
-        
-        if [[ ${expirationDate} =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2} ]]
-        then
-            # We split the date
-            local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c4)
-            local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c2)
-            local month=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4 | head -c2)
-            
-            # We convert the month
-            getMonthInEnglish ${month}
-            
-            # We assign the expiration date
-            expirationDate=${day}'-'${month}-${year}
-        fi
-        
+
+        # We split, Compose date with only digits. e.g -> 17-11-2017
+        splitComposeDateWithOnlyDigits
+
+        # if [[ ${expirationDate} =~  ]]
+
         # We convrt it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ 'expire:' ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
-        
+
         if [[ ${expirationDate} =~  ( |\') ]]
         then
             # We get the final date
             expirationDate=$(echo "${expirationDate}" |tail -c12)
         fi
-        
+
         # We convrt it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ 'Expiry Date:' ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2 | cut -d 'T' -f1)
-        
+
         if [[ ${expirationDate} =~  ( |\') ]]
         then
             # We get the final date
             expirationDate=$(echo "${expirationDate}" |tail -c11)
         fi
-        
-        if [[ ${expirationDate} =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2} ]]
-        then
-            # We split the date
-            local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c4)
-            local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c2)
-            local month=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4 | head -c2)
-            
-            # We convert the month
-            getMonthInEnglish ${month}
-            
-            # We assign the expiration date
-            expirationDate=${day}'-'${month}-${year}
-        fi
-        
+
+        # We split, Compose date with only digits. e.g -> 17-11-2017
+        splitComposeDateWithOnlyDigits
+
         # We convrt it to lower case
         dateToLower
     fi
@@ -590,7 +644,7 @@ main()
     domain=${1}
     # file <string>
     file=${2}
-    
+
     if [[ "${domain}" != "" ]]
     then
         # We only print message if ${quiet} == false
@@ -598,7 +652,7 @@ main()
         then
             printHeader "Generic"
         fi
-        
+
         # We execute the getExpirationDate function
         getExpirationDate "${domain}"
     elif [ -f "${file}" ]
@@ -608,7 +662,7 @@ main()
         then
             printHeader "Generic"
         fi
-        
+
         # We read the list of the file and pass the domain (1 line = 1 domain)
         # to getExpirationDate
         while read domain
