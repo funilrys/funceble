@@ -245,6 +245,25 @@ errorHandle()
     fi
 }
 
+validationHandle(){
+    local exp=${1}
+
+    if [[ ${noFiles} == false ]]
+    then
+        if [[ -f 'valid.txt' ]]
+        then
+            # We save domain and its data
+            prints "Valid" ${domain} ${exp} "$(date)" >> valid.txt
+        else
+            # We create a file and add header
+            printHeader 'Valid' > valid.txt
+
+            # We add domain and its data to file
+            prints "Valid" ${domain}  ${exp} "$(date)" >> valid.txt
+        fi
+    fi
+}
+
 ############################### Get Referer ####################################
 # Used to generate the report issue url
 #
@@ -307,27 +326,42 @@ getReferer(){
                 # in case the domain is not valid.
                 notSupported=false
             else
-                if [[ ${referer} == '' ]]
+                lookup=$(nslookup ${domain})
+                # echo ${lookup}
+                if [[ ${lookup} =~ server\scan\'t ]]
                 then
-                    # We assign "Not Found" to prevent empty column in files
-                    referer='Not Found'
-                fi
+                    errorHandle ${domainExtension} 'Error'
 
-                errorHandle ${domainExtension} 'Error'
-
-                if [[ ${noFiles} == false ]]
-                then
-                    if [[ -f 'error.txt' ]]
+                    if [[ ${noFiles} == false ]]
                     then
-                        # We save the domain and his data
-                        prints "Error" "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
-                    else
-                        # We create header into the newly created file
-                        printHeader "Error" > error.txt
+                        if [[ ${referer} == '' ]]
+                        then
+                            # We assign "Not Found" to prevent empty column in files
+                            referer='Not Found'
+                        fi
+                        if [[ -f 'error.txt' ]]
+                        then
+                            # We save the domain and his data
+                            prints "Error" "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
+                        else
+                            # We create header into the newly created file
+                            printHeader "Error" > error.txt
 
-                        # We save the domain and his data
-                        prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
+                            # We save the domain and his data
+                            prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
+                        fi
                     fi
+                else
+                    expirationDate="Unknown"
+                    # If ${quiet} != false, we don't print anything
+                    if [[ ${quiet} == false ]]
+                    then
+                        # We print domain and its data
+                        prints "Generic" "${domain}" "Valid" ${expirationDate} "$(date)"
+                    fi
+
+                    validationHandle ${expirationDate}
+
                 fi
             fi
         fi
@@ -399,20 +433,8 @@ getExpirationDate(){
                         prints "Generic" "${domain}" "Valid" ${expirationDate} "$(date)"
                     fi
 
-                    if [[ ${noFiles} == false ]]
-                    then
-                        if [[ -f 'valid.txt' ]]
-                        then
-                            # We save domain and its data
-                            prints "Valid" ${domain} ${expirationDate} "$(date)" >> valid.txt
-                        else
-                            # We create a file and add header
-                            printHeader 'Valid' > valid.txt
+                    validationHandle ${expirationDate}
 
-                            # We add domain and its data to file
-                            prints "Valid" ${domain}  ${expirationDate} "$(date)" >> valid.txt
-                        fi
-                    fi
                 elif [[ ${expirationDate} == '' ]]
                 then
                     # In case expiration Date is empty we save the record so we
