@@ -53,8 +53,11 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 ################################################################################
 ############################## Default Values ##################################
-# If quiet=true ==> We don't print anything
+# If set to true, we don't print anything
 quiet=false
+
+# If set to false, we generate only one file with the results
+splitFiles=false
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -223,7 +226,7 @@ errorHandle()
     
     if [[ ${lookup} =~ "NXDOMAIN" ]]
     then
-        if cat ${knownIssuesFile} | grep -Fq ${domainExtension} || curl -v -silent ${knownIssuesURL} 2>&1 | grep -Fq ${domainExtension}
+        if cat ${knownIssuesFile} | grep -Fq ${domainExtension} || curl -v -silent ${knownIssuesURL} 2>&1 | grep -Fq ${domainExtension} && ${splitFiles} == true
         then
             # If domain extension has a known issue, we simply get his
             # number and generate issue url
@@ -231,26 +234,30 @@ errorHandle()
             issueStatus='Known'
             issueUniqueUrl=${issueURL}${issueNumber}
         else
-            # We set issue status
-            issueStatus='Unknown'
-            
-            if [[ ${type} == 'Error' ]]
+            if [[ ${splitFiles} == true ]]
             then
-                # We generate issue title
-                local issueTitle=$(printf "[Not Found] .%s domains" "${domainExtension}")
-                # We generate issue body
-                local issueBody=$(printf "> **.%s** extensions returns error" "${domainExtension}")
-            elif [[ ${type} == 'Invalid' ]]
-            then
-                # We generate issue title
-                local issueTitle=$(printf "[Not Supported] .%s domains" "${domainExtension}")
-                # We generate issue body
-                local issueBody=$(printf "> **.%s** extensions are not supported" "${domainExtension}")
+                # We set issue status
+                issueStatus='Unknown'
+                
+                if [[ ${type} == 'Error' ]]
+                then
+                    # We generate issue title
+                    local issueTitle=$(printf "[Not Found] .%s domains" "${domainExtension}")
+                    # We generate issue body
+                    local issueBody=$(printf "> **.%s** extensions returns error" "${domainExtension}")
+                elif [[ ${type} == 'Invalid' ]]
+                then
+                    # We generate issue title
+                    local issueTitle=$(printf "[Not Supported] .%s domains" "${domainExtension}")
+                    # We generate issue body
+                    local issueBody=$(printf "> **.%s** extensions are not supported" "${domainExtension}")
+                fi
+                # We get the full issue URL
+                unknownIssueUrl "${issueTitle}" "${issueBody}"
+                issueUniqueUrl=${url}
             fi
-            # We get the full issue URL
-            unknownIssueUrl "${issueTitle}" "${issueBody}"
-            issueUniqueUrl=${url}
         fi
+        
         
         # If quiet != false, we don't print anything
         if [[ ${quiet} == false ]]
@@ -260,8 +267,9 @@ errorHandle()
                 if [[ ${type} == 'Invalid' ]]
                 then
                     type="${invalidStatus}"
+                    local status=${type}
                     
-                    if [[ ${noFiles} == false ]]
+                    if [[ ${noFiles} == false && ${splitFiles} == true ]]
                     then
                         if [[ -f 'invalid.txt' ]]
                         then
@@ -273,18 +281,29 @@ errorHandle()
                             # We save the domain and his data
                             prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> invalid.txt
                         fi
+                    elif [[ ${splitFiles} == false ]]
+                    then
+                        if [[ -f 'result.txt' ]]
+                        then
+                            printHeader "Generic" > result.txt
+                            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> result.txt
+                        else
+                            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> result.txt
+                        fi
                     fi
                 elif [[ ${type} == 'Error' ]]
                 then
                     type="${errorStatus}"
+                    local status=${type}
                     
-                    if [[ ${noFiles} == false ]]
+                    if [[ ${noFiles} == false && ${splitFiles} == true ]]
                     then
                         if [[ ${referer} == '' ]]
                         then
                             # We assign "Not Found" to prevent empty column in files
                             referer='Not Found'
                         fi
+                        
                         if [[ -f 'error.txt' ]]
                         then
                             # We save the domain and his data
@@ -296,27 +315,31 @@ errorHandle()
                             # We save the domain and his data
                             prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
                         fi
+                    elif [[ ${splitFiles} == false ]]
+                    then
+                        if [[ -f 'result.txt' ]]
+                        then
+                            printHeader "Generic" > result.txt
+                            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> result.txt
+                        else
+                            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> result.txt
+                        fi
                     fi
                     
                 fi
-                local status=${type}
             else
                 local status="${errorStatus}"
             fi
             prints "Generic" "${domain}" "${status}" "Unknown" "$(date)"
         fi
     else
-        local validationExpirationDate="Unknown"
-        
         if [[ ${quiet} == false ]]
         then
             # We print domain and its data
-            prints "Generic" "${domain}" "${validStatus}" "${validationExpirationDate}" "$(date)"
+            prints "Generic" "${domain}" "${validStatus}" "${exp}" "$(date)"
         fi
         
         validationHandle "Unknown"
-        
-        
     fi
 }
 
@@ -329,7 +352,7 @@ validationHandle(){
     local exp=${1}
     
     # We execute this only if ${noFiles} == false
-    if [[ ${noFiles} == false ]]
+    if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
         if [[ -f 'valid.txt' ]]
         then
@@ -342,6 +365,16 @@ validationHandle(){
             # We add domain and its data to file
             prints "Valid" ${domain} ${exp} "$(date)" >> valid.txt
         fi
+    elif [[ ${splitFiles} == false ]]
+    then
+        if [[ -f 'result.txt' ]]
+        then
+            printHeader "Generic" > result.txt
+            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> result.txt
+        else
+            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> result.txt
+        fi
+        
     fi
 }
 
