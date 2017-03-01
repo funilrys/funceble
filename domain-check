@@ -12,11 +12,17 @@
 # Written by: Nissar Chababy (@Funilrys) <contact at funilrys dot com>
 
 ################################ Contributors ##################################
-# Direct Contributors: None
-# Indirect Contributors:
-#    - Chris Down (@cdown) <chris@chrisdown.name>
-#        - urlEncode() + urlDecode()
-#
+# - @cdownn, Chris Down <chris@chrisdown.name>
+#     - urlEncode() + urlDecode(): Used to convert urlEncode
+#       @Souce: https://gist.github.com/cdown/1163649
+# - @mitchellkrogza, Mitchell Krog <mitchellkrog@gmail.com>
+#     - badreferslist: used along the construction of this script :)
+#       @Source: https://raw.githubusercontent.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker/master/Pull_Requests_Here_Please/badreferers.list
+# - @PromoFaux, Adam Warner <adamw@rner.email> && Pi-Hole <https://pi-hole.net>
+#     - Their blocking list is just awesome to test this script :)
+#       @Sources:
+#           - http://sprunge.us/TiZM
+#           - https://github.com/StevenBlack/hosts/pull/248#issuecomment-282809069
 ################################################################################
 
 
