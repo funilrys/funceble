@@ -63,6 +63,9 @@ validStatus="ACTIVE"
 
 # Invalid domain status
 invalidStatus="INVALID"
+
+# Down domain status
+errorStatus="INACTIVE"
 ################################################################################
 ################################### Github #####################################
 # Github issue URL
@@ -134,7 +137,7 @@ prints()
     elif [[ ${type} == 'Error' ]]
     then
         # Print data for error.txt
-        printf "%-100s %-35s %-17s %-17s %-180s %-50s\n" "${2}" "${3}" "${1}" "${4}" "${5}" "${6}"
+        printf "%-100s %-35s %-17s %-17s %-180s %-50s\n" "${2}" "${3}" "${errorStatus}" "${4}" "${5}" "${6}"
     elif [[ $type == 'Valid' ]]
     then
         # Print data for valid.txt
@@ -246,10 +249,13 @@ errorHandle()
             if [[ ${type} == 'Invalid' ]]
             then
                 type="${invalidStatus}"
+            elif [[ ${type} == 'Error' ]]
+            then
+                type="${errorStatus}"
             fi
             local status=${type}
         else
-            local status=${issueStatus}
+            local status="${errorStatus}"
         fi
         prints "Generic" "${domain}" "${status}" "Unknown" "$(date)"
     fi
@@ -343,7 +349,7 @@ getReferer(){
                 notSupported=false
             else
                 lookup=$(nslookup ${domain})
-                # echo ${lookup}
+                echo ${lookup}
                 if [[ ${lookup} =~ server\scan\'t ]]
                 then
                     errorHandle ${domainExtension} 'Error'
@@ -450,7 +456,7 @@ getExpirationDate(){
                     fi
                     
                     validationHandle ${expirationDate}
-                    
+                    break
                 elif [[ ${expirationDate} == '' ]]
                 then
                     # In case expiration Date is empty we save the record so we
@@ -459,6 +465,21 @@ getExpirationDate(){
                     # https://github.com/funilrys/funceble/issues/new
                     # So it can be fixed for everyone using this script
                     cat ${whoIs} >> ${referer}
+                fi
+            elif [[ ${i} == $(expr ${#toMatch[@]} - 1) ]]
+            then
+                errorHandle ${domainExtension} 'Error'
+                
+                if [[ -f 'error.txt' ]]
+                then
+                    # We save the domain and his data
+                    prints "Error" "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
+                else
+                    # We create header into the newly created file
+                    printHeader "Error" > error.txt
+                    
+                    # We save the domain and his data
+                    prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> error.txt
                 fi
             fi
         done
