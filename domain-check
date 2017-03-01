@@ -110,13 +110,13 @@ printHeader()
     elif [[ ${type} == 'Valid' ]]
     then
         # Generation of header for valid.txt
-        printf "\n%-50s %-8s %-18s %-20s\n" "Domain" "Status" "Expiration Date" "Analyse Date"
-        echo "-------------------------------------------------- -------- ----------------- -------------------------------"
+        printf "\n%-100s %-8s %-18s %-20s\n" "Domain" "Status" "Expiration Date" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- -------- ----------------- -------------------------------"
     elif [[ ${type} == 'Generic' ]]
     then
         # Generation of header
-        printf "\n%-50s %-11s %-18s %-20s\n" "Domain" "Status" "Expiration Date" "Analyse Date"
-        echo "-------------------------------------------------- ----------- ----------------- -------------------------------"
+        printf "\n%-100s %-11s %-18s %-20s\n" "Domain" "Status" "Expiration Date" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- -------------------------------"
     fi
 }
 
@@ -141,11 +141,11 @@ prints()
     elif [[ $type == 'Valid' ]]
     then
         # Print data for valid.txt
-        printf "%-50s %-8s %-18s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}"
+        printf "%-100s %-8s %-18s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}"
     elif [[ $type == 'Generic' ]]
     then
         # Print data
-        printf "%-50s %-11s %-18s %-20s\n" "${2}" "${3}" "${4}" "${5}"
+        printf "%-100s %-11s %-18s %-20s\n" "${2}" "${3}" "${4}" "${5}"
     fi
 }
 
@@ -214,9 +214,9 @@ errorHandle()
     type=${2}
 
     lookup=$(nslookup ${domain})
-    if [[ ${lookup} =~ server\scan\'t ]]
-    then
 
+    if [[ ${lookup} =~ "NXDOMAIN" ]]
+    then
         if cat ${knownIssuesFile} | grep -Fq ${domainExtension} || curl -v -silent ${knownIssuesURL} 2>&1 | grep -Fq ${domainExtension}
         then
             # If domain extension has a known issue, we simply get his
@@ -310,13 +310,14 @@ errorHandle()
 
         validationHandle "Unknown"
 
+
     fi
 }
 
 ############################## Validation Handle ####################################
 # Used to save valid domain into files
 #
-# @CalledBy getReferer
+# @CalledBy getReferer,getExpirationDate,errorHandle
 ################################################################################
 validationHandle(){
     local exp=${1}
@@ -400,6 +401,7 @@ getReferer(){
                 # in case the domain is not valid.
                 notSupported=false
             else
+                referer=''
                 errorHandle ${domainExtension} 'Error'
             fi
         fi
@@ -422,7 +424,7 @@ getExpirationDate(){
     getReferer ${domain}
 
     # Ensure that it's supported and not empty
-    if [[ ${notSupported} == false && ${domain} != "" ]]
+    if [[ ${notSupported} == false && ${domain} != "" && ${referer} != "" ]]
     then
         # We call the whois server and save the result into ${whoIs}
         # cf. Default Values Section
@@ -456,7 +458,7 @@ getExpirationDate(){
                         # We print domain and its data
                         prints "Generic" "${domain}" "${validStatus}" ${expirationDate} "$(date)"
                     fi
-                    
+
                     validationHandle ${expirationDate}
                     break
                 elif [[ ${expirationDate} == '' ]]
