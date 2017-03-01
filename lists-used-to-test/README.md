@@ -1,8 +1,8 @@
 # Special Thanks
 Thank you guys for your awesome lists which helped _(and still help)_ me build this script. :smile: :+1:
 
-* @mitchellkrogza
-* @PromoFaux (with the help of [Pi-Hole](https://github.com/pi-hole))
+* [@mitchellkrogza](https://github.com/mitchellkrogza)
+* [@PromoFaux](https://github.com/PromoFaux) (with the help of [Pi-Hole](https://github.com/pi-hole), an awesome project)
 
 # `badrefers.list`
 This one follow me since the first line!
