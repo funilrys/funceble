@@ -9,7 +9,7 @@
 # | )      | (___) || )  \  || (____/\| (____/\| )___) )| (____/\| (____/\
 # |/       (_______)|/    )_)(_______/(_______/|/ \___/ (_______/(_______/
 
-# Written by: Nissar Chababy (@Funilrys) <contact at funilrys dot com>
+# Written by: @Funilrys, Nissar Chababy <contact at funilrys dot com>
 
 ################################ Contributors ##################################
 # - @cdownn, Chris Down <chris@chrisdown.name>
@@ -54,13 +54,13 @@ normal=$(tput sgr0)
 ################################################################################
 ############################## Default Values ##################################
 # Output directory. DO NOT FORGET '/' AT THE END
-outputDir='./output/'
+outputDir='output/'
 
 # If set to true, we don't print anything
 quiet=false
 
 # If set to false, we generate only one file with the results
-splitFiles=false
+splitFiles=true
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -236,100 +236,99 @@ errorHandle()
             local issueNumber=$(cat ${knownIssuesFile} | grep -F ${domainExtension} | cut -d ' ' -f2)
             issueStatus='Known'
             issueUniqueUrl=${issueURL}${issueNumber}
-        else
-            if [[ ${splitFiles} == true ]]
-            then
-                # We set issue status
-                issueStatus='Unknown'
-                
-                if [[ ${type} == 'Error' ]]
-                then
-                    # We generate issue title
-                    local issueTitle=$(printf "[Not Found] .%s domains" "${domainExtension}")
-                    # We generate issue body
-                    local issueBody=$(printf "> **.%s** extensions returns error" "${domainExtension}")
-                elif [[ ${type} == 'Invalid' ]]
-                then
-                    # We generate issue title
-                    local issueTitle=$(printf "[Not Supported] .%s domains" "${domainExtension}")
-                    # We generate issue body
-                    local issueBody=$(printf "> **.%s** extensions are not supported" "${domainExtension}")
-                fi
-                # We get the full issue URL
-                unknownIssueUrl "${issueTitle}" "${issueBody}"
-                issueUniqueUrl=${url}
-            fi
-        fi
+        elif [[ ${splitFiles} == true ]]
         
-        
-        # If quiet != false, we don't print anything
-        if [[ ${quiet} == false ]]
         then
-            if [[ ${issueStatus} == 'Unknown' ]]
+            # We set issue status
+            issueStatus='Unknown'
+            
+            if [[ ${type} == 'Error' ]]
             then
-                if [[ ${type} == 'Invalid' ]]
+                # We generate issue title
+                local issueTitle=$(printf "[Not Found] .%s domains" "${domainExtension}")
+                # We generate issue body
+                local issueBody=$(printf "> **.%s** extensions returns error" "${domainExtension}")
+            elif [[ ${type} == 'Invalid' ]]
+            then
+                # We generate issue title
+                local issueTitle=$(printf "[Not Supported] .%s domains" "${domainExtension}")
+                # We generate issue body
+                local issueBody=$(printf "> **.%s** extensions are not supported" "${domainExtension}")
+            fi
+            # We get the full issue URL
+            unknownIssueUrl "${issueTitle}" "${issueBody}"
+            issueUniqueUrl=${url}
+        fi
+    fi
+    
+    # If quiet != false, we don't print anything
+    if [[ ${quiet} == false ]]
+    then
+        if [[ ${issueStatus} == 'Unknown' ]]
+        then
+            if [[ ${type} == 'Invalid' ]]
+            then
+                type="${invalidStatus}"
+                local status=${type}
+                
+                if [[ ${noFiles} == false && ${splitFiles} == true ]]
                 then
-                    type="${invalidStatus}"
-                    local status=${type}
-                    
-                    if [[ ${noFiles} == false && ${splitFiles} == true ]]
+                    if [[ -f ${outputDir}'invalid.txt' ]]
                     then
-                        if [[ -f 'invalid.txt' ]]
-                        then
-                            # We save the domain and his data
-                            prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> ${outputDir}invalid.txt
-                        else
-                            # We create header into the newly created file
-                            printHeader 'Invalid' > ${outputDir}invalid.txt
-                            # We save the domain and his data
-                            prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> ${outputDir}invalid.txt
-                        fi
-                    elif [[ ${splitFiles} == false ]]
-                    then
-                        if [[ -f 'result.txt' ]]
-                        then
-                            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
-                        else
-                            printHeader "Generic" > ${outputDir}result.txt
-                            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
-                        fi
+                        # We save the domain and his data
+                        prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> ${outputDir}invalid.txt
+                    else
+                        # We create header into the newly created file
+                        printHeader 'Invalid' > ${outputDir}invalid.txt
+                        # We save the domain and his data
+                        prints "Invalid" ${domain} "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> ${outputDir}invalid.txt
                     fi
-                elif [[ ${type} == 'Error' ]]
+                elif [[ ${splitFiles} == false ]]
                 then
-                    type="${errorStatus}"
-                    local status=${type}
-                    
-                    if [[ ${noFiles} == false && ${splitFiles} == true ]]
+                    if [[ -f ${outputDir}'result.txt' ]]
                     then
-                        if [[ ${referer} == '' ]]
-                        then
-                            # We assign "Not Found" to prevent empty column in files
-                            referer='Not Found'
-                        fi
-                        
-                        if [[ -f 'error.txt' ]]
-                        then
-                            # We save the domain and his data
-                            prints "Error" "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> ${outputDir}error.txt
-                        else
-                            # We create header into the newly created file
-                            printHeader "Error" > ${outputDir}error.txt
-                            
-                            # We save the domain and his data
-                            prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> ${outputDir}error.txt
-                        fi
-                    elif [[ ${splitFiles} == false ]]
-                    then
-                        if [[ -f 'result.txt' ]]
-                        then
-                            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
-                        else
-                            printHeader "Generic" > ${outputDir}result.txt
-                            prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
-                        fi
+                        prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
+                    else
+                        printHeader "Generic" > ${outputDir}result.txt
+                        prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
                     fi
-                    
                 fi
+            elif [[ ${type} == 'Error' ]]
+            then
+                type="${errorStatus}"
+                local status=${type}
+                
+                if [[ ${noFiles} == false && ${splitFiles} == true ]]
+                then
+                    if [[ ${referer} == '' ]]
+                    then
+                        # We assign "Not Found" to prevent empty column in files
+                        referer='Not Found'
+                    fi
+                    
+                    if [[ -f ${outputDir}'error.txt' ]]
+                    then
+                        # We save the domain and his data
+                        prints "Error" "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> ${outputDir}error.txt
+                    else
+                        # We create header into the newly created file
+                        printHeader "Error" > ${outputDir}error.txt
+                        
+                        # We save the domain and his data
+                        prints "Error"  "${domain}" "${referer}" "${issueStatus}" "${issueUniqueUrl}" "$(date)" >> ${outputDir}error.txt
+                    fi
+                elif [[ ${splitFiles} == false ]]
+                then
+                    if [[ -f ${outputDir}'result.txt' ]]
+                    then
+                        prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
+                    else
+                        printHeader "Generic" > ${outputDir}result.txt
+                        prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
+                    fi
+                fi
+                
+                
             else
                 local status="${errorStatus}"
             fi
@@ -357,7 +356,7 @@ validationHandle(){
     # We execute this only if ${noFiles} == false
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
-        if [[ -f 'valid.txt' ]]
+        if [[ -f ${outputDir}'valid.txt' ]]
         then
             # We save domain and its data
             prints "Valid" ${domain} ${exp} "$(date)" >> ${outputDir}valid.txt
@@ -370,7 +369,7 @@ validationHandle(){
         fi
     elif [[ ${splitFiles} == false ]]
     then
-        if [[ -f 'result.txt' ]]
+        if [[ -f ${outputDir}'result.txt' ]]
         then
             prints "Generic" "${domain}" ${exp} "$(date)" >> ${outputDir}result.txt
         else
