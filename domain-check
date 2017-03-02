@@ -60,7 +60,7 @@ outputDir='./output/'
 quiet=false
 
 # If set to false, we generate only one file with the results
-splitFiles=true
+splitFiles=false
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -288,9 +288,9 @@ errorHandle()
                     then
                         if [[ -f 'result.txt' ]]
                         then
-                            printHeader "Generic" > ${outputDir}result.txt
                             prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
                         else
+                            printHeader "Generic" > ${outputDir}result.txt
                             prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
                         fi
                     fi
@@ -322,9 +322,9 @@ errorHandle()
                     then
                         if [[ -f 'result.txt' ]]
                         then
-                            printHeader "Generic" > ${outputDir}result.txt
                             prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
                         else
+                            printHeader "Generic" > ${outputDir}result.txt
                             prints "Generic" "${domain}" "${status}" "Unknown" "$(date)" >> ${outputDir}result.txt
                         fi
                     fi
@@ -372,9 +372,9 @@ validationHandle(){
     then
         if [[ -f 'result.txt' ]]
         then
-            printHeader "Generic" > ${outputDir}result.txt
             prints "Generic" "${domain}" ${exp} "$(date)" >> ${outputDir}result.txt
         else
+            printHeader "Generic" > ${outputDir}result.txt
             prints "Generic" "${domain}" ${exp} "$(date)" >> ${outputDir}result.txt
         fi
         
@@ -510,7 +510,7 @@ getExpirationDate(){
                     # In case this happen please report issue to
                     # https://github.com/funilrys/funceble/issues/new
                     # So it can be fixed for everyone using this script
-                    cat ${whoIs} >> ${referer}
+                    cat ${whoIs} >> ${outputDir}${referer}
                 fi
             elif [[ ${i} == $(expr ${#toMatch[@]} - 1) ]]
             then
