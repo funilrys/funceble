@@ -1,0 +1,138 @@
+#!/bin/bash
+
+# _______           _        _______  _______  ______   _        _______
+# (  ____ \|\     /|( (    /|(  ____ \(  ____ \(  ___ \ ( \      (  ____ \
+# | (    \/| )   ( ||  \  ( || (    \/| (    \/| (   ) )| (      | (    \/
+# | (__    | |   | ||   \ | || |      | (__    | (__/ / | |      | (__
+# |  __)   | |   | || (\ \) || |      |  __)   |  __ (  | |      |  __)
+# | (      | |   | || | \   || |      | (      | (  \ \ | |      | (
+# | )      | (___) || )  \  || (____/\| (____/\| )___) )| (____/\| (____/\
+# |/       (_______)|/    )_)(_______/(_______/|/ \___/ (_______/(_______/
+
+# Written by: @Funilrys, Nissar Chababy <contact at funilrys dot com>
+
+###############################  Text Format ###################################
+# Red Color
+red=$(tput setaf 1)
+
+# Cyan Color
+cyan=$(tput setaf 6)
+
+# Bold
+bold=$(tput bold)
+
+# Disable formating
+normal=$(tput sgr0)
+################################################################################
+############################## Default Values ##################################
+# We get the current dir we're working on
+currentDir=${PWD}'/'
+
+# Output of log
+logOutput='output/logs/install.log'
+
+# The file name of the script
+script='funceble'
+
+# New output directory
+outputDir="outputDir='${currentDir}output/'"
+
+# We get the content of the script
+scriptContent=$(cat ${currentDir}${script} 2> ${logOutput})
+################################################################################
+
+# We log the date
+date > ${logOutput}
+
+# We log && print message
+printf 'Script exist' && printf 'Script exist' >> ${logOutput}
+if [[ -f "${currentDir}${script}" ]]
+then
+    # We log && print message
+    printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+    printf "Script readable" && printf "Script readable" >> ${logOutput}
+
+    if [[ -r "${currentDir}${script}" ]]
+    then
+        # We log && print message
+        printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        printf "Script executable" && printf "Script executable" >> ${logOutput}
+
+        if [[ -x "${currentDir}${script}" ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+            printf "\n${bold}awk${normal} installed" && printf "awk installed" >> ${logOutput}
+
+            if [[ $(which awk 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+            then
+                # We log && print message
+                printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+                echo "Please make sure that awk is installed in your system"
+                exit 0
+            else
+                # We log && print message
+                printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+                printf "${bold}whois${normal} installed" && printf "whois installed" >> ${logOutput}
+
+                if [[ $(which whois 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+                then
+                    # We log && print message
+                    printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+                    echo "Please make sure that whois is installed in your system"
+                    exit 0
+                else
+                    # We log && print message
+                    printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+                    printf "${bold}sed${normal} installed" && printf "sed installed" >> ${logOutput}
+
+                    if [[ $(which whois 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+                    then
+                        # We log && print message
+                        printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+                        echo "Please make sure that whois is installed in your system"
+                        exit 0
+                    else
+                        # We log && print message
+                        printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+                        printf "\nInstallation of working directory" &&  printf "Installation of working directory" >> ${logOutput}
+
+                        regex="outputDir='.*\/output\/'"
+
+                        if [[ ${scriptContent} =~ ${regex} ]]
+                        then
+                            # We replace with the current working directory an we print message
+                            sed -i "s|${regex}|${outputDir}|g" funceble
+                            printf "  ${cyan}✔${normal}\n \n" && printf "  ✔\n" >> ${logOutput}
+
+                            echo "${bold}${cyan}The installation was successfully completed!${normal}"
+                            echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
+                            printf '\n'
+                            exit 1
+                        else
+                            # We log && print message
+                            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+                            echo "Impossible to finalize installation."
+                            exit 0
+                        fi
+                    fi
+                fi
+            fi
+        else
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Please make sure that ${currentDir}${script} is executable. You can execute 'chmod +x ${currentDir}${script}' to make it executable" >> ${logOutput}
+            exit 0
+        fi
+    else
+        # We log && print message
+        printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+        echo "Impossible to read ${currentDir}${script}" >> ${logOutput}
+        exit 0
+    fi
+else
+    # We log && print message
+    printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+    echo "The file ${currentDir}${script} is not found"
+    exit 0
+fi
