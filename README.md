@@ -44,14 +44,14 @@ To contribute, you have to send a new [Pull Request](https://github.com/funilrys
 
 * To sign your commit(s) with **'Signed-off by: FirstName LastName <e at mail dot com>'** AND/OR simply sign your commit(s) with **PGP**. **Please read more [here](https://github.com/blog/2144-gpg-signature-verification)**.
 * All contributions/modifications must be done under **the `dev` branch**.
-______________________
 
+____
 # Contributors
 
 * [@mitchellkrogza](https://github.com/mitchellkrogza)
 * [@PromoFaux](https://github.com/PromoFaux) with [Pi-Hole](https://github.com/pi-hole/pi-hole) hosts file.
-_______________________
 
+____
 # `Hosts` files
 
 If you're not familiar with `hosts` files, take a look at [this short definition](http://www.computerhope.com/jargon/h/hostsfil.htm).
