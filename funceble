@@ -1,0 +1,934 @@
+#!/bin/bash
+
+# _______           _        _______  _______  ______   _        _______
+# (  ____ \|\     /|( (    /|(  ____ \(  ____ \(  ___ \ ( \      (  ____ \
+# | (    \/| )   ( ||  \  ( || (    \/| (    \/| (   ) )| (      | (    \/
+# | (__    | |   | ||   \ | || |      | (__    | (__/ / | |      | (__
+# |  __)   | |   | || (\ \) || |      |  __)   |  __ (  | |      |  __)
+# | (      | |   | || | \   || |      | (      | (  \ \ | |      | (
+# | )      | (___) || )  \  || (____/\| (____/\| )___) )| (____/\| (____/\
+# |/       (_______)|/    )_)(_______/(_______/|/ \___/ (_______/(_______/
+
+# Written by: @Funilrys, Nissar Chababy <contact at funilrys dot com>
+# Github : https://github.com/funilrys/funceble
+
+################################ Contributors ##################################
+# - @cdownn, Chris Down <chris@chrisdown.name>
+#     - urlEncode() + urlDecode(): Used to convert urlEncode
+#       @Souce: https://gist.github.com/cdown/1163649
+# - @mitchellkrogza, Mitchell Krog <mitchellkrog@gmail.com>
+#     - badreferslist: used along the construction of this script :)
+#       @Source: https://raw.githubusercontent.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker/master/Pull_Requests_Here_Please/badreferers.list
+# - @PromoFaux, Adam Warner <adamw@rner.email> with Pi-Hole <https://pi-hole.net>
+#     - Their blocking list is just awesome to test this script :)
+#       @Sources:
+#           - http://sprunge.us/TiZM (Fork under lists-used-to-test)
+################################################################################
+
+
+################################# Temporary ####################################&&
+# Path to temporary file
+whoIs="/var/tmp/whois.$$"
+################################################################################
+################################### Files ######################################
+# IANA Root Zone Database file.
+# The file is a dump of the extensions this script can accept.
+# Source: https://www.iana.org/domains/root/db
+ianaDB="iana-domains-db"
+################################################################################
+###############################  Text Format ###################################
+# Red Color
+red=$(tput setaf 1)
+
+# White Color
+white=$(tput setaf 7)
+
+# Cyan Color
+cyan=$(tput setaf 6)
+
+# Bold
+bold=$(tput bold)
+
+# Disable formating
+normal=$(tput sgr0)
+################################################################################
+################################## Status ######################################
+# Valid domain status
+validStatus="ACTIVE"
+
+# Invalid domain status
+invalidStatus="INVALID"
+
+# Down domain status
+errorStatus="INACTIVE"
+################################################################################
+################################## Outputs #####################################
+# If noFiles=true, We don't any results files ==> Not applied to hosts file
+noFiles=false
+
+# Output directory. DO NOT FORGET '/' AT THE END
+outputDir='/home/funilrys/Projects/funceble/output/'
+
+# Output of hosts file
+outputHost=${outputDir}hosts/hosts
+
+# Output of inactive domain (come with hosts file)
+outputDeadOrDownHost=${outputDir}hosts/deadOrDown
+
+# Output of unified results
+outputUnifiedResult=${outputDir}splited/result.txt
+
+# Output of valid results
+outputValidResult=${outputDir}splited/active.txt
+
+# Output of invalid results
+outputInvalidResult=${outputDir}splited/invalid.txt
+
+# Output of error results
+outputErrorResult=${outputDir}splited/inactive.txt
+################################################################################
+############################## Default Values ##################################
+# IP for host file
+customIP='0.0.0.0'
+
+# Activate/Desactivate the generation of hosts file
+generateHosts=false
+
+# If set to true, we don't print anything
+quiet=false
+
+# If set to false, we generate only one file with the results
+splitFiles=false
+
+# IANA whois server. The following is there to give use the whois
+# host we have to call to get a (valid) response.
+# Note: Whois Server are different for each extensions.
+whoisServer="whois.iana.org"
+
+# Regex to match
+regexCurrentDir='%%currentDir'
+################################################################################
+
+# _______           _        _______ __________________ _______  _        _______
+# (  ____ \|\     /|( (    /|(  ____ \\__   __/\__   __/(  ___  )( (    /|(  ____ \
+# | (    \/| )   ( ||  \  ( || (    \/   ) (      ) (   | (   ) ||  \  ( || (    \/
+# | (__    | |   | ||   \ | || |         | |      | |   | |   | ||   \ | || (_____
+# |  __)   | |   | || (\ \) || |         | |      | |   | |   | || (\ \) |(_____  )
+# | (      | |   | || | \   || |         | |      | |   | |   | || | \   |      ) |
+# | )      | (___) || )  \  || (____/\   | |   ___) (___| (___) || )  \  |/\____) |
+# |/       (_______)|/    )_)(_______/   )_(   \_______/(_______)|/    )_)\_______)
+
+############################### Print Header ###################################
+# Used to print header if quiet=false and in files
+# @CalledBy getReferer
+################################################################################
+printHeader()
+{
+    # type <string>
+    local type=${1}
+
+    if [[ ${type} == 'Invalid' ]]
+    then
+        # Generation of header for invalid.txt
+        printf "\n%-100s %-17s %-10s %-8s\n" "Domain" "Status" "Source" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ---------- ----------------------------"
+    elif [[ ${type} == 'Error' ]]
+    then
+        # Generation of header for error.txt
+        printf "\n%-100s %-35s %-17s %10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ---------- ----------------------------"
+    elif [[ ${type} == 'Valid' ]]
+    then
+        # Generation of header for valid.txt
+        printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
+    elif [[ ${type} == 'Generic' ]]
+    then
+        # Generation of header
+        printf "\n%-100s %-11s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
+    fi
+}
+
+################################# Prints #######################################
+# Come with printHeader(). In charge to print data
+#
+# @CalledBy getReferer
+################################################################################
+prints()
+{
+    # type <string>
+    local type=${1}
+
+    if [[ ${type} == 'Invalid' ]]
+    then
+        # Print data for invalid.txt
+        printf "%-100s %-17s %-8s %-8s\n" "${2}" "${invalidStatus}" "${3}" "${4}"
+    elif [[ ${type} == 'Error' ]]
+    then
+        # Print data for error.txt
+        printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${errorStatus}" "${4}" "${5}"
+    elif [[ $type == 'Valid' ]]
+    then
+        # Print data for valid.txt
+        printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}" "${5}"
+    elif [[ $type == 'Generic' ]]
+    then
+        # Print data
+        printf "%-100s %-11s %-17s %-10s %-20s\n" "${2}" "${3}" "${4}" "${5}" "${6}"
+    elif [[ $type == 'FullHosts' ]]
+    then
+        # Print host file
+        printf "%s %s\n" "${customIP}" "${2}"
+    fi
+}
+
+############################# Generate Hosts File ##############################
+# In charge to print data into hosts file
+#
+# @CalledBy generateInvalidFile,generateErrorFile,generateValidFile
+################################################################################
+generateHostsFile()
+{
+    local type=${1}
+    if [[ ${generateHosts} == true ]]
+    then
+        if [[ ${type} == 'DeadOrDown' ]]
+        then
+            echo "${domain}" >> ${outputDeadOrDownHost}
+        else
+            # We print / create the host file
+            prints 'FullHosts' "${domain}" >> ${outputHost}
+        fi
+    fi
+}
+
+########################### Generate Unified File ##############################
+# In charge to print data into result.txt
+#
+# @CalledBy generateInvalidFile,generateErrorFile,generateValidFile
+################################################################################
+generateUnifiedFile()
+{
+    local type=${1}
+    if [[ -f ${outputUnifiedResult} ]]
+    then
+        # We save the domain and his data to the unified file
+        prints "Generic" "${domain}" "${status}" "Unknown" "${type}" "$(date)" >> ${outputUnifiedResult}
+    else
+        # We create header into and in between, create the file
+        printHeader "Generic" > ${outputUnifiedResult}
+        # We save the domain and his data to the unified file
+        prints "Generic" "${domain}" "${status}" "Unknown" "${type}" "$(date)" >> ${outputUnifiedResult}
+    fi
+}
+
+############################### Generate Invalid File ##########################
+# In charge to print data into invalid.txt
+#
+# @CalledBy errorHandle
+################################################################################
+generateInvalidFile()
+{
+    local type=${1}
+    generateHostsFile 'DeadOrDown'
+
+    if [[ ${noFiles} == false && ${splitFiles} == true ]]
+    then
+        if [[ -f ${outputInvalidResult} ]]
+        then
+            # We save the domain and his data
+            prints "Invalid" ${domain} "${type}" "$(date)" >> ${outputInvalidResult}
+        else
+            # We create header into and in between, create the file
+            printHeader 'Invalid' > ${outputInvalidResult}
+            # We save the domain and his data
+            prints "Invalid" ${domain} "${type}" "$(date)" >> ${outputInvalidResult}
+        fi
+    elif [[ ${noFiles} == false ]]
+    then
+        generateUnifiedFile "${type}"
+    fi
+}
+
+################################# Generate Error File ##########################
+# In charge to print data into error.txt
+#
+# @CalledBy errorHandle
+################################################################################
+generateErrorFile()
+{
+    local type=${1}
+    # We generate the host file
+    generateHostsFile 'DeadOrDown'
+
+    if [[ ${noFiles} == false && ${splitFiles} == true ]]
+    then
+        if [[ ${referer} == '' ]]
+        then
+            # We assign "Not Found" to prevent empty column in files
+            referer='Not Found'
+        fi
+
+        if [[ -f ${outputErrorResult} ]]
+        then
+            # We save the domain and his data
+            prints "Error" "${domain}" "${referer}" "${type}" "$(date)" >> ${outputErrorResult}
+        else
+            # We create header into and in between, create the file
+            printHeader "Error" > ${outputErrorResult}
+            # We save the domain and his data
+            prints "Error"  "${domain}" "${referer}" "${type}" "$(date)" >> ${outputErrorResult}
+        fi
+    elif [[ ${noFiles} == false ]]
+    then
+        generateUnifiedFile "${type}"
+    fi
+}
+
+############################ Generate Valid File ###############################
+# In charge to print data into error.txt
+#
+# @CalledBy getReferer, errorHandle
+################################################################################
+generateValidFile(){
+    # We get the expiration date
+    local exp=${1}
+    local type=${2}
+
+    # If empty, we change the data of ${exp}
+    if [[ ${exp} == '' ]]
+    then
+        exp='Unknown'
+    fi
+    # If ${quiet} != false, we don't print anything
+    if [[ ${quiet} == false ]]
+    then
+        # We print domain and its data
+        prints "Generic" "${domain}" "${validStatus}" "${exp}" "${type}" "$(date)"
+    fi
+
+    # we generate the host file
+    generateHostsFile 'Funilrys'
+
+    # We execute this only if ${noFiles} == false
+    if [[ ${noFiles} == false && ${splitFiles} == true ]]
+    then
+        if [[ -f  ${outputValidResult} ]]
+        then
+            # We save domain and its data
+            prints "Valid" ${domain} ${exp} "${type}" "$(date)" >> ${outputValidResult}
+        else
+            # We create a file and add header
+            printHeader 'Valid' > ${outputValidResult}
+
+            # We add domain and its data to file
+            prints "Valid" ${domain} ${exp} "${type}" "$(date)" >> ${outputValidResult}
+        fi
+    elif [[ ${noFiles} == false ]]
+    then
+        generateUnifiedFile "${type}"
+    fi
+}
+
+############################## Error Handle ####################################
+# Used to return issue status and issue url
+#
+# @CalledBy getReferer
+################################################################################
+errorHandle()
+{
+    # We get/save the type
+    local type=${1}
+    # We create a variable to catch the case that domain don't pass lslookup
+    local issueStatus=''
+
+    # We set the current type
+    sourceType="NSLOOKUP"
+
+    # We save output of nslookup
+    local lookup=$(nslookup ${domain})
+    regexNxDomain='NXDOMAIN'
+
+    if [[ ${lookup} =~ ${regexNxDomain} ]]
+    then
+        # If domain is down
+        issueStatus='Unknown'
+    elif [[ ${issueStatus} == '' ]]
+    then
+        # If domain is up, We generate the valid/unified file
+        generateValidFile "Unknown" "${sourceType}"
+        return 1
+    fi
+
+    if [[ ${type} == 'Invalid' &&  ${issueStatus} == 'Unknown' ]]
+    then
+        # We assign the status
+        local status="${invalidStatus}"
+
+        # We generate the invalid/unified file
+        generateInvalidFile "${sourceType}"
+    elif [[  ${issueStatus} == 'Unknown' && ${type} == 'Error' || ${type} != 'Invalid' || ${type} != 'Valid' ]]
+    then
+        # We assign the status
+        local status="${errorStatus}"
+
+        # We generate the error/unified file
+        generateErrorFile
+    fi
+
+    # If quiet != false, we don't print anything
+    if [[ ${quiet} == false ]]
+    then
+        prints "Generic" "${domain}" "${status}" "Unknown" "${sourceType}" "$(date)"
+    fi
+
+}
+
+############################### Get Referer ####################################
+# Used to generate the report issue url
+#
+# @CalledBy getExpirationDate
+################################################################################
+getReferer(){
+    # initialDomain <string>
+    initialDomain=${1}
+
+    # We get the extension of the given domain
+    domainExtension=${initialDomain##*.}
+    # We get the list of allowed extensions
+    validExtension=$(cat ${ianaDB})
+
+    # We check if the given domain extension is in our database file
+    if [[ ${validExtension} =~ ${domainExtension} ]]
+    then
+        # Special case for '.ga' domains which don't have their whois server
+        # registered to IANA. (cf. https://github.com/funilrys/funceble/issues/1)
+        if [[ ${domainExtension} == "ga" ]]
+        then
+            # We can now use the domain
+            domain=${initialDomain}
+
+            # We assign the domain WHOIS referer server
+            referer="whois.my.ga"
+
+            # The Following is used to stop the execution of getExpirationDate
+            # in case the domain is not valid.
+            notSupported=false
+        elif [[ ${domainExtension} == "za" ]]
+        then
+            # We can now use the domain
+            domain=${initialDomain}
+
+            # We assign the domain WHOIS referer server
+            referer="whois.registry.net.za"
+
+            # The Following is used to stop the execution of getExpirationDate
+            # in case the domain is not valid.
+            notSupported=false
+        elif [[ ${domainExtension} == "bz" ]]
+        then
+            # We can now use the domain
+            domain=${initialDomain}
+
+            # We assign the domain WHOIS referer server
+            referer="whois.afilias-grs.info"
+
+            # The Following is used to stop the execution of getExpirationDate
+            # in case the domain is not valid.
+            notSupported=false
+        else
+            # We get the host to call.
+            # If extension have a host assigned, it's written if format
+            # refer: whois.hello.world for example
+            referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
+
+            regexWhois='(.*)whois(.*)'
+
+            # We check if the format is valid
+            if [[ ${referer} =~ ${regexWhois} ]]
+            then
+                # We can now use the domain
+                domain=${initialDomain}
+
+                # The Following is used to stop the execution of getExpirationDate
+                # in case the domain is not valid.
+                notSupported=false
+            else
+                # We empty the referer variable
+                referer=''
+
+                # We handle error & check if server is up
+                errorHandle 'Error'
+            fi
+        fi
+    else
+        # We handle error & check if server is up
+        errorHandle 'Invalid'
+    fi
+}
+
+####################### Get (Domain) Expiration Date ###########################
+# Used to get the expiration date of a given domain.
+#
+# @CalledBy None
+################################################################################
+getExpirationDate(){
+    # domain <string>
+    # Domain given by user
+    domain=${1}
+
+    # We get the whois server referenced for the given domain
+    getReferer ${domain}
+
+    # Ensure that it's supported and not empty
+    if [[ ${notSupported} == false && ${domain} != "" && ${referer} != "" ]]
+    then
+        # We call the whois server and save the result into ${whoIs}
+        # cf. Default Values Section
+        whois -h ${referer} "${domain}" > ${whoIs}
+        # We get the content of the previously saved file
+        local content=$(cat ${whoIs})
+
+        # Here's a list of words the ${content} have to match to get the
+        # expiration date from the whois record of domain
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date')
+
+        # Here's a list of regex to extract the expiration date part of the
+        # whois record
+        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}")
+
+        for i in ${!toMatch[*]}
+        do
+            if [[ ${content} =~ ${toMatch[${i}]} ]]
+            then
+                # We get the expiration date
+                expirationDate=$(cat ${whoIs} | awk "${ifMatched[${i}]}")
+
+                regexNumber='[0-9]'
+                if [[ ${expirationDate} =~ ${regexNumber} ]]
+                then
+                    # If it contain numbers, we format it
+                    formatDate
+
+                    # We set the current type
+                    sourceType="WHOIS"
+
+                    # We generate valid/unified file
+                    generateValidFile ${expirationDate} "${sourceType}"
+                    return 1
+                elif [[ ${expirationDate} == '' ]]
+                then
+                    # In case expiration Date is empty we save the record so we
+                    # can debug it.
+                    # In case this happen please report issue to
+                    # https://github.com/funilrys/funceble/issues/new
+                    # So it can be fixed for everyone who use this script
+                    cat ${whoIs} >> ${outputDir}${referer}
+                fi
+            elif [[ ${i} == $(expr ${#toMatch[@]} - 1) ]]
+            then
+                # We handle error & check if server is up
+                errorHandle 'Error'
+            fi
+        done
+    fi
+}
+
+################################ Date to Lower #################################
+# Used to convert date to lower case
+#
+# @CalledBy formatDate
+################################################################################
+dateToLower(){
+    expirationDate=$(echo "${expirationDate}" | awk '{print tolower($0)}')
+}
+
+############################# Get Month In English #############################
+# Used to convert month from numeric to alphabetic
+#
+# @CalledBy formatDate
+################################################################################
+getMonthInEnglish(){
+    local numericMonth=${1}
+
+    case ${numericMonth} in
+        1|01)
+            month='jan'
+        ;;
+        2|02)
+            month='feb'
+        ;;
+        3|03)
+            month='mar'
+        ;;
+        4|04)
+            month='apr'
+        ;;
+        5|05)
+            month='may'
+        ;;
+        6|06)
+            month='jun'
+        ;;
+        7|07)
+            month='jul'
+        ;;
+        8|08)
+            month='aug'
+        ;;
+        9|09)
+            month='sep'
+        ;;
+        10)
+            month='oct'
+        ;;
+        11)
+            month='nov'
+        ;;
+        12)
+            month='dec'
+        ;;
+        *)
+            month='0'
+        ;;
+    esac
+}
+
+############################# Convert Day to 2 Digits ##########################
+# Used to convert one digit day to two Digits
+# e.g -> 1 ==> 01
+#
+# @CalledBy formatDate
+################################################################################
+convertDayTo2digits(){
+    oneDigitDay="${1}"
+    local regex='(?<!\S)\d(?!\S)'
+    if [[ ${oneDigitDay} =~ regex ]]
+    then
+        case ${oneDigitDay} in
+            1)
+                day='0'
+            ;;
+            2)
+                day='01'
+            ;;
+            3)
+                day='03'
+            ;;
+            4)
+                day='04'
+            ;;
+            5)
+                day='05'
+            ;;
+            6)
+                day='06'
+            ;;
+            7)
+                day='07'
+            ;;
+            8)
+                day='08'
+            ;;
+            9)
+                day='09'
+            ;;
+            *)
+                day='00'
+            ;;
+        esac
+    else
+        day=${oneDigitDay}
+    fi
+}
+
+####################### Split Compose Date With Only Digits ####################
+# Used to convert split and compose date in format 2017-06-25
+#
+# @CalledBy formatDate
+################################################################################
+splitComposeDateWithOnlyDigits(){
+    local regex='^[0-9]{4}(-|\.)[0-9]{2}(-|\.)[0-9]{2}'
+    if [[ ${expirationDate} =~ ${regex} ]]
+    then
+        # We split the date
+        local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c4)
+        local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c2)
+        local month=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4 | head -c2)
+
+        # We convert the day
+        convertDayTo2digits ${day}
+
+        # We convert the month
+        getMonthInEnglish ${month}
+
+        # We assign the expiration date
+        expirationDate=${day}'-'${month}-${year}
+    fi
+}
+
+################################ Format Date ###################################
+# Used to format date. We have to work with multiple date format from WHOIS
+# records so this function is in charge to create an unified format.
+#
+# @CalledBy getExpirationDate
+################################################################################
+formatDate()
+{
+    local regexDomExpDate='Domain Expiration Date:'
+    local regexExpDate='Expiration Date:'
+    local regexExpOn='expire on:'
+    local regexExp='expire:'
+    local regexSpace="( |\')"
+    local regexFreDate='free-date:'
+
+    if [[ ${expirationDate} =~ ${regexDomExpDate} ]]
+    then
+        # We split the date
+        local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c2)
+        local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c4)
+        local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | tail -c6 | head -c3)
+
+        # We convert the day
+        convertDayTo2digits "${day}"
+
+        # We assign the expiration date
+        expirationDate=${day}'-'${month}'-'${year}
+
+        # We convert it to lower case
+        dateToLower
+    elif [[ ${expirationDate} =~ ${regexExpDate} || ${expirationDate} =~ regexExpOn ]]
+    then
+        # We split the string to get the date
+        expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
+
+        # In case ${expirationDate} contain space
+        if [[ ${expirationDate} =~  ${regexSpace} ]]
+        then
+            expirationDate=$(echo "${expirationDate}" | head -c12 |  sed -e 's/^[[:space:]]*//')
+        fi
+
+        # We split, Compose date with only digits. e.g -> 17-11-2017
+        splitComposeDateWithOnlyDigits
+
+        # We convrt it to lower case
+        dateToLower
+    elif [[ ${expirationDate} =~ regexExp ]]
+    then
+        # We split the string to get the date
+        expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
+
+        if [[ ${expirationDate} =~  ${regexSpace} ]]
+        then
+            # We get the final date
+            expirationDate=$(echo "${expirationDate}" | tail -c12)
+        fi
+
+        # We convrt it to lower case
+        dateToLower
+    elif [[ ${expirationDate} =~ ${regexSpace} ]]
+    then
+        # We split the string to get the date
+        expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2 | cut -d 'T' -f1)
+
+        if [[ ${expirationDate} =~  ( |\') ]]
+        then
+            # We get the final date
+            expirationDate=$(echo "${expirationDate}" |tail -c11)
+        fi
+
+        # We split, Compose date with only digits. e.g -> 17-11-2017
+        splitComposeDateWithOnlyDigits
+
+        # We convrt it to lower case
+        dateToLower
+    elif [[ ${expirationDate} =~ ${regexFreDate} ]]
+    then
+        # We split the string to get the date
+        expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
+
+        if [[ ${expirationDate} =~  ${regexSpace} ]]
+        then
+            # We get the final date
+            expirationDate=$(echo "${expirationDate}" |tail -c11)
+        fi
+
+        # We split, Compose date with only digits. e.g -> 17-11-2017
+        splitComposeDateWithOnlyDigits
+
+        # We convrt it to lower case
+        dateToLower
+    fi
+}
+
+################################## Main ########################################
+# Main function used to call other function
+#
+# @CalledBy Arguments Handle Section
+################################################################################
+main()
+{
+    # We get the domain
+    domain=${1}
+    # We get the file
+    file=${2}
+
+    if [[ "${domain}" != "" ]]
+    then
+        # We only print message if ${quiet} == false
+        if [[ ${quiet} == false ]]
+        then
+            printHeader "Generic"
+        fi
+
+        # We execute the getExpirationDate function
+        getExpirationDate "${domain}"
+    elif [[ ${file} != "" ]]
+    then
+        if [[ -f "${file}" &&  -r "${file}" ]]
+        then
+            # We only print message if ${quiet} == false
+            if [[ ${quiet} == false ]]
+            then
+                printHeader "Generic"
+            fi
+
+            # We read the list of the file and pass the domain (1 line = 1 domain)
+            # to getExpirationDate
+            while read domain
+            do
+                getExpirationDate "${domain}"
+            done < ${file}
+        else
+            # We exit in case file don't exit or is not readable
+            echo "File not found or unreadable"
+            exit 0
+        fi
+    else
+        # If domain is empty & file file don't exist we print usage
+        usage
+    fi
+}
+
+################################## Usage #######################################
+# Help function
+#
+# @CalledBy main
+################################################################################
+usage()
+{
+    echo "Usage: ${0} [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]"
+    echo ""
+    echo "       {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}"
+    echo ""
+    echo "  --domain                   -d              Domain to analyze"
+    echo "  --file                     -f              File with a list of domains"
+    echo "  --help                                     Print this screen"
+    echo "                             -ip             Change the ip to print in host file"
+    echo "  --host                     -h              Activate the generation of host (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --noFiles                  -n              Desactivate the production of output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --split                                    Split output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo ""
+    echo "Examples:"
+    echo ""
+    echo "  ${0} -d helloworld.com ${bold}OR${normal} ${0} --domain=helloworld.com"
+    echo "           Search if ${cyan}helloworld.com${normal} is ${bold}ACTIVE${normal} or ${bold}not${normal}"
+    echo "           Print the output in screen and under the ${cyan}output${normal} directory"
+    echo ""
+    echo "  ${0} -f /home/helloworld/lists/badrefers.list ${bold}OR${normal} --file=/home/helloworld/lists/badrefers.list"
+    echo "           Search if ${cyan}all domains${normal} under the file ${cyan}/home/helloworld/lists/badrefers.list${normal} are ${bold}ACTIVE${normal} or ${bold}not${normal}"
+    echo "           Print the output in screen and under the ${cyan}output${normal} directory"
+    echo ""
+    echo " ${0} -h -f /home/helloworld/lists/badrefers.list ${bold}OR${normal} --file=/home/helloworld/lists/badrefers.list"
+    echo "           Same as ${bold}${0} -f${normal}"
+    echo "           Generate the ${cyan}hosts file${normal} under the ${cyan}output${normal} directory"
+    echo ""
+    echo " ${0} -q -f /home/helloworld/lists/badrefers.list ${bold}OR${normal} --file=/home/helloworld/lists/badrefers.list"
+    echo "           Same as ${bold}${0} -f${normal}"
+    echo "           Instead, it does not generate output on screen"
+    echo ""
+}
+
+
+############################### Arguments Handle ###############################
+# We use this part to get arguments from command line.
+#
+# @Requiredby All
+################################################################################
+if [[  ${outputDir} =~ ${regexCurrentDir} ]]
+then
+    printf "${bold}${red}Please run the installation script first. \nYou can run it with: %s\n" "${cyan}${PWD}/installation${normal}"
+    exit 0
+else
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            # We catch domain
+            -d)
+                main "${2}" ''
+                shift 2
+            ;;
+            # We catch file path
+            -f)
+                main '' "${2}"
+                shift 2
+            ;;
+            # we catch if the user want to activate the creation of hosts file
+            -h|--host)
+                generateHosts=true
+                if [[ -f ${outputHost} || -f {$outputDeadOrDownHost} ]];then outputHost=${outputHost}'_'$(date +%d-%m-%Y); outputDeadOrDownHost=${outputDeadOrDownHost}'_'$(date +%d-%m-%Y);fi
+                shift 1
+            ;;
+            --help)
+                usage
+                shift 1
+            ;;
+            # We change the IP to print into the hosts file
+            -ip)
+                customIP="${2}"
+                shift 2
+            ;;
+            # We catch if we can produce file or not
+            -n|--noFiles)
+                noFiles=true
+                quiet=false
+                shift 1
+            ;;
+            # Activation of quiet system
+            -q|--quiet)
+                quiet=true
+                noFiles=false
+                shift 1
+            ;;
+
+            # We split the result into different file
+            --split)
+                splitFiles=true
+                noFiles=false
+                shift 1
+            ;;
+            # catch the domain after --domain= for example: --domain=helloworld.com
+            # Will result only helloworld.com
+            --domain=*)
+                domainToCheck=${1#*=}
+                main "${domainToCheck}" ''
+                shift 1
+            ;;
+            # catch the domain after --domain= for example: --file=lustUsedInDev/badreferers.list
+            # Will get the file lustUsedInDev/badreferers.list
+            --file=*)
+                fileToCheck=${1#*=}
+                main "" "${fileToCheck}"
+                shift 1
+            ;;
+            -*)
+                echo "Unknown option: $1" >&2
+                exit 1
+            ;;
+            *) usage
+                shift 1
+            ;;
+        esac
+    done
+fi
