@@ -1,4 +1,4 @@
 *
 !.gitignore
-!/logs
-!/hosts
+!/logs/
+!/hosts/
