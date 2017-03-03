@@ -51,19 +51,19 @@ then
     # We log && print message
     printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
     printf "Script readable" && printf "Script readable" >> ${logOutput}
-
+    
     if [[ -r "${currentDir}${script}" ]]
     then
         # We log && print message
         printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
         printf "Script executable" && printf "Script executable" >> ${logOutput}
-
+        
         if [[ -x "${currentDir}${script}" ]]
         then
             # We log && print message
             printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
             printf "\n${bold}awk${normal} installed" && printf "awk installed" >> ${logOutput}
-
+            
             if [[ $(which awk 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
             then
                 # We log && print message
@@ -74,7 +74,7 @@ then
                 # We log && print message
                 printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
                 printf "${bold}whois${normal} installed" && printf "whois installed" >> ${logOutput}
-
+                
                 if [[ $(which whois 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
                 then
                     # We log && print message
@@ -85,7 +85,7 @@ then
                     # We log && print message
                     printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
                     printf "${bold}sed${normal} installed" && printf "sed installed" >> ${logOutput}
-
+                    
                     if [[ $(which whois 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
                     then
                         # We log && print message
@@ -96,15 +96,15 @@ then
                         # We log && print message
                         printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
                         printf "\nInstallation of working directory" &&  printf "Installation of working directory" >> ${logOutput}
-
+                        
                         regex="outputDir='.*\/output\/'"
-
+                        
                         if [[ ${scriptContent} =~ ${regex} ]]
                         then
                             # We replace with the current working directory an we print message
                             sed -i "s|${regex}|${outputDir}|g" funceble
                             printf "  ${cyan}✔${normal}\n \n" && printf "  ✔\n" >> ${logOutput}
-
+                            
                             echo "${bold}${cyan}The installation was successfully completed!${normal}"
                             echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
                             printf '\n'
