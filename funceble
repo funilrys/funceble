@@ -67,7 +67,7 @@ errorStatus="INACTIVE"
 noFiles=false
 
 # Output directory. DO NOT FORGET '/' AT THE END
-outputDir='/home/funilrys/Projects/funceble/output/'
+outputDir='$$currentDir%%/output/'
 
 # Output of hosts file
 outputHost=${outputDir}hosts/hosts
