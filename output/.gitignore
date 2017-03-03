@@ -2,3 +2,4 @@
 !.gitignore
 !/logs/
 !/hosts/
+!/splited/
