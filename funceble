@@ -67,7 +67,7 @@ errorStatus="INACTIVE"
 noFiles=false
 
 # Output directory. DO NOT FORGET '/' AT THE END
-outputDir='$$currentDir%%/output/'
+outputDir='%%currentDir%%/output/'
 
 # Output of hosts file
 outputHost=${outputDir}hosts/hosts
@@ -106,7 +106,7 @@ splitFiles=false
 whoisServer="whois.iana.org"
 
 # Regex to match
-regexCurrentDir='%%currentDir'
+regexCurrentDir='%%currentDir%%'
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
