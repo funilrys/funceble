@@ -86,7 +86,7 @@ outputHost=${outputDir}hosts/hosts
 outputDeadOrDownHost=${outputDir}hosts/deadOrDown
 
 # Output of unified results
-outputUnifiedResult=${outputDir}splited/result.txt
+outputUnifiedResult=${outputDir}/result.txt
 
 # Output of valid results
 outputValidResult=${outputDir}splited/active.txt
