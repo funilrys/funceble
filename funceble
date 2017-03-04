@@ -46,6 +46,9 @@ white=$(tput setaf 7)
 # Cyan Color
 cyan=$(tput setaf 6)
 
+# Magenta Color
+magenta=$(tput setaf 5)
+
 # Bold
 bold=$(tput bold)
 
@@ -68,6 +71,12 @@ noFiles=false
 
 # Output directory. DO NOT FORGET '/' AT THE END
 outputDir='%%currentDir%%/output/'
+
+# Output of log
+logOutput=${outputDir}'logs/'
+
+# Output of execution Time log
+executionLog=${logOutput}execution.log
 
 # Output of hosts file
 outputHost=${outputDir}hosts/hosts
@@ -526,7 +535,7 @@ getExpirationDate(){
                     # So it can be fixed for everyone who use this script
                     cat ${whoIs} >> ${outputDir}${referer}
                 fi
-            elif [[ ${i} == $(expr ${#toMatch[@]} - 1) ]]
+            elif [[ ${i} == $(( ${#toMatch[@]} - 1)) ]]
             then
                 # We handle error & check if server is up
                 errorHandle 'Error'
@@ -857,8 +866,18 @@ usage()
 #
 # @Requiredby All
 ################################################################################
+#We log the execution
+echo "Execution Time log of" $(date) >> ${executionLog}
+echo "----------------------------------------------------------------" >> ${executionLog}
+# We get execution start time
+executionStart=$(date +%s)
+# We log the start time
+printf "Start: %s\n" "${executionStart}" >> ${executionLog}
+
 if [[  ${outputDir} =~ ${regexCurrentDir} ]]
 then
+    # We print the following to avoid the use of this script without
+    # dependencies check
     printf "${bold}${red}Please run the installation script first. \nYou can run it with: %s\n" "${cyan}${PWD}/installation${normal}"
     exit 0
 else
@@ -932,3 +951,22 @@ else
         esac
     done
 fi
+
+# We get execution end time
+executionEnd=$(date +%s)
+# We log end time
+printf "End: %s\n" "${executionEnd}" >> ${executionLog}
+
+# We get the difference betwen end and start
+timeDifference=$(( ${executionEnd} - ${executionStart} ))
+
+# We get the hours
+((hours=${timeDifference}/3600))
+# We get the minutes
+((minutes=(${timeDifference}%3600)/60))
+# We get the seconds
+((seconds=${timeDifference}%60))
+
+# We display + log message
+printf "\n${magenta}Execution Time:${normal}\n" && printf "Execution Time:" >> ${executionLog}
+printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} && printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} >> ${executionLog}
