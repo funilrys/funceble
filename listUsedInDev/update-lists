@@ -12,4 +12,4 @@
 # Written by: @Funilrys, Nissar Chababy <contact at funilrys dot com>
 
 # Update badrefers.list
-curl https://raw.githubusercontent.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker/master/Pull_Requests_Here_Please/badreferers.list -o ./lists-used-to-test/badreferers.list
+curl https://raw.githubusercontent.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker/master/Pull_Requests_Here_Please/badreferers.list -o badreferers.list
