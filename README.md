@@ -10,7 +10,7 @@ Current Version: **1.0.0**
 
 ## NB Status
 
-* **ACTIVE** 
+* **ACTIVE**
     * Date of expiration accessible per WHOIS-Server (`whois` command)
     * `nslookup` Don't return "**server can't find domain-name.me: NXDOMAIN**"
 * **INACTIVE**
@@ -50,6 +50,7 @@ ____
 
 * [@mitchellkrogza](https://github.com/mitchellkrogza)
 * [@PromoFaux](https://github.com/PromoFaux) with [Pi-Hole](https://github.com/pi-hole/pi-hole) hosts file.
+* [@WaLLy3K](https://github.com/WaLLy3K)
 
 ____
 # `Hosts` files
