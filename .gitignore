@@ -1,9 +1,8 @@
 # Dev Part
 production
+/Releases/
 
 # Temp Files
 funceble~
 installation~
-
-# Unneeded for now
-known-issues-dev
+production~
