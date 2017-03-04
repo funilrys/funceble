@@ -505,11 +505,11 @@ getExpirationDate(){
         
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
-        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date')
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:')
         
         # Here's a list of regex to extract the expiration date part of the
         # whois record
-        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}")
+        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}" "/${toMatch[5]}/{print $NC}")
         
         for i in ${!toMatch[*]}
         do
@@ -528,7 +528,7 @@ getExpirationDate(){
                     sourceType="WHOIS"
                     
                     # We generate valid/unified file
-                    generateValidFile ${expirationDate} "${sourceType}"
+                    generateValidFile "${expirationDate}" "${sourceType}"
                     return 1
                 elif [[ ${expirationDate} == '' ]]
                 then
@@ -695,6 +695,7 @@ formatDate()
     local regexExp='expire:'
     local regexSpace="( |\')"
     local regexFreDate='free-date:'
+    local regexExpires='expires:'
     
     if [[ ${expirationDate} =~ ${regexDomExpDate} ]]
     then
@@ -711,6 +712,22 @@ formatDate()
         
         # We convert it to lower case
         dateToLower
+    elif [[ ${expirationDate} =~ ${regexExpires} ]]
+    then
+        # We split the string to get the date
+        expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
+        
+        # In case ${expirationDate} contain space
+        if [[ ${expirationDate} =~  ${regexSpace} ]]
+        then
+            expirationDate=$(echo "${expirationDate}" | tail -c14 | head -c10)
+        fi
+        
+        # We split, Compose date with only digits. e.g -> 17-11-2017
+        splitComposeDateWithOnlyDigits
+        
+        # We convrt it to lower case
+        dateToLower
     elif [[ ${expirationDate} =~ ${regexExpDate} || ${expirationDate} =~ regexExpOn ]]
     then
         # We split the string to get the date
@@ -719,7 +736,7 @@ formatDate()
         # In case ${expirationDate} contain space
         if [[ ${expirationDate} =~  ${regexSpace} ]]
         then
-            expirationDate=$(echo "${expirationDate}" | head -c12 |  sed -e 's/^[[:space:]]*//')
+            expirationDate=$(echo "${expirationDate}" | head -c12 | sed -e 's/^[[:space:]]*//')
         fi
         
         # We split, Compose date with only digits. e.g -> 17-11-2017
