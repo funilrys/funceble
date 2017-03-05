@@ -420,7 +420,7 @@ getReferer(){
         notSupported=true
         
         # Special cases domains which don't have their whois server
-        -       # registered to IANA.
+        # registered to IANA.
         # cf. https://github.com/funilrys/funceble/issues?q=is%3Aissue+Not+Found+is%3Aclosed
         case ${domainExtension} in
             ga)
@@ -544,6 +544,7 @@ getExpirationDate(){
                 fi
             elif [[ ${i} == $(( ${#toMatch[@]} - 1)) ]]
             then
+                cat ${whoIs} >> ${logOutput}${referer}
                 # We handle error & check if server is up
                 errorHandle 'Error'
             fi
