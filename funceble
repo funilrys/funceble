@@ -213,7 +213,7 @@ generateHostsFile()
     then
         if [[ ${type} == 'DeadOrDown' ]]
         then
-            echo "${domain}" >> ${outputDeadOrDownHost}
+            prints 'FullHosts' "${domain}" >> ${outputDeadOrDownHost}
         else
             # We print / create the host file
             prints 'FullHosts' "${domain}" >> ${outputHost}
@@ -405,7 +405,6 @@ errorHandle()
     then
         prints "Generic" "${domain}" "${status}" "Unknown" "${sourceType}" "$(date)"
     fi
-    
 }
 
 ############################### Get Referer ####################################
