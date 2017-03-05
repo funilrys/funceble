@@ -13,3 +13,9 @@
 
 # Update badrefers.list
 curl https://raw.githubusercontent.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker/master/Pull_Requests_Here_Please/badreferers.list -o badreferers.list
+
+# Update StenvenBlack's hosts list
+curl https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts -o stevenBlackHosts.list
+grep -v "#" stevenBlackHosts.list > stevenBlackHosts.list.bak; mv stevenBlackHosts.list.bak stevenBlackHosts.list
+cat stevenBlackHosts.list | grep . >> funilrys; mv funilrys stevenBlackHosts.list
+cat stevenBlackHosts.list | cut -d ' ' -f2 >> funilrys; mv funilrys stevenBlackHosts.list
