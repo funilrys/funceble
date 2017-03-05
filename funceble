@@ -229,6 +229,8 @@ generateHostsFile()
 generateUnifiedFile()
 {
     local type=${1}
+    local status=${2}
+    
     if [[ -f ${outputUnifiedResult} ]]
     then
         # We save the domain and his data to the unified file
@@ -249,6 +251,8 @@ generateUnifiedFile()
 generateInvalidFile()
 {
     local type=${1}
+    
+    # We generate the host file
     generateHostsFile 'DeadOrDown'
     
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
@@ -256,16 +260,16 @@ generateInvalidFile()
         if [[ -f ${outputInvalidResult} ]]
         then
             # We save the domain and his data
-            prints "Invalid" ${domain} "${type}" >> ${outputInvalidResult}
+            prints "Invalid" "${domain}" "${type}" >> ${outputInvalidResult}
         else
             # We create header into and in between, create the file
             printHeader 'Invalid' > ${outputInvalidResult}
             # We save the domain and his data
-            prints "Invalid" ${domain} "${type}" >> ${outputInvalidResult}
+            prints "Invalid" "${domain}" "${type}" >> ${outputInvalidResult}
         fi
     elif [[ ${noFiles} == false ]]
     then
-        generateUnifiedFile "${type}"
+        generateUnifiedFile "${type}" "${invalidStatus}"
     fi
 }
 
@@ -277,6 +281,7 @@ generateInvalidFile()
 generateErrorFile()
 {
     local type=${1}
+    
     # We generate the host file
     generateHostsFile 'DeadOrDown'
     
@@ -300,7 +305,7 @@ generateErrorFile()
         fi
     elif [[ ${noFiles} == false ]]
     then
-        generateUnifiedFile "${type}"
+        generateUnifiedFile "${type}" "${errorStatus}"
     fi
 }
 
@@ -335,17 +340,17 @@ generateValidFile(){
         if [[ -f  ${outputValidResult} ]]
         then
             # We save domain and its data
-            prints "Valid" ${domain} ${exp} "${type}" >> ${outputValidResult}
+            prints "Valid" "${domain}" "${exp}" "${type}" >> ${outputValidResult}
         else
             # We create a file and add header
             printHeader 'Valid' > ${outputValidResult}
             
             # We add domain and its data to file
-            prints "Valid" ${domain} ${exp} "${type}" >> ${outputValidResult}
+            prints "Valid" "${domain}" "${exp}" "${type}" >> ${outputValidResult}
         fi
     elif [[ ${noFiles} == false ]]
     then
-        generateUnifiedFile "${type}"
+        generateUnifiedFile "${type}" "${validStatus}"
     fi
 }
 
@@ -392,7 +397,7 @@ errorHandle()
         local status="${errorStatus}"
         
         # We generate the error/unified file
-        generateErrorFile
+        generateErrorFile "${sourceType}"
     fi
     
     # If quiet != false, we don't print anything
