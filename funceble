@@ -70,6 +70,10 @@ errorStatus="INACTIVE"
 # If noFiles=true, We don't any results files ==> Not applied to hosts file
 noFiles=false
 
+# Generate debug file under log
+# DO NOT USE THIS IF YOU DON'T KNOW HOW TO DEBUG FROM OUTPUTED FILE
+debugUnknown=false
+
 # Output directory. DO NOT FORGET '/' AT THE END
 outputDir='%%currentDir%%/output/'
 
@@ -533,18 +537,26 @@ getExpirationDate(){
                     # We generate valid/unified file
                     generateValidFile "${expirationDate}" "${sourceType}"
                     return 1
-                elif [[ ${expirationDate} == '' ]]
+                elif [[ ${expirationDate} == '' && ${debugUnknown} == true ]]
                 then
                     # In case expiration Date is empty we save the record so we
                     # can debug it.
                     # In case this happen please report issue to
                     # https://github.com/funilrys/funceble/issues/new
                     # So it can be fixed for everyone who use this script
+                    printf "=%.0s" {1..100} >> ${logOutput}${referer}
                     cat ${whoIs} >> ${logOutput}${referer}
+                    printf "=%.0s" {1..100} >> ${logOutput}${referer}
                 fi
             elif [[ ${i} == $(( ${#toMatch[@]} - 1)) ]]
             then
-                cat ${whoIs} >> ${logOutput}${referer}
+                if [[ ${debugUnknown} == true ]]
+                then
+                    # We save the file
+                    printf "=%.0s" {1..100} >> ${logOutput}${referer}
+                    cat ${whoIs} >> ${logOutput}${referer}
+                    printf "=%.0s" {1..100} >> ${logOutput}${referer}
+                fi
                 # We handle error & check if server is up
                 errorHandle 'Error'
             fi
