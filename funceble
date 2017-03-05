@@ -109,6 +109,9 @@ customIP='0.0.0.0'
 # Activate/Desactivate the generation of hosts file
 generateHosts=false
 
+# Output less data
+outputLess=true
+
 # If set to true, we don't print anything
 quiet=false
 
@@ -165,6 +168,11 @@ printHeader()
         # Generation of header
         printf "\n%-100s %-11s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
+    elif [[ ${type} == 'Less' ]]
+    then
+        # Generation of header
+        printf "\n%-100s %-11s %-10s\n" "Domain" "Status" "Source"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
     fi
 }
 
@@ -186,18 +194,22 @@ prints()
     then
         # Print data for error.txt
         printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${errorStatus}" "${4}" "$(date)"
-    elif [[ $type == 'Valid' ]]
+    elif [[ ${type} == 'Valid' ]]
     then
         # Print data for valid.txt
         printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}" "$(date)"
-    elif [[ $type == 'Generic' ]]
+    elif [[ ${type} == 'Generic' ]]
     then
         # Print data
         printf "%-100s %-11s %-17s %-10s %-20s\n" "${2}" "${3}" "${4}" "${5}" "$(date)"
-    elif [[ $type == 'FullHosts' ]]
+    elif [[ ${type} == 'FullHosts' ]]
     then
         # Print host file
         printf "%s %s\n" "${customIP}" "${2}"
+    elif [[ ${type} == 'Less' ]]
+    then
+        # Print data
+        printf "%-100s %-11s %-10s\n" "${2}" "${3}" "${4}"
     fi
 }
 
@@ -233,13 +245,27 @@ generateUnifiedFile()
     
     if [[ -f ${outputUnifiedResult} ]]
     then
-        # We save the domain and his data to the unified file
-        prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+        if [[ ${outputLess} == true ]]
+        then
+            # We save the domain and his data to the unified file
+            prints "Less" "${domain}" "${status}" "${type}" >> ${outputUnifiedResult}
+        else
+            # We save the domain and his data to the unified file
+            prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+        fi
     else
-        # We create header into and in between, create the file
-        printHeader "Generic" > ${outputUnifiedResult}
-        # We save the domain and his data to the unified file
-        prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+        if [[ ${outputLess} == true]]
+        then
+            # We create header into and in between, create the file
+            printHeader "Less" > ${outputUnifiedResult}
+            # We save the domain and his data to the unified file
+            prints "Less" "${domain}" "${status}" "${type}" >> ${outputUnifiedResult}
+        else
+            # We create header into and in between, create the file
+            printHeader "Generic" > ${outputUnifiedResult}
+            # We save the domain and his data to the unified file
+            prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+        fi
     fi
 }
 
@@ -327,8 +353,13 @@ generateValidFile(){
     # If ${quiet} != false, we don't print anything
     if [[ ${quiet} == false ]]
     then
-        # We print domain and its data
-        prints "Generic" "${domain}" "${validStatus}" "${exp}" "${type}" "$(date)"
+        if [[ ${outputLess} == true ]]
+        then
+            prints "Less" "${domain}" "${validStatus}" "${type}"
+        else
+            # We print domain and its data
+            prints "Generic" "${domain}" "${validStatus}" "${exp}" "${type}"
+        fi
     fi
     
     # we generate the host file
@@ -403,7 +434,12 @@ errorHandle()
     # If quiet != false, we don't print anything
     if [[ ${quiet} == false ]]
     then
-        prints "Generic" "${domain}" "${status}" "Unknown" "${sourceType}" "$(date)"
+        if [[ ${outputLess} == true ]]
+        then
+            prints "Less" "${domain}" "${status}" "${sourceType}"
+        else
+            prints "Generic" "${domain}" "${status}" "Unknown" "${sourceType}"
+        fi
     fi
 }
 
@@ -882,7 +918,12 @@ main()
         # We only print message if ${quiet} == false
         if [[ ${quiet} == false ]]
         then
-            printHeader "Generic"
+            if [[ ${outputLess} == true ]]
+            then
+                printHeader "Less"
+            else
+                printHeader "Generic"
+            fi
         fi
         
         # We execute the getExpirationDate function
@@ -894,7 +935,12 @@ main()
             # We only print message if ${quiet} == false
             if [[ ${quiet} == false ]]
             then
-                printHeader "Generic"
+                if [[ ${outputLess} == true ]]
+                then
+                    printHeader "Less"
+                else
+                    printHeader "Generic"
+                fi
             fi
             
             # We read the list of the file and pass the domain (1 line = 1 domain)
