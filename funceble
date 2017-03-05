@@ -119,7 +119,7 @@ whoisServer="whois.iana.org"
 regexCurrentDir='%%currentDir%%'
 
 # Show/hide execution time
-showExecutionTime=true
+showExecutionTime=false
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
@@ -901,14 +901,15 @@ main()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]"
+    echo "Usage: ${0} [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]"
     echo ""
     echo "       {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}"
     echo ""
     echo "  --domain                   -d              Domain to analyze"
     echo "  --file                     -f              File with a list of domains"
+    echo "  --execution                -ex             Show the execution time (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --help                                     Print this screen"
-    echo "                             -ip             Change the ip to print in host file"
+    echo "                             -ip             Change the ip to print in host file (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --host                     -h              Activate the generation of host (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --noFiles                  -n              Desactivate the production of output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
@@ -964,6 +965,12 @@ else
             -d)
                 main "${2}" ''
                 shift 2
+            ;;
+            # We catch if we show the execution time
+            -ex|--execution)
+                showExecutionTime=true
+                quiet=false
+                shift 1
             ;;
             # We catch file path
             -f)
