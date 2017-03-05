@@ -415,42 +415,45 @@ getReferer(){
     # We check if the given domain extension is in our database file
     if [[ ${validExtension} =~ ${domainExtension} ]]
     then
-        # Special case for '.ga' domains which don't have their whois server
-        # registered to IANA. (cf. https://github.com/funilrys/funceble/issues/1)
-        if [[ ${domainExtension} == "ga" ]]
+        # We initiate this variable in order to know if ${domainExtension} pass
+        # The cases
+        notSupported=true
+        
+        # Special cases domains which don't have their whois server
+        -       # registered to IANA.
+        # cf. https://github.com/funilrys/funceble/issues?q=is%3Aissue+Not+Found+is%3Aclosed
+        case ${domainExtension} in
+            ga)
+                # We can now use the domain
+                domain=${initialDomain}
+                # We assign the domain WHOIS referer server
+                referer="whois.my.ga"
+                # The Following is used to stop the execution of getExpirationDate
+                # in case the domain is not valid.
+                notSupported=false
+            ;;
+            za)
+                # We can now use the domain
+                domain=${initialDomain}
+                # We assign the domain WHOIS referer server
+                referer="whois.registry.net.za"
+                # The Following is used to stop the execution of getExpirationDate
+                # in case the domain is not valid.
+                notSupported=false
+            ;;
+            bz)
+                # We can now use the domain
+                domain=${initialDomain}
+                # We assign the domain WHOIS referer server
+                referer="whois.afilias-grs.info"
+                # The Following is used to stop the execution of getExpirationDate
+                # in case the domain is not valid.
+                notSupported=false
+            ;;
+        esac
+        
+        if [[ ${notSupported} == true ]]
         then
-            # We can now use the domain
-            domain=${initialDomain}
-            
-            # We assign the domain WHOIS referer server
-            referer="whois.my.ga"
-            
-            # The Following is used to stop the execution of getExpirationDate
-            # in case the domain is not valid.
-            notSupported=false
-        elif [[ ${domainExtension} == "za" ]]
-        then
-            # We can now use the domain
-            domain=${initialDomain}
-            
-            # We assign the domain WHOIS referer server
-            referer="whois.registry.net.za"
-            
-            # The Following is used to stop the execution of getExpirationDate
-            # in case the domain is not valid.
-            notSupported=false
-        elif [[ ${domainExtension} == "bz" ]]
-        then
-            # We can now use the domain
-            domain=${initialDomain}
-            
-            # We assign the domain WHOIS referer server
-            referer="whois.afilias-grs.info"
-            
-            # The Following is used to stop the execution of getExpirationDate
-            # in case the domain is not valid.
-            notSupported=false
-        else
             # We get the host to call.
             # If extension have a host assigned, it's written if format
             # refer: whois.hello.world for example
@@ -537,7 +540,7 @@ getExpirationDate(){
                     # In case this happen please report issue to
                     # https://github.com/funilrys/funceble/issues/new
                     # So it can be fixed for everyone who use this script
-                    cat ${whoIs} >> ${outputDir}${referer}
+                    cat ${whoIs} >> ${logOutput}${referer}
                 fi
             elif [[ ${i} == $(( ${#toMatch[@]} - 1)) ]]
             then
