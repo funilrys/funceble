@@ -46,10 +46,14 @@ To contribute, you have to send a new [Pull Request](https://github.com/funilrys
 * All contributions/modifications must be done under **the `dev` branch**.
 
 ____
-# Contributors
+# Special Thanks
+Thank you guys for your awesome lists which helped _(and still help)_ me build this script. :smile: :+1:
 
 * [@mitchellkrogza](https://github.com/mitchellkrogza)
 * [@PromoFaux](https://github.com/PromoFaux) with [Pi-Hole](https://github.com/pi-hole/pi-hole) hosts file.
+
+# Contributors
+
 * [@WaLLy3K](https://github.com/WaLLy3K)
 
 ____
