@@ -74,7 +74,8 @@ noFiles=false
 # DO NOT USE THIS IF YOU DON'T KNOW HOW TO DEBUG FROM OUTPUTED FILE
 debugUnknown=false
 
-# Output directory. DO NOT FORGET '/' AT THE END
+# Output directory.
+# DO NOT FORGET '/' AT THE END
 outputDir='%%currentDir%%/output/'
 
 # Output of log
