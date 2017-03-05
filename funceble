@@ -176,19 +176,19 @@ prints()
     if [[ ${type} == 'Invalid' ]]
     then
         # Print data for invalid.txt
-        printf "%-100s %-17s %-8s %-8s\n" "${2}" "${invalidStatus}" "${3}" "${4}"
+        printf "%-100s %-17s %-8s %-8s\n" "${2}" "${invalidStatus}" "${3}" "$(date)"
     elif [[ ${type} == 'Error' ]]
     then
         # Print data for error.txt
-        printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${errorStatus}" "${4}" "${5}"
+        printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${errorStatus}" "${4}" "$(date)"
     elif [[ $type == 'Valid' ]]
     then
         # Print data for valid.txt
-        printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}" "${5}"
+        printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}" "$(date)"
     elif [[ $type == 'Generic' ]]
     then
         # Print data
-        printf "%-100s %-11s %-17s %-10s %-20s\n" "${2}" "${3}" "${4}" "${5}" "${6}"
+        printf "%-100s %-11s %-17s %-10s %-20s\n" "${2}" "${3}" "${4}" "${5}" "$(date)"
     elif [[ $type == 'FullHosts' ]]
     then
         # Print host file
@@ -227,12 +227,12 @@ generateUnifiedFile()
     if [[ -f ${outputUnifiedResult} ]]
     then
         # We save the domain and his data to the unified file
-        prints "Generic" "${domain}" "${status}" "Unknown" "${type}" "$(date)" >> ${outputUnifiedResult}
+        prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
     else
         # We create header into and in between, create the file
         printHeader "Generic" > ${outputUnifiedResult}
         # We save the domain and his data to the unified file
-        prints "Generic" "${domain}" "${status}" "Unknown" "${type}" "$(date)" >> ${outputUnifiedResult}
+        prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
     fi
 }
 
@@ -251,12 +251,12 @@ generateInvalidFile()
         if [[ -f ${outputInvalidResult} ]]
         then
             # We save the domain and his data
-            prints "Invalid" ${domain} "${type}" "$(date)" >> ${outputInvalidResult}
+            prints "Invalid" ${domain} "${type}" >> ${outputInvalidResult}
         else
             # We create header into and in between, create the file
             printHeader 'Invalid' > ${outputInvalidResult}
             # We save the domain and his data
-            prints "Invalid" ${domain} "${type}" "$(date)" >> ${outputInvalidResult}
+            prints "Invalid" ${domain} "${type}" >> ${outputInvalidResult}
         fi
     elif [[ ${noFiles} == false ]]
     then
@@ -286,12 +286,12 @@ generateErrorFile()
         if [[ -f ${outputErrorResult} ]]
         then
             # We save the domain and his data
-            prints "Error" "${domain}" "${referer}" "${type}" "$(date)" >> ${outputErrorResult}
+            prints "Error" "${domain}" "${referer}" "${type}" >> ${outputErrorResult}
         else
             # We create header into and in between, create the file
             printHeader "Error" > ${outputErrorResult}
             # We save the domain and his data
-            prints "Error"  "${domain}" "${referer}" "${type}" "$(date)" >> ${outputErrorResult}
+            prints "Error"  "${domain}" "${referer}" "${type}" >> ${outputErrorResult}
         fi
     elif [[ ${noFiles} == false ]]
     then
@@ -330,13 +330,13 @@ generateValidFile(){
         if [[ -f  ${outputValidResult} ]]
         then
             # We save domain and its data
-            prints "Valid" ${domain} ${exp} "${type}" "$(date)" >> ${outputValidResult}
+            prints "Valid" ${domain} ${exp} "${type}" >> ${outputValidResult}
         else
             # We create a file and add header
             printHeader 'Valid' > ${outputValidResult}
             
             # We add domain and its data to file
-            prints "Valid" ${domain} ${exp} "${type}" "$(date)" >> ${outputValidResult}
+            prints "Valid" ${domain} ${exp} "${type}" >> ${outputValidResult}
         fi
     elif [[ ${noFiles} == false ]]
     then
