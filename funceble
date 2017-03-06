@@ -185,6 +185,7 @@ prints()
 {
     # type <string>
     local type=${1}
+    
     local dateAn=$(date)
     
     if [[ ${type} == 'Invalid' ]]
@@ -221,11 +222,14 @@ prints()
 ################################################################################
 generateHostsFile()
 {
+    # type <string>
     local type=${1}
+    
     if [[ ${generateHosts} == true ]]
     then
         if [[ ${type} == 'DeadOrDown' ]]
         then
+            # We print / create the DeadOrDown file
             prints 'FullHosts' "${domain}" >> ${outputDeadOrDownHost}
         else
             # We print / create the host file
@@ -241,7 +245,9 @@ generateHostsFile()
 ################################################################################
 generateUnifiedFile()
 {
+    # type <string>
     local type=${1}
+    # status <string>
     local status=${2}
     
     if [[ -f ${outputUnifiedResult} ]]
@@ -277,6 +283,7 @@ generateUnifiedFile()
 ################################################################################
 generateInvalidFile()
 {
+    # type <string>
     local type=${1}
     
     # We generate the host file
@@ -310,6 +317,7 @@ generateInvalidFile()
         fi
     elif [[ ${noFiles} == false ]]
     then
+        # We generate the unified file
         generateUnifiedFile "${type}" "${invalidStatus}"
     fi
 }
@@ -321,6 +329,7 @@ generateInvalidFile()
 ################################################################################
 generateErrorFile()
 {
+    # type <string>
     local type=${1}
     
     # We generate the host file
@@ -346,6 +355,7 @@ generateErrorFile()
         fi
     elif [[ ${noFiles} == false ]]
     then
+        # We generate the unified files
         generateUnifiedFile "${type}" "${errorStatus}"
     fi
 }
@@ -357,7 +367,9 @@ generateErrorFile()
 ################################################################################
 generateValidFile(){
     # We get the expiration date
+    # exp <string>
     local exp=${1}
+    # type <string>
     local type=${2}
     
     # If empty, we change the data of ${exp}
@@ -365,6 +377,7 @@ generateValidFile(){
     then
         exp='Unknown'
     fi
+    
     # If ${quiet} != false, we don't print anything
     if [[ ${quiet} == false ]]
     then
@@ -411,6 +424,7 @@ generateValidFile(){
         fi
     elif [[ ${noFiles} == false ]]
     then
+        # We generate the unified file
         generateUnifiedFile "${type}" "${validStatus}"
     fi
 }
@@ -423,6 +437,7 @@ generateValidFile(){
 errorHandle()
 {
     # We get/save the type
+    # type <string>
     local type=${1}
     # We create a variable to catch the case that domain don't pass lslookup
     local issueStatus=''
@@ -466,8 +481,10 @@ errorHandle()
     then
         if [[ ${outputLess} == true ]]
         then
+            # We print data to screen
             prints "Less" "${domain}" "${status}" "${sourceType}"
         else
+            # We print data to screen
             prints "Generic" "${domain}" "${status}" "Unknown" "${sourceType}"
         fi
     fi
@@ -534,6 +551,7 @@ getReferer(){
             # refer: whois.hello.world for example
             referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
             
+            # regex to pass to have a valid referer
             regexWhois='(.*)whois(.*)'
             
             # We check if the format is valid
@@ -596,6 +614,7 @@ getExpirationDate(){
                 # We get the expiration date
                 expirationDate=$(cat ${whoIs} | awk "${ifMatched[${i}]}")
                 
+                # Regex to pass in order to be reconized as a date
                 regexNumber='[0-9]'
                 if [[ ${expirationDate} =~ ${regexNumber} ]]
                 then
