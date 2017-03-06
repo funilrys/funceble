@@ -8,17 +8,6 @@ For all issues/bugs and others, please report [here](https://github.com/funilrys
 
 Current Version: **1.0.0**
 
-## NB Status
-
-* **ACTIVE**
-    * Date of expiration accessible per WHOIS-Server (`whois` command)
-    * `nslookup` Don't return "**server can't find domain-name.me: NXDOMAIN**"
-* **INACTIVE**
-    * WHOIS-Server don't return anything
-    * nslookup return "**server can't find domain-name.me: NXDOMAIN**"
-* **INVALID**
-    * Domain extension has an invalid format or is unregistered in **[IANA](https://www.iana.org/domains/root/db) Root Zone Database**.
-
 ## Usage
 
 ```sh
@@ -36,6 +25,16 @@ Usage: ./funceble [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]
   --noFiles                  -n              Desactivate the production of output files (Must be before -d or -f)
   --split                                    Split output files (Must be before -d or -f)
 ```
+## NB Status
+
+* **ACTIVE**
+    * Date of expiration accessible per WHOIS-Server (`whois` command)
+    * `nslookup` Don't return "**server can't find domain-name.me: NXDOMAIN**"
+* **INACTIVE**
+    * WHOIS-Server don't return anything
+    * nslookup return "**server can't find domain-name.me: NXDOMAIN**"
+* **INVALID**
+    * Domain extension has an invalid format or is unregistered in **[IANA](https://www.iana.org/domains/root/db) Root Zone Database**.
 
 ## How to contribute?
 
