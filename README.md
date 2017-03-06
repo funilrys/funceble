@@ -22,17 +22,18 @@ Current Version: **1.0.0**
 ## Usage
 
 ```sh
-Usage: ./funceble [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]
+Usage: ./funceble [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]
 
        {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}
 
   --domain                   -d              Domain to analyze
   --file                     -f              File with a list of domains
+  --execution                -ex             Show the execution time (Must be before -d or -f)
   --help                                     Print this screen
-                             -ip             Change the IP to print in the host file
+                             -ip             Change the ip to print in host file (Must be before -d or -f)
   --host                     -h              Activate the generation of host (Must be before -d or -f)
   --quiet                    -q              Activate quiet mode (Must be before -d or -f)
-  --noFiles                  -n              Deactivate the production of output files (Must be before -d or -f)
+  --noFiles                  -n              Desactivate the production of output files (Must be before -d or -f)
   --split                                    Split output files (Must be before -d or -f)
 ```
 
