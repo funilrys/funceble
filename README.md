@@ -11,10 +11,11 @@ Current Version: **1.0.0**
 ## Usage
 
 ```sh
-Usage: ./funceble [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]
+Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]
 
        {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}
 
+  --all                      -a              Output all information on screen (Must be before -d or -f)
   --domain                   -d              Domain to analyze
   --file                     -f              File with a list of domains
   --execution                -ex             Show the execution time (Must be before -d or -f)
@@ -22,17 +23,17 @@ Usage: ./funceble [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]
                              -ip             Change the ip to print in host file (Must be before -d or -f)
   --host                     -h              Activate the generation of host (Must be before -d or -f)
   --quiet                    -q              Activate quiet mode (Must be before -d or -f)
-  --noFiles                  -n              Desactivate the production of output files (Must be before -d or -f)
+  --noFiles                  -n              Deactivate the production of output files (Must be before -d or -f)
   --split                                    Split output files (Must be before -d or -f)
 ```
-## NB Status
+## Status
 
 * **ACTIVE**
-    * Date of expiration accessible per WHOIS-Server (`whois` command)
-    * `nslookup` Don't return "**server can't find domain-name.me: NXDOMAIN**"
+    * `whois` return the date of expiration
+    * `nslookup` don't return "**server can't find domain-name.me: NXDOMAIN**"
 * **INACTIVE**
-    * WHOIS-Server don't return anything
-    * nslookup return "**server can't find domain-name.me: NXDOMAIN**"
+    * `whois` don't return anything
+    * `nslookup` return "**server can't find domain-name.me: NXDOMAIN**"
 * **INVALID**
     * Domain extension has an invalid format or is unregistered in **[IANA](https://www.iana.org/domains/root/db) Root Zone Database**.
 
