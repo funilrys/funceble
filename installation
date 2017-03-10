@@ -105,6 +105,14 @@ then
                             sed -i "s|${regex}|${outputDir}|g" funceble
                             printf "  ${cyan}✔${normal}\n \n" && printf "  ✔\n" >> ${logOutput}
                             
+                            # Option if we want to debug
+                            regexDebug='debugUnknown=false'
+                            if [[ "${1}" == 'debug' ]]
+                            then
+                                replaceBy="debugUnknown=true"
+                                sed -i "s|${regexDebug}|${replaceBy}|g" funceble
+                            fi
+                            
                             echo "${bold}${cyan}The installation was successfully completed!${normal}"
                             echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
                             printf '\n'
