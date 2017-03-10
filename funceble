@@ -1078,10 +1078,11 @@ main()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]"
+    echo "Usage: ${0} [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]"
     echo ""
     echo "       {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}"
     echo ""
+    echo "  --all                      -a              Output all informations on screen (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --domain                   -d              Domain to analyze"
     echo "  --file                     -f              File with a list of domains"
     echo "  --execution                -ex             Show the execution time (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
@@ -1127,6 +1128,11 @@ then
 else
     while [ "$#" -gt 0 ]; do
         case "$1" in
+            # We catch if we have to print all infos on screen
+            -a|-all)
+                outputLess=false
+                shift 1
+            ;;
             # We catch domain
             -d)
                 main "${2}" ''
