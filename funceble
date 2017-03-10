@@ -933,7 +933,7 @@ endExecutionTime()
         # We log end time
         printf "End: %s\n" "${executionEnd}" >> ${executionLog}
         
-        # We get the difference betwen end and start
+        # We get the difference between end and start
         timeDifference=$(( ${executionEnd} - ${executionStart} ))
         
         # We get the hours
@@ -996,6 +996,15 @@ main()
             # to getExpirationDate
             while read domain
             do
+                # In case the file contain comment or empty line we continue to
+                # the next line
+                case "${domain}" in
+                    ''|\#*)
+                        continue
+                    ;;
+                esac
+                
+                # We get the expiration date and check status in between
                 getExpirationDate "${domain}"
             done < ${file}
         else
