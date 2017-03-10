@@ -71,7 +71,7 @@ errorStatus="INACTIVE"
 noFiles=false
 
 # Generate debug file under log
-# DO NOT USE THIS IF YOU DON'T KNOW HOW TO DEBUG FROM OUTPUTED FILE
+# DO NOT USE THIS IF YOU DON'T KNOW HOW TO DEBUG FROM OUTPUTTED FILE
 debugUnknown=false
 
 # Output directory.
@@ -120,7 +120,7 @@ splitFiles=false
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
-# Note: Whois Server are different for each extensions.
+# Note: Whois Server are different for each extension.
 whoisServer="whois.iana.org"
 
 # Regex to match
