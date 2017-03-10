@@ -60,6 +60,19 @@ Thank you guys for your awesome lists which helped _(and still help)_ me build t
 ____
 # `Hosts` files
 
-If you're not familiar with `hosts` files, take a look at [this short definition](http://www.computerhope.com/jargon/h/hostsfil.htm).
+## What is a hosts file?
+
+A hosts file, named `hosts` (with no file extension), is a plain-text file
+used by all operating systems to map hostnames to IP addresses.
+
+In most operating systems, the `hosts` file is preferential to `DNS`.
+Therefore if a domain name is resolved by the `hosts` file, the request never
+leaves your computer.
+
+Having a smart `hosts` file goes a long way towards blocking malware, adware, ransomware, porn and other nuisance websites.
+
+A hosts file like this causes any lookups to any of the listed domains to resolve back to your localhost so it prevents any outgoing connections to the listed domains.
+
+## Recommendations
 
 I'd personally recommend using [Steven's hosts](https://github.com/StevenBlack/hosts) or [Pi-Hole](https://github.com/pi-hole/pi-hole) which are in my opinion the best out there.
