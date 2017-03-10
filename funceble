@@ -996,11 +996,15 @@ main()
             # to getExpirationDate
             while read domain
             do
+                # echo ${domain}|cut -d ' ' -f2
                 # In case the file contain comment or empty line we continue to
                 # the next line
                 case "${domain}" in
-                    ''|\#*)
+                    ''|\#*|*localhost*)
                         continue
+                    ;;
+                    '127.0.0.1'*|'0.0.0.0'*)
+                        domain=$(echo "${domain}"|cut -d ' ' -f2)
                     ;;
                 esac
                 
