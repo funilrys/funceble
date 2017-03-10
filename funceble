@@ -1064,17 +1064,6 @@ then
     printf "${bold}${red}Please run the installation script first. \nYou can run it with: %s\n" "${cyan}${PWD}/installation${normal}"
     exit 0
 else
-    if [[ ${showExecutionTime} == true ]]
-    then
-        #We log the execution
-        echo "Execution Time log of" $(date) >> ${executionLog}
-        echo "----------------------------------------------------------------" >> ${executionLog}
-        # We get execution start time
-        executionStart=$(date +%s)
-        # We log the start time
-        printf "Start: %s\n" "${executionStart}" >> ${executionLog}
-    fi
-    
     while [ "$#" -gt 0 ]; do
         case "$1" in
             # We catch domain
