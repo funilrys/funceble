@@ -629,11 +629,11 @@ getExpirationDate(){
         
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
-        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:')
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:')
         
         # Here's a list of regex to extract the expiration date part of the
         # whois record
-        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}" "/${toMatch[5]}/{print $NC}" "/${toMatch[6]}/{print $NC}" "/${toMatch[7]}/{print $NC}" )
+        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}" "/${toMatch[5]}/{print $NC}" "/${toMatch[6]}/{print $NC}" "/${toMatch[7]}/{print $NC}" "/${toMatch[8]}/{print $NC}" )
         
         for i in ${!toMatch[*]}
         do
