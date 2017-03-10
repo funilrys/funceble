@@ -147,9 +147,15 @@ linkScript="https://github.com/funilrys/funceble"
 # @CalledBy getReferer
 ################################################################################
 beforeHeader(){
-    printf "# File generated with %s\n" "${linkScript}"
-    printf "# Date of generation: %s\n" "$(date)"
-    printf "\n"
+    # We get the file we're gonna print into
+    local file="${1}"
+    
+    if [[ ! -f "${file}" ]]
+    then
+        printf "# File generated with %s\n" "${linkScript}" > ${file}
+        printf "# Date of generation: %s\n" "$(date)" >> ${file}
+        printf "\n" >> ${file}
+    fi
 }
 
 ############################### Print Header ###################################
@@ -243,17 +249,11 @@ generateHostsFile()
         if [[ ${type} == 'DeadOrDown' ]]
         then
             # We print / create the DeadOrDown file
-            if [[ ! -f ${outputDeadOrDownHost} ]]
-            then
-                beforeHeader > ${outputDeadOrDownHost}
-            fi
+            beforeHeader ${outputDeadOrDownHost}
             prints 'FullHosts' "${domain}" >> ${outputDeadOrDownHost}
         else
             # We print / create the host file
-            if [[ ! -f ${outputHost} ]]
-            then
-                beforeHeader > ${outputHost}
-            fi
+            beforeHeader ${outputHost}
             prints 'FullHosts' "${domain}" >> ${outputHost}
         fi
     fi
@@ -285,19 +285,13 @@ generateUnifiedFile()
         if [[ ${outputLess} == true ]]
         then
             # We create header into and in between, create the file
-            if [[ ! -f ${outputUnifiedResult} ]]
-            then
-                beforeHeader > ${outputUnifiedResult}
-            fi
+            beforeHeader ${outputUnifiedResult}
             printHeader "Less" >> ${outputUnifiedResult}
             # We save the domain and his data to the unified file
             prints "Less" "${domain}" "${status}" "${type}" >> ${outputUnifiedResult}
         else
             # We create header into and in between, create the file
-            if [[ ! -f ${outputUnifiedResult} ]]
-            then
-                beforeHeader > ${outputUnifiedResult}
-            fi
+            beforeHeader ${outputUnifiedResult}
             printHeader "Generic" >> ${outputUnifiedResult}
             # We save the domain and his data to the unified file
             prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
@@ -334,19 +328,13 @@ generateInvalidFile()
             if [[ ${outputLess} == true ]]
             then
                 # We create header into and in between, create the file
-                if [[ ! -f ${outputInvalidResult} ]]
-                then
-                    beforeHeader > ${outputInvalidResult}
-                fi
+                beforeHeader ${outputInvalidResult}
                 printHeader "Less"  >> ${outputInvalidResult}
                 # We save the domain and his data
                 prints "${domain}" "${invalidStatus}" "${type}"  >> ${outputInvalidResult}
             else
                 # We create header into and in between, create the file
-                if [[ ! -f ${outputInvalidResult} ]]
-                then
-                    beforeHeader > ${outputInvalidResult}
-                fi
+                beforeHeader ${outputInvalidResult}
                 printHeader 'Invalid' >> ${outputInvalidResult}
                 # We save the domain and his data
                 prints "Invalid" "${domain}" "${type}" >> ${outputInvalidResult}
@@ -386,10 +374,7 @@ generateErrorFile()
             prints "Error" "${domain}" "${referer}" "${type}" >> ${outputErrorResult}
         else
             # We create header into and in between, create the file
-            if [[ ! -f ${outputErrorResult} ]]
-            then
-                beforeHeader > ${outputErrorResult}
-            fi
+            beforeHeader ${outputErrorResult}
             printHeader "Error" >> ${outputErrorResult}
             # We save the domain and his data
             prints "Error"  "${domain}" "${referer}" "${type}" >> ${outputErrorResult}
@@ -452,19 +437,13 @@ generateValidFile(){
             if [[ ${outputLess} == true ]]
             then
                 # We create a file and add header
-                if [[ ! -f ${outputValidResult} ]]
-                then
-                    beforeHeader > ${outputValidResult}
-                fi
+                beforeHeader ${outputValidResult}
                 printHeader "Less"  >> ${outputValidResult}
                 # We add domain and its data to file
                 prints "Less" "${domain}" "${validStatus}" "${type}"  >> ${outputValidResult}
             else
                 # We create a file and add header
-                if [[ ! -f ${outputValidResult} ]]
-                then
-                    beforeHeader > ${outputValidResult}
-                fi
+                beforeHeader ${outputValidResult}
                 printHeader 'Valid' >> ${outputValidResult}
                 
                 # We add domain and its data to file
