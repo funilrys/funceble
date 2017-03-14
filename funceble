@@ -131,6 +131,21 @@ showExecutionTime=false
 
 # Link to script
 linkScript="https://github.com/funilrys/funceble"
+
+# Show/hide percentage
+showPercentage=false
+
+# Number of domain tested
+numberOfTested=0
+
+# Number of active
+numberOfActive=0
+
+# Number of domain which returns inactive
+numberOfInactive=0
+
+# Number of domain which returns invalid
+numberOfInvalid=0
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
@@ -192,6 +207,11 @@ printHeader()
         # Generation of header
         printf "\n%-100s %-11s %-10s\n" "Domain" "Status" "Source"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
+    elif [[ ${type} == 'Percentage' ]]
+    then
+        # Generation of header
+        printf "\n%-11s %-11s\n" "Status" "Percentage"
+        echo "----------- ------------"
     fi
 }
 
@@ -231,6 +251,17 @@ prints()
     then
         # Print data
         printf "%-100s %-11s %-10s\n" "${2}" "${3}" "${4}"
+    elif [[ ${type} == 'Percentage' ]]
+    then
+        # We calcul the results
+        percentage 'result' 'act'
+        percentage 'result' 'ina'
+        percentage 'result' 'inv'
+        
+        # We print data
+        printf "%-11s %-11s\n"  "ACTIVE" "${percentageOfActive}%"
+        printf "%-11s %-11s\n"  "INACTIVE" "${percentageOfInactive}%"
+        printf "%-11s %-11s\n"  "INVALID" "${percentageOfInvalid}%"
     fi
 }
 
@@ -249,10 +280,12 @@ generateHostsFile()
         if [[ ${type} == 'DeadOrDown' ]]
         then
             # We print / create the DeadOrDown file
+            ((numberOfInactive=${numberOfInactive}+1))
             beforeHeader ${outputDeadOrDownHost}
             prints 'FullHosts' "${domain}" >> ${outputDeadOrDownHost}
         else
             # We print / create the host file
+            ((numberOfTested=${numberOfTested}+1))
             beforeHeader ${outputHost}
             prints 'FullHosts' "${domain}" >> ${outputHost}
         fi
@@ -311,6 +344,7 @@ generateInvalidFile()
     
     # We generate the host file
     generateHostsFile 'DeadOrDown'
+    percentage 'counter' 'inv'
     
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
@@ -359,6 +393,8 @@ generateErrorFile()
     
     # We generate the host file
     generateHostsFile 'DeadOrDown'
+    
+    percentage 'counter' 'ina'
     
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
@@ -419,6 +455,8 @@ generateValidFile(){
     
     # we generate the host file
     generateHostsFile 'Funilrys'
+    
+    percentage 'counter' 'act'
     
     # We execute this only if ${noFiles} == false
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
@@ -978,6 +1016,61 @@ endExecutionTime()
     fi
 }
 
+################################# Percentage ###################################
+# Used to increment the number of tested and number of inactive/invalid
+# In between it's calculate the percentage
+#
+# @CalledBy main
+################################################################################
+percentage()
+{
+    # We get type of the operation to do
+    local type="${1}"
+    # And the information to calculate (ina/inv)
+    local status="${2}"
+    
+    if [[ ${showPercentage} == true ]]
+    then
+        # We increment the number of tested
+        
+        if [[ ${type} == 'counter' && ${status} == 'ina' ]]
+        then
+            # We increment the number of inactive
+            ((numberOfTested=${numberOfTested}+1))
+            ((numberOfInactive=${numberOfInactive}+1))
+        elif [[ ${type} == 'counter' && ${status} == 'inv' ]]
+        then
+            # We increment the number of invalid
+            ((numberOfTested=${numberOfTested}+1))
+            ((numberOfInvalid=${numberOfInvalid}+1))
+        elif [[ ${type} == 'counter' && ${status} == 'act' ]]
+        then
+            # We increment the number of active
+            ((numberOfTested=${numberOfTested}+1))
+            ((numberOfActive=${numberOfActive}+1))
+        elif [[ ${type} == 'result' && ${status} == 'ina' ]]
+        then
+            # We calculate the percentage of inactive
+            ((percentageOfInactive=${numberOfInactive}*100/${numberOfTested}))
+        elif [[ ${type} == 'result' && ${status} == 'inv' ]]
+        then
+            # We calculate the percentage of invalid
+            ((percentageOfInvalid=${numberOfInvalid}*100/${numberOfTested}))
+        elif [[ ${type} == 'result' && ${status} == 'act' ]]
+        then
+            # We calculate the percentage of active
+            ((percentageOfActive=${numberOfActive}*100/${numberOfTested}))
+        fi
+        
+        if [[ ${type} == 'results' ]]
+        then
+            # We calculate the sum of
+            # ${percentageOfInvalid} && ${percentageOfInactive}
+            ((percentageOfInvaIna=${percentageOfInvalid}+${percentageOfInactive}))
+        fi
+    fi
+}
+
 ################################## Main ########################################
 # Main function used to call other function
 #
@@ -1049,6 +1142,13 @@ main()
         usage
     fi
     endExecutionTime
+    
+    if [[ ${showPercentage} == true ]]
+    then
+        # We print on screen the percentage and its header
+        printHeader 'Percentage'
+        prints 'Percentage'
+    fi
 }
 
 ################################## Usage #######################################
@@ -1058,7 +1158,7 @@ main()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]"
+    echo "Usage: ${0} [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ --split ]"
     echo ""
     echo "       {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}"
     echo ""
@@ -1070,6 +1170,7 @@ usage()
     echo "                             -ip             Change the ip to print in host file (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --host                     -h              Activate the generation of host (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --percentage               -p              Show the percentage of the results (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --noFiles                  -n              Deactivate the production of output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --split                                    Split output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo ""
@@ -1148,6 +1249,11 @@ else
             -n|--noFiles)
                 noFiles=true
                 quiet=false
+                shift 1
+            ;;
+            # We catch if have to show or hide the percentages
+            -p|--percentage)
+                showPercentage=true
                 shift 1
             ;;
             # Activation of quiet system
