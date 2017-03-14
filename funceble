@@ -96,6 +96,9 @@ invalidHostsDir=${hostsDir}INVALID/
 # Output of log
 logOutput=${outputDir}'logs/'
 
+# Whois output
+whoisLogOutput=${logOutput}whois
+
 # Output of execution Time log
 executionLog=${logOutput}execution.log
 
@@ -182,7 +185,7 @@ numberOfInvalid=0
 beforeHeader(){
     # We get the file we're gonna print into
     local file="${1}"
-
+    
     if [[ ! -f "${file}" ]]
     then
         printf "# File generated with %s\n" "${linkScript}" > ${file}
@@ -199,7 +202,7 @@ printHeader()
 {
     # type <string>
     local type=${1}
-
+    
     if [[ ${type} == 'Invalid' ]]
     then
         # Generation of header for invalid.txt
@@ -242,9 +245,9 @@ prints()
 {
     # type <string>
     local type=${1}
-
+    
     local dateAn=$(date)
-
+    
     if [[ ${type} == 'Invalid' ]]
     then
         # Print data for invalid.txt
@@ -275,7 +278,7 @@ prints()
         percentage 'result' 'act'
         percentage 'result' 'ina'
         percentage 'result' 'inv'
-
+        
         # We print data
         printf "%-11s %-11s\n"  "ACTIVE" "${percentageOfActive}%"
         printf "%-11s %-11s\n"  "INACTIVE" "${percentageOfInactive}%"
@@ -292,7 +295,7 @@ generateHostsFile()
 {
     # type <string>
     local type=${1}
-
+    
     if [[ ${generateHosts} == true ]]
     then
         if [[ ${type} == 'inactive' ]]
@@ -328,7 +331,7 @@ generateUnifiedFile()
     local type=${1}
     # status <string>
     local status=${2}
-
+    
     if [[ -f ${outputUnifiedResult} ]]
     then
         if [[ ${outputLess} == true ]]
@@ -366,11 +369,11 @@ generateInvalidFile()
 {
     # type <string>
     local type=${1}
-
+    
     # We generate the host file
     generateHostsFile 'invalid'
     percentage 'counter' 'inv'
-
+    
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
         if [[ -f ${outputInvalidResult} ]]
@@ -415,12 +418,12 @@ generateErrorFile()
 {
     # type <string>
     local type=${1}
-
+    
     # We generate the host file
     generateHostsFile 'inactive'
-
+    
     percentage 'counter' 'ina'
-
+    
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
         if [[ ${referer} == '' ]]
@@ -428,7 +431,7 @@ generateErrorFile()
             # We assign "Not Found" to prevent empty column in files
             referer='Not Found'
         fi
-
+        
         if [[ -f ${outputErrorResult} ]]
         then
             # We save the domain and his data
@@ -458,13 +461,13 @@ generateValidFile(){
     local exp=${1}
     # type <string>
     local type=${2}
-
+    
     # If empty, we change the data of ${exp}
     if [[ ${exp} == '' ]]
     then
         exp='Unknown'
     fi
-
+    
     # If ${quiet} != false, we don't print anything
     if [[ ${quiet} == false ]]
     then
@@ -477,12 +480,12 @@ generateValidFile(){
             prints "Generic" "${domain}" "${validStatus}" "${exp}" "${type}"
         fi
     fi
-
+    
     # we generate the host file
     generateHostsFile 'active'
-
+    
     percentage 'counter' 'act'
-
+    
     # We execute this only if ${noFiles} == false
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
@@ -508,7 +511,7 @@ generateValidFile(){
                 # We create a file and add header
                 beforeHeader ${outputValidResult}
                 printHeader 'Valid' >> ${outputValidResult}
-
+                
                 # We add domain and its data to file
                 prints "Valid" "${domain}" "${exp}" "${type}" >> ${outputValidResult}
             fi
@@ -532,14 +535,14 @@ errorHandle()
     local type=${1}
     # We create a variable to catch the case that domain don't pass lslookup
     local issueStatus=''
-
+    
     # We set the current type
     sourceType="NSLOOKUP"
-
+    
     # We save output of nslookup
     local lookup=$(nslookup ${domain})
     regexNxDomain='NXDOMAIN'
-
+    
     if [[ ${lookup} =~ ${regexNxDomain} ]]
     then
         # If domain is down
@@ -550,23 +553,23 @@ errorHandle()
         generateValidFile "Unknown" "${sourceType}"
         return 1
     fi
-
+    
     if [[ ${type} == 'Invalid' &&  ${issueStatus} == 'Unknown' ]]
     then
         # We assign the status
         local status="${invalidStatus}"
-
+        
         # We generate the invalid/unified file
         generateInvalidFile "${sourceType}"
     elif [[  ${issueStatus} == 'Unknown' && ${type} == 'Error' || ${type} != 'Invalid' || ${type} != 'Valid' ]]
     then
         # We assign the status
         local status="${errorStatus}"
-
+        
         # We generate the error/unified file
         generateErrorFile "${sourceType}"
     fi
-
+    
     # If quiet != false, we don't print anything
     if [[ ${quiet} == false ]]
     then
@@ -589,19 +592,19 @@ errorHandle()
 getReferer(){
     # initialDomain <string>
     initialDomain=${1}
-
+    
     # We get the extension of the given domain
     domainExtension=${initialDomain##*.}
     # We get the list of allowed extensions
     validExtension=$(cat ${ianaDB})
-
+    
     # We check if the given domain extension is in our database file
     if [[ ${validExtension} =~ ${domainExtension} ]]
     then
         # We initiate this variable in order to know if ${domainExtension} pass
         # The cases
         notSupported=true
-
+        
         # Special cases domains which don't have their whois server
         # registered to IANA.
         # cf. https://github.com/funilrys/funceble/issues?q=is%3Aissue+Not+Found+is%3Aclosed
@@ -634,30 +637,30 @@ getReferer(){
                 notSupported=false
             ;;
         esac
-
+        
         if [[ ${notSupported} == true ]]
         then
             # We get the host to call.
             # If extension have a host assigned, it's written if format
             # refer: whois.hello.world for example
             referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
-
+            
             # regex to pass to have a valid referer
             regexWhois='(.*)whois(.*)'
-
+            
             # We check if the format is valid
             if [[ ${referer} =~ ${regexWhois} ]]
             then
                 # We can now use the domain
                 domain=${initialDomain}
-
+                
                 # The Following is used to stop the execution of getExpirationDate
                 # in case the domain is not valid.
                 notSupported=false
             else
                 # We empty the referer variable
                 referer=''
-
+                
                 # We handle error & check if server is up
                 errorHandle 'Error'
             fi
@@ -666,6 +669,18 @@ getReferer(){
         # We handle error & check if server is up
         errorHandle 'Invalid'
     fi
+}
+
+################################## Whois Log ###################################
+# Used to generate the logs
+#
+# @CalledBy None
+################################################################################
+whoisLog(){
+    # We save the output of whois into log directory
+    printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
+    cat ${whoIs} >> ${whoisLogOutput}${referer}
+    printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
 }
 
 ####################### Get (Domain) Expiration Date ###########################
@@ -677,10 +692,10 @@ getExpirationDate(){
     # domain <string>
     # Domain given by user
     domain=${1}
-
+    
     # We get the whois server referenced for the given domain
     getReferer ${domain}
-
+    
     # Ensure that it's supported and not empty
     if [[ ${notSupported} == false && ${domain} != "" && ${referer} != "" ]]
     then
@@ -689,32 +704,32 @@ getExpirationDate(){
         whois -h ${referer} "${domain}" > ${whoIs}
         # We get the content of the previously saved file
         local content=$(cat ${whoIs})
-
+        
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
         local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:')
-
+        
         # Here's a list of regex to extract the expiration date part of the
         # whois record
         local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}" "/${toMatch[5]}/{print $NC}" "/${toMatch[6]}/{print $NC}" "/${toMatch[7]}/{print $NC}" "/${toMatch[8]}/{print $NC}" "/${toMatch[9]}/{print $NC}" )
-
+        
         for i in ${!toMatch[*]}
         do
             if [[ ${content} =~ ${toMatch[${i}]} ]]
             then
                 # We get the expiration date
                 expirationDate=$(cat ${whoIs} | awk "${ifMatched[${i}]}")
-
+                
                 # Regex to pass in order to be reconized as a date
                 regexNumber='[0-9]'
                 if [[ ${expirationDate} =~ ${regexNumber} ]]
                 then
                     # If it contain numbers, we format it
                     formatDate
-
+                    
                     # We set the current type
                     sourceType="WHOIS"
-
+                    
                     # We generate valid/unified file
                     generateValidFile "${expirationDate}" "${sourceType}"
                     return 1
@@ -725,18 +740,17 @@ getExpirationDate(){
                     # In case this happen please report issue to
                     # https://github.com/funilrys/funceble/issues/new
                     # So it can be fixed for everyone who use this script
-                    printf "=%.0s" {1..100} >> ${logOutput}${referer}
-                    cat ${whoIs} >> ${logOutput}${referer}
-                    printf "=%.0s" {1..100} >> ${logOutput}${referer}
+                    #
+                    # You can find the logs under output/logs/whois/
+                    # or with the command `ls output/logs/whois/*`
+                    whoisLog
                 fi
             elif [[ ${i} == $(( ${#toMatch[@]} - 1)) ]]
             then
                 if [[ ${debugUnknown} == true ]]
                 then
-                    # We save the file
-                    printf "=%.0s" {1..100} >> ${logOutput}${referer}
-                    cat ${whoIs} >> ${logOutput}${referer}
-                    printf "=%.0s" {1..100} >> ${logOutput}${referer}
+                    # generate whois log file
+                    whoisLog
                 fi
                 # We handle error & check if server is up
                 errorHandle 'Error'
@@ -761,7 +775,7 @@ dateToLower(){
 ################################################################################
 getMonthInEnglish(){
     local numericMonth=${1}
-
+    
     case ${numericMonth} in
         1|01)
             month='jan'
@@ -866,13 +880,13 @@ splitComposeDateWithOnlyDigits(){
         local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c4)
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c2)
         local month=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4 | head -c2)
-
+        
         # We convert the day
         convertDayTo2digits ${day}
-
+        
         # We convert the month
         getMonthInEnglish ${month}
-
+        
         # We assign the expiration date
         expirationDate=${day}'-'${month}-${year}
     fi
@@ -895,97 +909,97 @@ formatDate()
     local regexExpires='expires:'
     local regexExpyDate='Expiry Date:'
     local regexRenDate='renewal date:'
-
+    
     if [[ ${expirationDate} =~ ${regexDomExpDate} ]]
     then
         # We split the date
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  head -c2)
         local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' |  tail -c4)
         local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | tail -c6 | head -c3)
-
+        
         # We convert the day
         convertDayTo2digits "${day}"
-
+        
         # We assign the expiration date
         expirationDate=${day}'-'${month}'-'${year}
-
+        
         # We convert it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ ${regexExpires} || ${expirationDate} =~ ${regexRenDate} ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
-
+        
         # In case ${expirationDate} contain space
         if [[ ${expirationDate} =~  ${regexSpace} ]]
         then
             expirationDate=$(echo "${expirationDate}" | tail -c14 | head -c10)
         fi
-
+        
         # We split, Compose date with only digits. e.g -> 17-11-2017
         splitComposeDateWithOnlyDigits
-
+        
         # We convrt it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ ${regexExpDate} || ${expirationDate} =~ regexExpOn ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
-
+        
         # In case ${expirationDate} contain space
         if [[ ${expirationDate} =~  ${regexSpace} ]]
         then
             expirationDate=$(echo "${expirationDate}" | head -c12 | sed -e 's/^[[:space:]]*//')
         fi
-
+        
         # We split, Compose date with only digits. e.g -> 17-11-2017
         splitComposeDateWithOnlyDigits
-
+        
         # We convrt it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ regexExp ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
-
+        
         if [[ ${expirationDate} =~  ${regexSpace} ]]
         then
             # We get the final date
             expirationDate=$(echo "${expirationDate}" | tail -c12)
         fi
-
+        
         # We convrt it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ ${regexSpace} ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2 | cut -d 'T' -f1)
-
+        
         if [[ ${expirationDate} =~  ( |\') ]]
         then
             # We get the final date
             expirationDate=$(echo "${expirationDate}" |tail -c11)
         fi
-
+        
         # We split, Compose date with only digits. e.g -> 17-11-2017
         splitComposeDateWithOnlyDigits
-
+        
         # We convrt it to lower case
         dateToLower
     elif [[ ${expirationDate} =~ ${regexFreDate} ]]
     then
         # We split the string to get the date
         expirationDate=$(echo "${expirationDate}" | cut -d ':' -f2)
-
+        
         if [[ ${expirationDate} =~  ${regexSpace} ]]
         then
             # We get the final date
             expirationDate=$(echo "${expirationDate}" |tail -c11)
         fi
-
+        
         # We split, Compose date with only digits. e.g -> 17-11-2017
         splitComposeDateWithOnlyDigits
-
+        
         # We convrt it to lower case
         dateToLower
     fi
@@ -1017,24 +1031,24 @@ startExecutionTime()
 ################################################################################
 endExecutionTime()
 {
-
+    
     if [[ ${showExecutionTime} == true ]]
     then
         # We get execution end time
         executionEnd=$(date +%s)
         # We log end time
         printf "End: %s\n" "${executionEnd}" >> ${executionLog}
-
+        
         # We get the difference between end and start
         timeDifference=$(( ${executionEnd} - ${executionStart} ))
-
+        
         # We get the hours
         ((hours=${timeDifference}/3600))
         # We get the minutes
         ((minutes=(${timeDifference}%3600)/60))
         # We get the seconds
         ((seconds=${timeDifference}%60))
-
+        
         # We display + log message
         printf "\n${magenta}Execution Time:${normal}\n" && printf "Execution Time:" >> ${executionLog}
         printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} && printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} >> ${executionLog}
@@ -1053,11 +1067,11 @@ percentage()
     local type="${1}"
     # And the information to calculate (ina/inv)
     local status="${2}"
-
+    
     if [[ ${showPercentage} == true ]]
     then
         # We increment the number of tested
-
+        
         if [[ ${type} == 'counter' && ${status} == 'ina' ]]
         then
             # We increment the number of inactive
@@ -1086,7 +1100,7 @@ percentage()
             # We calculate the percentage of active
             ((percentageOfActive=${numberOfActive}*100/${numberOfTested}))
         fi
-
+        
         if [[ ${type} == 'results' ]]
         then
             # We calculate the sum of
@@ -1109,7 +1123,7 @@ checkHostsFiles()
         # We check files and assign date into a variable
         currentDate=$(date)
         fileNameDate=_${currentDate// /_}
-
+        
         # We append the date to the default values
         outputActiveHost=${outputActiveHost}${fileNameDate}
         outputInvalidHost=${outputInvalidHost}${fileNameDate}
@@ -1128,7 +1142,7 @@ main()
     domain=${1}
     # We get the file
     file=${2}
-
+    
     if [[ "${domain}" != "" ]]
     then
         # We only print message if ${quiet} == false
@@ -1141,7 +1155,7 @@ main()
                 printHeader "Generic"
             fi
         fi
-
+        
         # We execute the getExpirationDate function
         getExpirationDate "${domain}"
     elif [[ ${file} != "" ]]
@@ -1158,7 +1172,7 @@ main()
                     printHeader "Generic"
                 fi
             fi
-
+            
             # We read the list of the file and pass the domain (1 line = 1 domain)
             # to getExpirationDate
             while read domain
@@ -1173,7 +1187,7 @@ main()
                         domain=$(echo "${domain}"|cut -d ' ' -f2)
                     ;;
                 esac
-
+                
                 # We get the expiration date and check status in between
                 getExpirationDate "${domain}"
             done < ${file}
@@ -1187,7 +1201,7 @@ main()
         usage
     fi
     endExecutionTime
-
+    
     if [[ ${showPercentage} == true ]]
     then
         # We print on screen the percentage and its header
@@ -1307,7 +1321,7 @@ else
                 noFiles=false
                 shift 1
             ;;
-
+            
             # We split the result into different file
             --split)
                 splitFiles=true
