@@ -231,8 +231,8 @@ printHeader()
     elif [[ ${type} == 'Percentage' ]]
     then
         # Generation of header
-        printf "\n%-11s %-11s\n" "Status" "Percentage"
-        echo "----------- ------------"
+        printf "\n%-11s %-12s %-12s\n" "Status" "Percentage" "Numbers"
+        echo "----------- ------------ -------------"
     fi
 }
 
@@ -280,9 +280,9 @@ prints()
         percentage 'result' 'inv'
         
         # We print data
-        printf "%-11s %-11s\n"  "ACTIVE" "${percentageOfActive}%"
-        printf "%-11s %-11s\n"  "INACTIVE" "${percentageOfInactive}%"
-        printf "%-11s %-11s\n"  "INVALID" "${percentageOfInvalid}%"
+        printf "%-11s %-12s %-12s\n"  "ACTIVE" "${percentageOfActive}%" "${numberOfActive}"
+        printf "%-11s %-12s %-12s\n"  "INACTIVE" "${percentageOfInactive}%" "${numberOfInactive}"
+        printf "%-11s %-12s %-12s\n"  "INVALID" "${percentageOfInvalid}%" "${numberOfInvalid}"
     fi
 }
 
@@ -301,13 +301,11 @@ generateHostsFile()
         if [[ ${type} == 'inactive' ]]
         then
             # We print / create the inactive file
-            ((numberOfInactive=${numberOfInactive}+1))
             beforeHeader ${outputInactiveHost}
             prints 'FullHosts' "${domain}" >> ${outputInactiveHost}
         elif [[ ${type} == 'active' ]]
         then
             # We print / create active file
-            ((numberOfTested=${numberOfTested}+1))
             beforeHeader ${outputActiveHost}
             prints 'FullHosts' "${domain}" >> ${outputActiveHost}
         elif [[ ${type} == 'invalid' ]]
