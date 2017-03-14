@@ -674,7 +674,7 @@ getReferer(){
 ################################## Whois Log ###################################
 # Used to generate the logs
 #
-# @CalledBy None
+# @CalledBy getExpirationDate
 ################################################################################
 whoisLog(){
     # We save the output of whois into log directory
