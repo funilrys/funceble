@@ -97,7 +97,7 @@ invalidHostsDir=${hostsDir}INVALID/
 logOutput=${outputDir}'logs/'
 
 # Whois output
-whoisLogOutput=${logOutput}whois
+whoisLogOutput=${logOutput}whois/
 
 # Output of execution Time log
 executionLog=${logOutput}execution.log
