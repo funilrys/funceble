@@ -678,9 +678,9 @@ getReferer(){
 ################################################################################
 whoisLog(){
     # We save the output of whois into log directory
-    printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
+    printf "=%.0s\n" {1..100} >> ${whoisLogOutput}${referer}
     cat ${whoIs} >> ${whoisLogOutput}${referer}
-    printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
+    printf "=%.0s\n" {1..100} >> ${whoisLogOutput}${referer}
 }
 
 ####################### Get (Domain) Expiration Date ###########################
