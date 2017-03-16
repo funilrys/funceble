@@ -2,7 +2,7 @@
 
 A script to check domains or IP accessibilities.
 
-The main idea was to create a script that can **check if domain** or a **list of domains** are/is **ACTIVE** or **INACTIVE**. And, in between, **create a hosts file** base on the results.
+The main idea was to create a script that can **check if domain** or a **list of domains** are/is **ACTIVE** or **INACTIVE**. And, in between, **create a hosts file** based on the results.
 
 For all issues/bugs and others, please report [here](https://github.com/funilrys/funceble/issues/new).
 
@@ -11,7 +11,7 @@ Current Version: **1.1.0**
 ## Usage
 
 ```sh
-Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --split ]
+Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ --split ]
 
        {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}
 
@@ -23,6 +23,7 @@ Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ --spl
                              -ip             Change the ip to print in host file (Must be before -d or -f)
   --host                     -h              Activate the generation of host (Must be before -d or -f)
   --quiet                    -q              Activate quiet mode (Must be before -d or -f)
+  --percentage               -p              Show the percentage of the results (Must be before -d or -f)
   --noFiles                  -n              Deactivate the production of output files (Must be before -d or -f)
   --split                                    Split output files (Must be before -d or -f)
 ```
