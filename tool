@@ -66,24 +66,24 @@ checkVersion()
 {
     # We get the type
     type="${1}"
-
+    
     if [[ ${type} == 'get' ]]
     then
         # We download the script
         curl -s ${onlineScript} -o ${currentDir}funilrys
         # we give execution permission
         chmod +x ${currentDir}funilrys
-
+        
         # We secretly execute a silent installation in the downloaded
         # script
         installation "${currentDir}funilrys" true
     fi
-
+    
     # We get the sha512sum of the downloaded script
     local copiedVersion=$(sha512sum ${currentDir}funilrys|cut -d ' ' -f1)
     # We get the sha512sum of the already exist script
     local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
-
+    
     # We compare the versions
     if [[ ${currentVersion} == ${copiedVersion} ]]
     then
@@ -104,12 +104,12 @@ downloadScript()
 {
     # We log && print message
     printf "Download of the script" &&  printf "Download of the script" >> ${logOutput}
-
+    
     # We check internet connection
     # If no internet connections are possible, we stop this script and
     # return a message error
     wget -q --tries=10 --timeout=20 --spider http://google.com
-
+    
     if [[ $? != 0 ]]; then
         # We log && print message
         printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
@@ -132,21 +132,21 @@ update()
 {
     # We get the online version and compare versions
     checkVersion 'get'
-
+    
     if [[ ${update} == true ]]
     then
         # We only need to execute if the versions are not the same
-
+        
         downloadScript
-
+        
         # We install the new script
         installation ${currentDir}${script} false
         # We log && print message
         printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
-
+        
         # We check the version of the newly downloaded script
         checkVersion
-
+        
         if [[ ${update} == false ]]
         then
             # If we don't need to update, here's the end
@@ -154,7 +154,7 @@ update()
             printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
             echo "${bold}${cyan}The update was successfully completed!${normal}"
             printf '\n'
-
+            
             # We delete the temporary file and stop the script
             rm -f "${currentDir}funilrys"
             exit 1
@@ -199,7 +199,7 @@ debug()
 scriptExist()
 {
     local fileToInstall="${1}"
-
+    
     # We log && print message
     if [[ ${quiet} == false ]]
     then
@@ -237,7 +237,7 @@ scriptReadable()
         # We log && print message
         printf "Script readable" && printf "Script readable" >> ${logOutput}
     fi
-
+    
     if [[ -r "${fileToInstall}" ]]
     then
         if [[ ${quiet} == false ]]
@@ -269,7 +269,7 @@ scriptExecutable()
         # We log && print message
         printf "Script executable" && printf "Script executable" >> ${logOutput}
     fi
-
+    
     if [[ -x "${fileToInstall}" ]]
     then
         if [[ ${quiet} == false ]]
@@ -345,7 +345,7 @@ whoisInstalled()
             printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
         fi
     fi
-
+    
 }
 
 ################################# sed Installed ################################
@@ -420,7 +420,7 @@ scriptsWorkDir()
         # We log && print message
         printf "\nInstallation of working directory" &&  printf "Installation of working directory" >> ${logOutput}
     fi
-
+    
     regex="outputDir='.*\/output\/'"
     if [[ ${scriptContent} =~ ${regex} ]]
     then
@@ -431,17 +431,17 @@ scriptsWorkDir()
         then
             printf "  ${cyan}✔${normal}\n \n" && printf "  ✔\n" >> ${logOutput}
         fi
-
+        
         # We activate the debug mode in the script
         debug
-
+        
         if [[ ${quiet} == false ]]
         then
             echo "${bold}${cyan}The installation was successfully completed!${normal}"
             echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
             printf '\n'
         fi
-
+        
     else
         if [[ ${quiet} == false ]]
         then
@@ -450,6 +450,36 @@ scriptsWorkDir()
             echo "Impossible to finalize installation."
         fi
         exit 0
+    fi
+}
+
+############################## curl Installed ##################################
+# We check if curl is installed
+#
+# @CalledBy installation
+################################################################################
+curlInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}curl${normal} installed" && printf "curl installed" >> ${logOutput}
+    fi
+    if [[ $(which curl 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Please make sure that curl is installed in your system"
+        fi
+        exit 0
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
     fi
 }
 
@@ -462,18 +492,19 @@ installation()
 {
     local fileToInstall="${1}"
     quiet="${2}"
-
+    
     # We check the script
     scriptExist "${fileToInstall}"
     scriptReadable "${fileToInstall}"
     scriptExecutable "${fileToInstall}"
-
+    
     # We check dependencies
     awkInstalled
-    whoisInstalled
+    curlInstalled
     sedInstalled
     sha512sumInstalled
-
+    whoisInstalled
+    
     # We finalize installation
     scriptsWorkDir
 }
