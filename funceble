@@ -1212,7 +1212,7 @@ if [[  ${outputDir} =~ ${regexCurrentDir} ]]
 then
     # We print the following to avoid the use of this script without
     # dependencies check
-    printf "${bold}${red}Please run the installation script first. \nYou can run it with: %s\n" "${cyan}${PWD}/installation${normal}"
+    printf "${bold}${red}Please run the installation script first. \nYou can run it with: %s\n" "${cyan}${PWD}/tool -i${normal}"
     exit 0
 else
     while [ "$#" -gt 0 ]; do
