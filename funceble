@@ -724,11 +724,11 @@ getExpirationDate(){
         
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
-        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:')
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:')
         
         # Here's a list of regex to extract the expiration date part of the
         # whois record
-        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}" "/${toMatch[5]}/{print $NC}" "/${toMatch[6]}/{print $NC}" "/${toMatch[7]}/{print $NC}" "/${toMatch[8]}/{print $NC}" "/${toMatch[9]}/{print $NC}" "/${toMatch[10]}/{print $NC}" )
+        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}" "/${toMatch[5]}/{print $NC}" "/${toMatch[6]}/{print $NC}" "/${toMatch[7]}/{print $NC}" "/${toMatch[8]}/{print $NC}" "/${toMatch[9]}/{print $NC}" "/${toMatch[10]}/{print $NC}" "/${toMatch[11]}/{print $NC}" )
         
         for i in ${!toMatch[*]}
         do
@@ -737,6 +737,7 @@ getExpirationDate(){
                 # We get the expiration date
                 expirationDate=$(cat ${whoIs} | awk "${ifMatched[${i}]}")
                 expirationDate=${expirationDate#*:}
+                expirationDate=$(echo -e "${expirationDate}" | sed -e 's/^[[:space:]]*//')
                 
                 # Regex to pass in order to be reconized as a date
                 regexNumber='[0-9]'
@@ -887,6 +888,8 @@ formatDate()
     local regex20='[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}$'
     # Date in format: 2017-01-02T23:59:59.0Z // Month: jan
     local regex21='[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9].*[A-Z]'
+    # Date in format: 02-01-2017
+    local regex22='[0-9]{2}-[0-9]{2}-[0-9]{4}'
     
     if [[ "${expirationDate}" =~ ${regex1} || "${expirationDate}" =~ ${regex11} ]]
     then
@@ -924,7 +927,7 @@ formatDate()
         
         # We assign the expiration date
         expirationDate=${day}'-'${month}'-'${year}
-    elif [[ "${expirationDate}" =~ ${regex10} ]]
+    elif [[ "${expirationDate}" =~ ${regex10} || "${expirationDate}" =~ ${regex22} ]]
     then
         # We split the date
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c2)
