@@ -90,6 +90,7 @@ checkVersion()
         # If the same == no need to update
         update=false
     else
+        curlInstalled
         # If they are not the same == we need to update
         update=true
     fi
@@ -103,7 +104,7 @@ checkVersion()
 downloadScript()
 {
     # We log && print message
-    printf "Download of the script" &&  printf "Download of the script" >> ${logOutput}
+    printf "\nDownload of the script" &&  printf "Download of the script" >> ${logOutput}
     
     # We check internet connection
     # If no internet connections are possible, we stop this script and
