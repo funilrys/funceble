@@ -41,6 +41,7 @@ logOutput='output/logs/install.log'
 outputDir="outputDir='${currentDir}output/'"
 ################################################################################
 ############################## Default Values ##################################
+debug=false
 # The file name of the script
 script='funceble'
 
@@ -135,11 +136,8 @@ debug()
     then
         # Option if we want to debug
         regexDebug='debugUnknown=false'
-        if [[ "${1}" == 'debug' ]]
-        then
-            replaceBy="debugUnknown=true"
-            sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
-        fi
+        replaceBy="debugUnknown=true"
+        sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
     fi
 }
 
