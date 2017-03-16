@@ -726,16 +726,12 @@ getExpirationDate(){
         # expiration date from the whois record of domain
         local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:')
         
-        # Here's a list of regex to extract the expiration date part of the
-        # whois record
-        local ifMatched=("/${toMatch[0]}/{print $NC}" "/${toMatch[1]}/{print $NC}" "/${toMatch[2]}/{print $NC}" "/${toMatch[3]}/{print $NC}" "/${toMatch[4]}/{print $NC}" "/${toMatch[5]}/{print $NC}" "/${toMatch[6]}/{print $NC}" "/${toMatch[7]}/{print $NC}" "/${toMatch[8]}/{print $NC}" "/${toMatch[9]}/{print $NC}" "/${toMatch[10]}/{print $NC}" "/${toMatch[11]}/{print $NC}" )
-        
         for i in ${!toMatch[*]}
         do
             if [[ ${content} =~ ${toMatch[${i}]} ]]
             then
                 # We get the expiration date
-                expirationDate=$(cat ${whoIs} | awk "${ifMatched[${i}]}")
+                expirationDate=$(cat ${whoIs} | awk "/${toMatch[${i}]}/{print $NC}")
                 expirationDate=${expirationDate#*:}
                 expirationDate=$(echo -e "${expirationDate}" | sed -e 's/^[[:space:]]*//')
                 
