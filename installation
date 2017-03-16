@@ -15,8 +15,14 @@
 # Red Color
 red=$(tput setaf 1)
 
+# White Color
+white=$(tput setaf 7)
+
 # Cyan Color
 cyan=$(tput setaf 6)
+
+# Magenta Color
+magenta=$(tput setaf 5)
 
 # Bold
 bold=$(tput bold)
@@ -24,18 +30,31 @@ bold=$(tput bold)
 # Disable formating
 normal=$(tput sgr0)
 ################################################################################
-############################## Default Values ##################################
+################################## Outputs #####################################
 # We get the current dir we're working on
 currentDir=${PWD}'/'
 
 # Output of log
 logOutput='output/logs/install.log'
 
+# New output directory
+outputDir="outputDir='${currentDir}output/'"
+################################################################################
+############################## Default Values ##################################
 # The file name of the script
 script='funceble'
 
-# New output directory
-outputDir="outputDir='${currentDir}output/'"
+# Script online versionFile
+onlineScript='https://raw.githubusercontent.com/funilrys/funceble/dev/funceble'
+
+# Link of online VERSION file
+onlineVersionLink='https://raw.githubusercontent.com/funilrys/funceble/dev/VERSION'
+
+# Online verison of the script
+onlineVersion="$(curl -s ${onlineVersionLink}|cut -d ' ' -f2)"
+
+# Quiet mode
+quiet=false
 
 # We get the content of the script
 scriptContent=$(cat ${currentDir}${script} 2> ${logOutput})
@@ -44,103 +63,479 @@ scriptContent=$(cat ${currentDir}${script} 2> ${logOutput})
 # We log the date
 date > ${logOutput}
 
-# We log && print message
-printf 'Script exist' && printf 'Script exist' >> ${logOutput}
-if [[ -f "${currentDir}${script}" ]]
-then
-    # We log && print message
-    printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-    printf "Script readable" && printf "Script readable" >> ${logOutput}
+################################ checkVersion ##################################
+# This part is where we check the version
+#
+# @CalledBy update
+################################################################################
+checkVersion()
+{
+    # We get the type
+    type="${1}"
     
-    if [[ -r "${currentDir}${script}" ]]
+    if [[ ${type} == 'get' ]]
     then
-        # We log && print message
-        printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-        printf "Script executable" && printf "Script executable" >> ${logOutput}
+        # We download the script
+        curl -s ${onlineScript} -o ${currentDir}funilrys
+        # we give execution permission
+        chmod +x ${currentDir}funilrys
         
-        if [[ -x "${currentDir}${script}" ]]
+        # We secretly execute a silent installation in the downloaded
+        # script
+        installation "${currentDir}funilrys" true
+    fi
+    
+    # We get the sha512sum of the downloaded script
+    local copiedVersion=$(sha512sum ${currentDir}funilrys|cut -d ' ' -f1)
+    # We get the sha512sum of the already exist script
+    local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
+    
+    # We compare the versions
+    if [[ ${currentVersion} == ${copiedVersion} ]]
+    then
+        # If the same == no need to update
+        update=false
+    else
+        # If they are not the same == we need to update
+        update=true
+    fi
+}
+
+################################## Download Script #############################
+# We download the script
+#
+# @CalledBy update
+################################################################################
+downloadScript()
+{
+    # We log && print message
+    printf "Download of the script" &&  printf "Download of the script" >> ${logOutput}
+    
+    # We check internet connection
+    # If no internet connections are possible, we stop this script and
+    # return a message error
+    wget -q --tries=10 --timeout=20 --spider http://google.com
+    
+    if [[ $? != 0 ]]; then
+        # We log && print message
+        printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+        echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
+        exit 0
+    else
+        # We save the online script into the existing one
+        curl -s ${onlineScript} -o "${currentDir}${script}"
+        # We log && print message
+        printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
+    fi
+}
+
+################################## Update ######################################
+# This part is the brain of update
+#
+# @CalledBy Arguments Handle section
+################################################################################
+update()
+{
+    # We get the online version and compare versions
+    checkVersion 'get'
+    
+    if [[ ${update} == true ]]
+    then
+        # We only need to execute if the versions are not the same
+        
+        downloadScript
+        
+        # We install the new script
+        installation ${currentDir}${script} false
+        # We log && print message
+        printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
+        
+        # We check the version of the newly downloaded script
+        checkVersion
+        
+        if [[ ${update} == false ]]
         then
+            # If we don't need to update, here's the end
             # We log && print message
-            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-            printf "\n${bold}awk${normal} installed" && printf "awk installed" >> ${logOutput}
+            printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
+            echo "${bold}${cyan}The update was successfully completed!${normal}"
+            printf '\n'
             
-            if [[ $(which awk 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
-            then
-                # We log && print message
-                printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-                echo "Please make sure that awk is installed in your system"
-                exit 0
-            else
-                # We log && print message
-                printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-                printf "${bold}whois${normal} installed" && printf "whois installed" >> ${logOutput}
-                
-                if [[ $(which whois 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
-                then
-                    # We log && print message
-                    printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-                    echo "Please make sure that whois is installed in your system"
-                    exit 0
-                else
-                    # We log && print message
-                    printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-                    printf "${bold}sed${normal} installed" && printf "sed installed" >> ${logOutput}
-                    
-                    if [[ $(which whois 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
-                    then
-                        # We log && print message
-                        printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-                        echo "Please make sure that whois is installed in your system"
-                        exit 0
-                    else
-                        # We log && print message
-                        printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-                        printf "\nInstallation of working directory" &&  printf "Installation of working directory" >> ${logOutput}
-                        
-                        regex="outputDir='.*\/output\/'"
-                        
-                        if [[ ${scriptContent} =~ ${regex} ]]
-                        then
-                            # We replace with the current working directory an we print message
-                            sed -i "s|${regex}|${outputDir}|g" funceble
-                            printf "  ${cyan}✔${normal}\n \n" && printf "  ✔\n" >> ${logOutput}
-                            
-                            # Option if we want to debug
-                            regexDebug='debugUnknown=false'
-                            if [[ "${1}" == 'debug' ]]
-                            then
-                                replaceBy="debugUnknown=true"
-                                sed -i "s|${regexDebug}|${replaceBy}|g" funceble
-                            fi
-                            
-                            echo "${bold}${cyan}The installation was successfully completed!${normal}"
-                            echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
-                            printf '\n'
-                            exit 1
-                        else
-                            # We log && print message
-                            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-                            echo "Impossible to finalize installation."
-                            exit 0
-                        fi
-                    fi
-                fi
-            fi
+            # We delete the temporary file and stop the script
+            rm -f "${currentDir}funilrys"
+            exit 1
         else
             # We log && print message
             printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Please make sure that ${currentDir}${script} is executable. You can execute 'chmod +x ${currentDir}${script}' to make it executable" >> ${logOutput}
+            echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
             exit 0
         fi
     else
         # We log && print message
-        printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-        echo "Impossible to read ${currentDir}${script}" >> ${logOutput}
+        printf "No need to update.\n" &&  printf "No need to update." >> ${logOutput}
+        rm -f "${currentDir}funilrys"
+        exit 1
+    fi
+}
+
+################################## Debug #######################################
+# This part is the debug section
+#
+# @CalledBy scriptsWorkDir
+################################################################################
+debug()
+{
+    if [[ ${debug} == true ]]
+    then
+        # Option if we want to debug
+        regexDebug='debugUnknown=false'
+        if [[ "${1}" == 'debug' ]]
+        then
+            replaceBy="debugUnknown=true"
+            sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
+        fi
+    fi
+}
+
+################################## Script Exist ################################
+# We check if the script exist
+#
+# @CalledBy installation
+################################################################################
+scriptExist()
+{
+    local fileToInstall="${1}"
+    
+    # We log && print message
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf 'Script exist' && printf 'Script exist' >> ${logOutput}
+    fi
+    if [[ -f "${fileToInstall}" ]]
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "The file ${fileToInstall} is not found"
+        fi
         exit 0
     fi
-else
-    # We log && print message
-    printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-    echo "The file ${currentDir}${script} is not found"
-    exit 0
-fi
+}
+
+############################### Script Readable ################################
+# We check if the script is readable
+#
+# @CalledBy installation
+################################################################################
+scriptReadable()
+{
+    local fileToInstall="${1}"
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "Script readable" && printf "Script readable" >> ${logOutput}
+    fi
+    
+    if [[ -r "${fileToInstall}" ]]
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Impossible to read ${fileToInstall}" >> ${logOutput}
+        fi
+        exit 0
+    fi
+}
+
+############################# Script Executable ################################
+# We check if the script is executable
+#
+# @CalledBy installation
+################################################################################
+scriptExecutable()
+{
+    local fileToInstall="${1}"
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "Script executable" && printf "Script executable" >> ${logOutput}
+    fi
+    
+    if [[ -x "${fileToInstall}" ]]
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Please make sure that ${fileToInstall} is executable. You can execute 'chmod +x ${fileToInstall}' to make it executable" >> ${logOutput}
+        fi
+        exit 0
+    fi
+}
+############################# awk Installed ####################################
+# We check if awk is installed
+#
+# @CalledBy installation
+################################################################################
+awkInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "\n${bold}awk${normal} installed" && printf "awk installed" >> ${logOutput}
+    fi
+    if [[ $(which awk 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Please make sure that awk is installed in your system"
+        fi
+        exit 0
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+    fi
+}
+
+############################### whois Installed ################################
+# We check if whois is installed
+#
+# @CalledBy installation
+################################################################################
+whoisInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}whois${normal} installed" && printf "whois installed" >> ${logOutput}
+    fi
+    if [[ $(which whois 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Please make sure that whois is installed in your system"
+        fi
+        exit 0
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+    fi
+    
+}
+
+################################# sed Installed ################################
+# We check if sed is installed
+#
+# @CalledBy installation
+################################################################################
+sedInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}sed${normal} installed" && printf "sed installed" >> ${logOutput}
+    fi
+    if [[ $(which sed 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Please make sure that sed is installed in your system"
+        fi
+        exit 0
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+    fi
+}
+
+############################## sha512sum Installed #############################
+# We check if sha512sum is installed
+#
+# @CalledBy installation
+################################################################################
+sha512sumInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}sha512sum${normal} installed" && printf "sha512sum installed" >> ${logOutput}
+    fi
+    if [[ $(which sha512sum 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Please make sure that sha512sum is installed in your system"
+        fi
+        exit 0
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+    fi
+}
+
+############################## Script Work Dir #################################
+# We install the working directory into the script
+#
+# @CalledBy installation
+################################################################################
+scriptsWorkDir()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "\nInstallation of working directory" &&  printf "Installation of working directory" >> ${logOutput}
+    fi
+    
+    regex="outputDir='.*\/output\/'"
+    if [[ ${scriptContent} =~ ${regex} ]]
+    then
+        # We replace with the current working
+        # directory an we print message
+        sed -i "s|${regex}|${outputDir}|g" ${fileToInstall}
+        if [[ ${quiet} == false ]]
+        then
+            printf "  ${cyan}✔${normal}\n \n" && printf "  ✔\n" >> ${logOutput}
+        fi
+        
+        # We activate the debug mode in the script
+        debug
+        
+        if [[ ${quiet} == false ]]
+        then
+            echo "${bold}${cyan}The installation was successfully completed!${normal}"
+            echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
+            printf '\n'
+        fi
+        
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Impossible to finalize installation."
+        fi
+        exit 0
+    fi
+}
+
+############################### Installation ###################################
+# This part is the brain of the installation system
+#
+# @CalledBy Arguments Handle section, update
+################################################################################
+installation()
+{
+    local fileToInstall="${1}"
+    quiet="${2}"
+    
+    # We check the script
+    scriptExist "${fileToInstall}"
+    scriptReadable "${fileToInstall}"
+    scriptExecutable "${fileToInstall}"
+    
+    # We check dependencies
+    awkInstalled
+    whoisInstalled
+    sedInstalled
+    sha512sumInstalled
+    
+    # We finalize installation
+    scriptsWorkDir
+}
+
+################################## Usage #######################################
+# Help function
+#
+# @CalledBy main, Arguments Handle Section
+################################################################################
+usage()
+{
+    echo "Usage: ${0} [ -d ] [ -h ]"
+    echo ""
+    echo "       {[ -i ]} || {[ -u ]}"
+    echo ""
+    echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${white}-u${normal} ${red}${bold}or ${white}-i${normal})"
+    echo "  --help                                     Print this screen"
+    echo "  --installation             -i              Execute the installation script"
+    echo "  --update                   -u              Update the script"
+    echo ""
+}
+
+############################### Arguments Handle ###############################
+# We use this part to get arguments from command line.
+#
+# @Requiredby All
+################################################################################
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        # We catch if we have to activate debug on installation
+        -d|--debug)
+            debug=true
+            shift 1
+        ;;
+        # We catch if we have to show usage()
+        -h|--help)
+            usage
+            shift 1
+        ;;
+        # We catch if we have to install only the script
+        -i|--install)
+            installation "${currentDir}${script}" false
+            shift 1
+        ;;
+        # We catch if we have to update the script
+        -u|--update)
+            update
+            shift 1
+        ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            exit 1
+        ;;
+        *)
+            usage
+            shift 1
+        ;;
+    esac
+done
