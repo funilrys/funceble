@@ -123,55 +123,6 @@ downloadScript()
     fi
 }
 
-################################## Update ######################################
-# This part is the brain of update
-#
-# @CalledBy Arguments Handle section
-################################################################################
-update()
-{
-    # We get the online version and compare versions
-    checkVersion 'get'
-    
-    if [[ ${update} == true ]]
-    then
-        # We only need to execute if the versions are not the same
-        
-        downloadScript
-        
-        # We install the new script
-        installation ${currentDir}${script} false
-        # We log && print message
-        printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
-        
-        # We check the version of the newly downloaded script
-        checkVersion
-        
-        if [[ ${update} == false ]]
-        then
-            # If we don't need to update, here's the end
-            # We log && print message
-            printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
-            echo "${bold}${cyan}The update was successfully completed!${normal}"
-            printf '\n'
-            
-            # We delete the temporary file and stop the script
-            rm -f "${currentDir}funilrys"
-            exit 1
-        else
-            # We log && print message
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
-            exit 0
-        fi
-    else
-        # We log && print message
-        printf "No need to update.\n" &&  printf "No need to update." >> ${logOutput}
-        rm -f "${currentDir}funilrys"
-        exit 1
-    fi
-}
-
 ################################## Debug #######################################
 # This part is the debug section
 #
@@ -507,6 +458,55 @@ installation()
     
     # We finalize installation
     scriptsWorkDir
+}
+
+################################## Update ######################################
+# This part is the brain of update
+#
+# @CalledBy Arguments Handle section
+################################################################################
+update()
+{
+    # We get the online version and compare versions
+    checkVersion 'get'
+    
+    if [[ ${update} == true ]]
+    then
+        # We only need to execute if the versions are not the same
+        
+        downloadScript
+        
+        # We install the new script
+        installation ${currentDir}${script} false
+        # We log && print message
+        printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
+        
+        # We check the version of the newly downloaded script
+        checkVersion
+        
+        if [[ ${update} == false ]]
+        then
+            # If we don't need to update, here's the end
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
+            echo "${bold}${cyan}The update was successfully completed!${normal}"
+            printf '\n'
+            
+            # We delete the temporary file and stop the script
+            rm -f "${currentDir}funilrys"
+            exit 1
+        else
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
+            exit 0
+        fi
+    else
+        # We log && print message
+        printf "No need to update.\n" &&  printf "No need to update." >> ${logOutput}
+        rm -f "${currentDir}funilrys"
+        exit 1
+    fi
 }
 
 ################################## Usage #######################################
