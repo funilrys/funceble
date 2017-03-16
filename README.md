@@ -6,7 +6,7 @@ The main idea was to create a script that can **check if domain** or a **list of
 
 For all issues/bugs and others, please report [here](https://github.com/funilrys/funceble/issues/new).
 
-Current Version: **1.1.0**
+Current Version: **1.2.0**
 
 ## Usage
 
