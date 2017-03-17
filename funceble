@@ -102,6 +102,9 @@ whoisLogOutput=${logOutput}whois/
 # Date output
 dateLogOutput=${logOutput}dateFormat/
 
+# Percentages output
+percentageLogOutput=${logOutput}percentage/
+
 # Output of execution Time log
 executionLog=${logOutput}execution.log
 
@@ -130,6 +133,12 @@ outputErrorResult=${outputDir}splited/inactive.txt
 # IP for host file
 customIP='0.0.0.0'
 
+# Current Date
+currentDate=$(date)
+
+# Date if we append it to file
+fileNameDate=_${currentDate// /_}
+
 # Activate/Desactivate the generation of hosts file
 generateHosts=false
 
@@ -157,7 +166,7 @@ showExecutionTime=false
 linkScript="https://github.com/funilrys/funceble"
 
 # Show/hide percentage
-showPercentage=false
+showPercentage=true
 
 # Number of domain tested
 numberOfTested=0
@@ -192,7 +201,7 @@ beforeHeader(){
     if [[ ! -f "${file}" ]]
     then
         printf "# File generated with %s\n" "${linkScript}" > ${file}
-        printf "# Date of generation: %s\n" "$(date)" >> ${file}
+        printf "# Date of generation: %s\n" "${currentDate}" >> ${file}
         printf "\n" >> ${file}
     fi
 }
@@ -724,7 +733,7 @@ getExpirationDate(){
         
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
-        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL')
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL' 'renewal:')
         
         for i in ${!toMatch[*]}
         do
@@ -901,8 +910,10 @@ formatDate()
     local regex24='[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}'
     # Date in format: 20170102 // Month: jan
     local regex25='[0-9]{8}$'
+    # Date in format: 01-Jan-2017
+    local regex26='[0-9]{2}-[A-Z]{1}[a-z]{2}-[0-9]{4}'
     
-    if [[ "${expirationDate}" =~ ${regex1} || "${expirationDate}" =~ ${regex11} ]]
+    if [[ "${expirationDate}" =~ ${regex1} || "${expirationDate}" =~ ${regex11} || "${expirationDate}" =~ ${regex26} ]]
     then
         # We split the date
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c2)
@@ -1071,10 +1082,6 @@ checkHostsFiles()
 {
     if [[ -f ${outputActiveHost} || -f ${outputInvalidHost} || -f ${outputInactiveHost} ]]
     then
-        # We check files and assign date into a variable
-        currentDate=$(date)
-        fileNameDate=_${currentDate// /_}
-        
         # We append the date to the default values
         outputActiveHost=${outputActiveHost}${fileNameDate}
         outputInvalidHost=${outputInvalidHost}${fileNameDate}
@@ -1156,8 +1163,9 @@ main()
     if [[ ${showPercentage} == true ]]
     then
         # We print on screen the percentage and its header
-        printHeader 'Percentage'
-        prints 'Percentage'
+        beforeHeader ${percentageLogOutput}${fileNameDate}
+        printHeader 'Percentage' && printHeader 'Percentage' > ${percentageLogOutput}${fileNameDate}
+        prints 'Percentage' && prints 'Percentage' >> ${percentageLogOutput}${fileNameDate}
     fi
 }
 
