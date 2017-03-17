@@ -46,7 +46,7 @@ debug=false
 script='funceble'
 
 # Script online versionFile
-onlineScript='https://raw.githubusercontent.com/funilrys/funceble/dev/funceble'
+onlineScript='https://raw.githubusercontent.com/funilrys/funceble/master/funceble'
 
 # Quiet mode
 quiet=false
