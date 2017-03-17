@@ -2,7 +2,7 @@ _A script to check domains or IP accessibilities._
 
 The main idea was to create a script that can **check if domain** or a **list of domains** are/is **ACTIVE** or **INACTIVE**. And, in between, **create a hosts file** based on the results.
 
-# issues
+# Issues
 
 For all issues/bugs and others, please report [here](https://github.com/funilrys/funceble/issues/new).
 
