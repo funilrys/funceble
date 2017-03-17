@@ -39,6 +39,9 @@ logOutput='output/logs/install.log'
 
 # New output directory
 outputDir="outputDir='${currentDir}output/'"
+
+# Funilrys
+funilrys="${funilrys}"
 ################################################################################
 ############################## Default Values ##################################
 debug=false
@@ -71,17 +74,17 @@ checkVersion()
     if [[ ${type} == 'get' ]]
     then
         # We download the script
-        curl -s ${onlineScript} -o ${currentDir}funilrys
+        curl -s ${onlineScript} -o ${funilrys}
         # we give execution permission
-        chmod +x ${currentDir}funilrys
+        chmod +x ${funilrys}
         
         # We secretly execute a silent installation in the downloaded
         # script
-        installation "${currentDir}funilrys" true
+        installation "${funilrys}" true
     fi
     
     # We get the sha512sum of the downloaded script
-    local copiedVersion=$(sha512sum ${currentDir}funilrys|cut -d ' ' -f1)
+    local copiedVersion=$(sha512sum ${funilrys}|cut -d ' ' -f1)
     # We get the sha512sum of the already exist script
     local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
     
@@ -492,7 +495,7 @@ update()
             printf '\n'
             
             # We delete the temporary file and stop the script
-            rm -f "${currentDir}funilrys"
+            rm -f "${funilrys}"
             exit 1
         else
             # We log && print message
@@ -503,7 +506,7 @@ update()
     else
         # We log && print message
         printf "No need to update.\n" &&  printf "No need to update." >> ${logOutput}
-        rm -f "${currentDir}funilrys"
+        rm -f "${funilrys}"
         exit 1
     fi
 }
