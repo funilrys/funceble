@@ -601,7 +601,7 @@ errorHandle()
 ################################################################################
 getReferer(){
     # initialDomain <string>
-    initialDomain=${1}
+    initialDomain=$(echo ${1} |awk '{print tolower($0)}')
     
     # We get the extension of the given domain
     domainExtension=${initialDomain##*.}
