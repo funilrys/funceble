@@ -733,7 +733,7 @@ getExpirationDate(){
         
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
-        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL' 'renewal:')
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL' 'renewal:' 'expires............:')
         
         for i in ${!toMatch[*]}
         do
@@ -852,6 +852,55 @@ getMonthInEnglish(){
     esac
 }
 
+############################# Convert 1 to 2 Digits ##########################
+# Used to convert one digit to two Digits numbers
+# e.g -> 1 ==> 01
+#
+# @CalledBy formatDate
+################################################################################
+convert1To2digits(){
+    oneDigit="${1}"
+    
+    local regex='(?<!\S)\d(?!\S)'
+    if [[ ${oneDigit} =~ regex ]]
+    then
+        case ${oneDigit} in
+            1)
+                month='01'
+            ;;
+            2)
+                month='02'
+            ;;
+            3)
+                month='03'
+            ;;
+            4)
+                month='04'
+            ;;
+            5)
+                month='05'
+            ;;
+            6)
+                month='06'
+            ;;
+            7)
+                month='07'
+            ;;
+            8)
+                month='08'
+            ;;
+            9)
+                month='09'
+            ;;
+            *)
+                month='00'
+            ;;
+        esac
+    else
+        month=${oneDigit}
+    fi
+}
+
 ################################ Format Date ###################################
 # Used to format date. We have to work with multiple date format from WHOIS
 # records so this function is in charge to create an unified format.
@@ -910,8 +959,10 @@ formatDate()
     local regex24='[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}'
     # Date in format: 20170102 // Month: jan
     local regex25='[0-9]{8}$'
-    # Date in format: 01-Jan-2017
+    # Date in format: 02-Jan-2017
     local regex26='[0-9]{2}-[A-Z]{1}[a-z]{2}-[0-9]{4}'
+    # Date in format: 02.1.2017 // Month: jan
+    local regex27='[0-9]{2}\.[0-9]{1}\.[0-9]{4}'
     
     if [[ "${expirationDate}" =~ ${regex1} || "${expirationDate}" =~ ${regex11} || "${expirationDate}" =~ ${regex26} ]]
     then
@@ -955,6 +1006,24 @@ formatDate()
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c2)
         local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | head -c6 | tail -c3)
         local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4)
+        
+        # We assign the expiration date
+        expirationDate=${day}'-'${month}'-'${year}
+        
+        # We convert it to lower case
+        dateToLower
+    elif [[ "${expirationDate}" =~ ${regex27} ]]
+    then
+        # We split the date
+        local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c2)
+        local month=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c3 | tail -c1)
+        local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4)
+        
+        # We convert the month
+        convert1To2digits "${month}"
+        
+        # We convert the month to alpha format
+        getMonthInEnglish "${month}"
         
         # We assign the expiration date
         expirationDate=${day}'-'${month}'-'${year}
