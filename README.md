@@ -1,14 +1,18 @@
-# Funceble
-
-A script to check domains or IP accessibilities.
+_A script to check domains or IP accessibilities._
 
 The main idea was to create a script that can **check if domain** or a **list of domains** are/is **ACTIVE** or **INACTIVE**. And, in between, **create a hosts file** based on the results.
 
+# issues
+
 For all issues/bugs and others, please report [here](https://github.com/funilrys/funceble/issues/new).
 
-Current Version: **1.2.0**
+# Version
 
-## Usage
+Current Version: **1.2.1**
+
+# Usage
+
+## funceble
 
 ```sh
 Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ --split ]
@@ -27,7 +31,21 @@ Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] 
   --noFiles                  -n              Deactivate the production of output files (Must be before -d or -f)
   --split                                    Split output files (Must be before -d or -f)
 ```
-## Status
+
+## tool
+
+```sh
+Usage: ./tool [ -d ] [ -h ]
+
+       {[ -i ]} || {[ -u ]}
+
+  --debug                    -d              Activate the debug mode with the installation (Must be before -u or -i)
+  --help                                     Print this screen
+  --installation             -i              Execute the installation script
+  --update                   -u              Update the script
+```
+
+# Status
 
 * **ACTIVE**
     * `whois` return the date of expiration
@@ -38,11 +56,11 @@ Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] 
 * **INVALID**
     * Domain extension has an invalid format or is unregistered in **[IANA](https://www.iana.org/domains/root/db) Root Zone Database**.
 
-## How to contribute?
+# How to contribute?
 
 To contribute, you have to send a new [Pull Request](https://github.com/funilrys/funceble/compare) after you [forked](https://github.com/funilrys/funceble/pulls#fork-destination-box) and edited the script(s).
 
-### DO NOT FORGET
+## DO NOT FORGET
 
 * To sign your commit(s) with **'Signed-off by: FirstName LastName <e at mail dot com>'** AND/OR simply sign your commit(s) with **PGP**. **Please read more [here](https://github.com/blog/2144-gpg-signature-verification)**.
 * All contributions/modifications must be done under **the `dev` branch**.
