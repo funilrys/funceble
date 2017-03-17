@@ -724,7 +724,7 @@ getExpirationDate(){
         
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
-        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]')
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on')
         
         for i in ${!toMatch[*]}
         do
@@ -734,6 +734,9 @@ getExpirationDate(){
                 if [[ ${toMatch[${i}]} == '\[Expires on\]' ]]
                 then
                     expirationDate=$(cat ${whoIs} | awk "/${toMatch[${i}]}/{print $NC}" | sed "s/\] /]:/")
+                elif [[ ${toMatch[${i}]} == 'Record expires on' ]]
+                then
+                    expirationDate=$(cat ${whoIs} | awk "/${toMatch[${i}]}/{print $NC}" | sed "s/on/on:/" | sed "s/\s(YYYY-MM-DD)//")
                 else
                     expirationDate=$(cat ${whoIs} | awk "/${toMatch[${i}]}/{print $NC}")
                 fi
