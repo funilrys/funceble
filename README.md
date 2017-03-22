@@ -8,7 +8,7 @@ For all issues/bugs and others, please report [here](https://github.com/funilrys
 
 # Version
 
-Current Version: **1.2.1**
+Current Version: **1.2.2**
 
 # Usage
 
