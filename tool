@@ -160,6 +160,35 @@ textFormat()
     fi
 }
 
+##################################### Status ###################################
+# Only for production.
+# This part is used to fix changes to status section
+#
+# @CalledBy scriptsWorkDir
+################################################################################
+status()
+{
+    if [[ "${executionType}" == 'production' ]]
+    then
+        # We list the variable we have to change
+        variableToCatch=('validStatus=.*' 'invalidStatus=.*' 'errorStatus=.*')
+        # We list the replacement we have to do
+        changeWith=('validStatus="ACTIVE"' 'invalidStatus="INVALID"' 'errorStatus="INACTIVE"')
+        
+        for i in ${!variableToCatch[*]}
+        do
+            # We get the color
+            regexStatus="${variableToCatch[${i}]}"
+            
+            # We get the replacement
+            replaceBy="${changeWith[${i}]}"
+            
+            # We apply changes
+            sed -i "s|${regexStatus}|${replaceBy}|g" ${fileToInstall}
+        done
+    fi
+}
+
 ################################## Debug #######################################
 # This part is the debug section
 #
@@ -440,6 +469,7 @@ scriptsWorkDir()
         # We run some important scripts
         debug
         textFormat
+        status
         
         if [[ ${quiet} == false ]]
         then
