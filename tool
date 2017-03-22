@@ -41,7 +41,7 @@ logOutput='output/logs/install.log'
 outputDir="outputDir='${currentDir}output/'"
 
 # Funilrys
-funilrys="${funilrys}"
+funilrys="funilrys"
 ################################################################################
 ############################## Default Values ##################################
 debug=false
