@@ -132,7 +132,7 @@ downloadScript()
 }
 
 ################################## Text Format #################################
-# Only for prouction.
+# Only for production.
 # This part is used to fix changes to text format section
 #
 # @CalledBy scriptsWorkDir
