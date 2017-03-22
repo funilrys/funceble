@@ -56,6 +56,9 @@ quiet=false
 
 # We get the content of the script
 scriptContent=$(cat ${currentDir}${script} 2> ${logOutput})
+
+# Default type
+executionType='installation'
 ################################################################################
 
 # We log the date
@@ -71,7 +74,7 @@ checkVersion()
     # We get the type
     type="${1}"
     
-    if [[ ${type} == 'get' ]]
+    if [[ "${type}" == 'get' ]]
     then
         # We download the script
         curl -s ${onlineScript} -o ${funilrys}
@@ -135,11 +138,20 @@ downloadScript()
 ################################################################################
 debug()
 {
-    if [[ ${debug} == true ]]
+    if [[ "${executionType}" == 'installation' ]]
+    then
+        if [[ ${debug} == true ]]
+        then
+            # Option if we want to debug
+            regexDebug='debugUnknown=false'
+            replaceBy="debugUnknown=true"
+            sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
+        fi
+    elif [[ "${executionType}" == 'production' ]]
     then
         # Option if we want to debug
-        regexDebug='debugUnknown=false'
-        replaceBy="debugUnknown=true"
+        regexDebug='debugUnknown=[a-z]*'
+        replaceBy="debugUnknown=false"
         sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
     fi
 }
@@ -370,8 +382,15 @@ scriptsWorkDir()
 {
     if [[ ${quiet} == false ]]
     then
-        # We log && print message
-        printf "\nInstallation of working directory" &&  printf "Installation of working directory" >> ${logOutput}
+        if [[ "${executionType}" == 'installation' ]]
+        then
+            # We log && print message
+            printf "\nInstallation of working directory" &&  printf "Installation of working directory" >> ${logOutput}
+        elif [[ "${executionType}" == 'production' ]]
+        then
+            # We log && print message
+            printf "\nInstallation of default variables for production" &&  printf "Installation of default working directory for production" >> ${logOutput}
+        fi
     fi
     
     regex="outputDir='.*\/output\/'"
@@ -379,6 +398,10 @@ scriptsWorkDir()
     then
         # We replace with the current working
         # directory an we print message
+        if [[ "${executionType}" == 'production' ]]
+        then
+            outputDir="outputDir='%%currentDir%%/output/'"
+        fi
         sed -i "s|${regex}|${outputDir}|g" ${fileToInstall}
         if [[ ${quiet} == false ]]
         then
@@ -390,17 +413,32 @@ scriptsWorkDir()
         
         if [[ ${quiet} == false ]]
         then
-            echo "${bold}${cyan}The installation was successfully completed!${normal}"
-            echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
-            printf '\n'
+            if [[ "${executionType}" == 'installation' ]]
+            then
+                echo "${bold}${cyan}The installation was successfully completed!${normal}"
+                echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
+                printf '\n'
+            elif [[ "${executionType}" == 'production' ]]
+            then
+                echo "${bold}${cyan}The production logic was successfully completed!${normal}"
+                echo "You can now distribute this repository."
+                printf '\n'
+            fi
         fi
         
     else
         if [[ ${quiet} == false ]]
         then
-            # We log && print message
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Impossible to finalize installation."
+            if [[ "${executionType}" == 'installation' ]]
+            then
+                # We log && print message
+                printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+                echo "Impossible to finalize installation."
+            elif [[ "${executionType}" == 'production' ]]
+            then
+                printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+                echo "Impossible to finalize the poduction preparation."
+            fi
         fi
         exit 0
     fi
@@ -520,11 +558,12 @@ usage()
 {
     echo "Usage: ${0} [ -d ] [ -h ]"
     echo ""
-    echo "       {[ -i ]} || {[ -u ]}"
+    echo "       {[ -i ]} || {[ -p ]} || {[ -u ]}"
     echo ""
     echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${white}-u${normal} ${red}${bold}or ${white}-i${normal})"
     echo "  --help                                     Print this screen"
     echo "  --installation             -i              Execute the installation script"
+    echo "  --production               -p              Prepare the repository for production"
     echo "  --update                   -u              Update the script"
     echo ""
 }
@@ -548,6 +587,11 @@ while [ "$#" -gt 0 ]; do
         ;;
         # We catch if we have to install only the script
         -i|--install)
+            installation "${currentDir}${script}" false
+            shift 1
+        ;;
+        -p|--production)
+            executionType='production'
             installation "${currentDir}${script}" false
             shift 1
         ;;

@@ -37,11 +37,12 @@ Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] 
 ```sh
 Usage: ./tool [ -d ] [ -h ]
 
-       {[ -i ]} || {[ -u ]}
+       {[ -i ]} || {[ -p ]} || {[ -u ]}
 
   --debug                    -d              Activate the debug mode with the installation (Must be before -u or -i)
   --help                                     Print this screen
   --installation             -i              Execute the installation script
+  --production               -p              Prepare the repository for production
   --update                   -u              Update the script
 ```
 
