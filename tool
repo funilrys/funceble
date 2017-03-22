@@ -131,6 +131,35 @@ downloadScript()
     fi
 }
 
+################################## Text Format #################################
+# Only for prouction.
+# This part is used to fix changes to text format section
+#
+# @CalledBy scriptsWorkDir
+################################################################################
+textFormat()
+{
+    if [[ "${executionType}" == 'production' ]]
+    then
+        # We list the variable we have to change
+        variableToCatch=('red=.*' 'white=.*' 'cyan=.*' 'magenta=.*' 'bold=.*' 'normal=.*')
+        # We list the replacement we have to do
+        changeWith=('red=$(tput setaf 1)' 'white=$(tput setaf 7)' 'cyan=$(tput setaf 6)' 'magenta=$(tput setaf 5)' 'bold=$(tput bold)' 'normal=$(tput sgr0)')
+        
+        for i in ${!variableToCatch[*]}
+        do
+            # We get the color
+            regexColor="${variableToCatch[${i}]}"
+            
+            # We get the replacement
+            replaceBy="${changeWith[${i}]}"
+            
+            # We apply changes
+            sed -i "s|${regexColor}|${replaceBy}|g" ${fileToInstall}
+        done
+    fi
+}
+
 ################################## Debug #######################################
 # This part is the debug section
 #
@@ -408,8 +437,9 @@ scriptsWorkDir()
             printf "  ${cyan}✔${normal}\n \n" && printf "  ✔\n" >> ${logOutput}
         fi
         
-        # We activate the debug mode in the script
+        # We run some important scripts
         debug
+        textFormat
         
         if [[ ${quiet} == false ]]
         then
