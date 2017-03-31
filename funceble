@@ -72,14 +72,14 @@ noFiles=false
 
 # Generate debug file under log
 # DO NOT USE THIS IF YOU DON'T KNOW HOW TO DEBUG FROM OUTPUTTED FILE
-debugUnknown=false
+debugUnknown=true
 
 # Defaut name for hosts file
 hostsDefault='hosts'
 
 # Output directory.
 # DO NOT FORGET '/' AT THE END
-outputDir='%%currentDir%%/output/'
+outputDir='/home/funilrys/Projects/funceble/output/'
 
 # hosts directory
 hostsDir=${outputDir}hosts/
@@ -143,7 +143,10 @@ fileNameDate=_${currentDate// /_}
 generateHosts=false
 
 # Output less data
-outputLess=true
+outputLess=false
+
+# Output unified file
+outputUnified=true
 
 # If set to true, we don't print anything
 quiet=false
@@ -342,30 +345,33 @@ generateUnifiedFile()
     # status <string>
     local status=${2}
     
-    if [[ -f ${outputUnifiedResult} ]]
+    if [[ ${outputUnified} == true ]]
     then
-        if [[ ${outputLess} == true ]]
+        if [[ -f ${outputUnifiedResult} ]]
         then
-            # We save the domain and his data to the unified file
-            prints "Less" "${domain}" "${status}" "${type}" >> ${outputUnifiedResult}
+            if [[ ${outputLess} == true ]]
+            then
+                # We save the domain and his data to the unified file
+                prints "Less" "${domain}" "${status}" "${type}" >> ${outputUnifiedResult}
+            else
+                # We save the domain and his data to the unified file
+                prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+            fi
         else
-            # We save the domain and his data to the unified file
-            prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
-        fi
-    else
-        if [[ ${outputLess} == true ]]
-        then
-            # We create header into and in between, create the file
-            beforeHeader ${outputUnifiedResult}
-            printHeader "Less" >> ${outputUnifiedResult}
-            # We save the domain and his data to the unified file
-            prints "Less" "${domain}" "${status}" "${type}" >> ${outputUnifiedResult}
-        else
-            # We create header into and in between, create the file
-            beforeHeader ${outputUnifiedResult}
-            printHeader "Generic" >> ${outputUnifiedResult}
-            # We save the domain and his data to the unified file
-            prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+            if [[ ${outputLess} == true ]]
+            then
+                # We create header into and in between, create the file
+                beforeHeader ${outputUnifiedResult}
+                printHeader "Less" >> ${outputUnifiedResult}
+                # We save the domain and his data to the unified file
+                prints "Less" "${domain}" "${status}" "${type}" >> ${outputUnifiedResult}
+            else
+                # We create header into and in between, create the file
+                beforeHeader ${outputUnifiedResult}
+                printHeader "Generic" >> ${outputUnifiedResult}
+                # We save the domain and his data to the unified file
+                prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+            fi
         fi
     fi
 }
@@ -1245,7 +1251,7 @@ main()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ --split ]"
+    echo "Usage: ${0} [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ -nu ] [ --split ]"
     echo ""
     echo "       {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}"
     echo ""
@@ -1259,6 +1265,7 @@ usage()
     echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --percentage               -p              Show the percentage of the results (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --noFiles                  -n              Deactivate the production of output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo " --noUnified                 -nu             Deactivate the production of result.txt as unified result under the outpur directory (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --split                                    Split output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo ""
     echo "Examples:"
@@ -1301,52 +1308,68 @@ else
                 outputLess=false
                 shift 1
             ;;
+            
             # We catch domain
             -d)
                 main "${2}" ''
                 shift 2
             ;;
+            
             # We catch if we show the execution time
             -ex|--execution)
                 showExecutionTime=true
                 quiet=false
                 shift 1
             ;;
+            
             # We catch file path
             -f)
                 main '' "${2}"
                 shift 2
             ;;
+            
             # we catch if the user want to activate the creation of hosts file
             -h|--host)
                 generateHosts=true
                 checkHostsFiles
                 shift 1
             ;;
+            
             --help)
                 usage
                 shift 1
             ;;
+            
             # We change the IP to print into the hosts file
             -ip)
                 customIP="${2}"
                 shift 2
             ;;
+            
             # We catch if we can produce file or not
             -n|--noFiles)
                 noFiles=true
                 quiet=false
                 shift 1
             ;;
+            
             # We catch if have to show or hide the percentages
             -p|--percentage)
                 showPercentage=true
                 shift 1
             ;;
+            
             # Activation of quiet system
             -q|--quiet)
                 quiet=true
                 noFiles=false
+                shift 1
+            ;;
+            
+            # We catch if we need to active or deactivate the generation of
+            # output/result.txt
+            -nu|--noUnified)
+                outputUnified=false
                 shift 1
             ;;
             
@@ -1356,6 +1379,7 @@ else
                 noFiles=false
                 shift 1
             ;;
+            
             # catch the domain after --domain= for example: --domain=helloworld.com
             # Will result only helloworld.com
             --domain=*)
@@ -1363,6 +1387,7 @@ else
                 main "${domainToCheck}" ''
                 shift 1
             ;;
+            
             # catch the domain after --domain= for example: --file=lustUsedInDev/badreferers.list
             # Will get the file lustUsedInDev/badreferers.list
             --file=*)
@@ -1370,10 +1395,14 @@ else
                 main "" "${fileToCheck}"
                 shift 1
             ;;
+            
+            # Output if option is unknown
             -*)
                 echo "Unknown option: $1" >&2
                 exit 1
             ;;
+            
+            # Output if no option is definied
             *) usage
                 shift 1
             ;;
