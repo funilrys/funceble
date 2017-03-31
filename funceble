@@ -1421,8 +1421,9 @@ else
             ;;
             
             # Output if no option is definied
-            *) usage
-                shift 1
+            *)
+                usage
+                exit 1
             ;;
         esac
     done
