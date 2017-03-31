@@ -148,6 +148,9 @@ outputLess=false
 # Output unified file
 outputUnified=true
 
+# Output logs
+outputLogs=true
+
 # If set to true, we don't print anything
 quiet=false
 
@@ -693,13 +696,17 @@ getReferer(){
 # @CalledBy getExpirationDate
 ################################################################################
 whoisLog(){
-    # We save the output of whois into log directory
-    printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
-    printf "\n" >> ${whoisLogOutput}${referer}
-    cat ${whoIs} >> ${whoisLogOutput}${referer}
-    printf "\n" >> ${whoisLogOutput}${referer}
-    printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
-    printf "\n" >> ${whoisLogOutput}${referer}
+    if [[ ${outputLogs} == true ]]
+    then
+        
+        # We save the output of whois into log directory
+        printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
+        printf "\n" >> ${whoisLogOutput}${referer}
+        cat ${whoIs} >> ${whoisLogOutput}${referer}
+        printf "\n" >> ${whoisLogOutput}${referer}
+        printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
+        printf "\n" >> ${whoisLogOutput}${referer}
+    fi
 }
 
 ############################## Date Format Log #################################
@@ -708,11 +715,14 @@ whoisLog(){
 # @CalledBy formatDate
 ################################################################################
 dateFormatlog(){
-    # We save the output of whois into log directory
-    printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
-    printf "\nExpiration Date:%s\n" "${expirationDate}" >> ${dateLogOutput}${referer}
-    printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
-    printf "\n" >> ${dateLogOutput}${referer}
+    if [[ ${outputLogs} == true ]]
+    then
+        # We save the output of whois into log directory
+        printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
+        printf "\nExpiration Date:%s\n" "${expirationDate}" >> ${dateLogOutput}${referer}
+        printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
+        printf "\n" >> ${dateLogOutput}${referer}
+    fi
 }
 
 ####################### Get (Domain) Expiration Date ###########################
@@ -1251,7 +1261,7 @@ main()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ -nu ] [ --split ]"
+    echo "Usage: ${0} [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ -nl ] [ -nu ] [ --split ]"
     echo ""
     echo "       {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}"
     echo ""
@@ -1265,7 +1275,8 @@ usage()
     echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --percentage               -p              Show the percentage of the results (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --noFiles                  -n              Deactivate the production of output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
-    echo " --noUnified                 -nu             Deactivate the production of result.txt as unified result under the outpur directory (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --noLogs                   -nl             Deactivate the production of logs files in case we encouter some errors (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --noUnified                -nu             Deactivate the production of result.txt as unified result under the outpur directory (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo "  --split                                    Split output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
     echo ""
     echo "Examples:"
