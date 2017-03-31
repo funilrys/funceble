@@ -1364,6 +1364,20 @@ else
                 shift 1
             ;;
             
+            # We catch if we need to deactivate the generation of
+            # output/logs/*
+            -nl|--noLogs)
+                outputLogs=false
+                shift 1
+            ;;
+            
+            # We catch if we need to active or deactivate the generation of
+            # output/result.txt
+            -nu|--noUnified)
+                outputUnified=false
+                shift 1
+            ;;
+            
             # We catch if have to show or hide the percentages
             -p|--percentage)
                 showPercentage=true
@@ -1374,13 +1388,6 @@ else
             -q|--quiet)
                 quiet=true
                 noFiles=false
-                shift 1
-            ;;
-            
-            # We catch if we need to active or deactivate the generation of
-            # output/result.txt
-            -nu|--noUnified)
-                outputUnified=false
                 shift 1
             ;;
             
