@@ -79,7 +79,7 @@ hostsDefault='hosts'
 
 # Output directory.
 # DO NOT FORGET '/' AT THE END
-outputDir='/home/funilrys/Projects/funceble/output/'
+outputDir='%%currentDir%%/output/'
 
 # hosts directory
 hostsDir=${outputDir}hosts/
