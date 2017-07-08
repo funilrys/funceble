@@ -185,6 +185,9 @@ numberOfInactive=0
 
 # Number of domain which returns invalid
 numberOfInvalid=0
+
+# Default seconds before timeout
+secondsBeforeTimeout=20
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
@@ -302,6 +305,22 @@ prints()
         printf "%-11s %-12s %-12s\n"  "INACTIVE" "${percentageOfInactive}%" "${numberOfInactive}"
         printf "%-11s %-12s %-12s\n"  "INVALID" "${percentageOfInvalid}%" "${numberOfInvalid}"
     fi
+}
+
+
+################################### Timeout ####################################
+# In charge to initiate a timeout for commands
+#
+# @CalledBy timeout, getExpirationDate
+################################################################################
+timeout (){
+    # type <int|string>
+    time=${1}
+    
+    # start the command in a subshell in order to avoid problem with pipes
+    command="/bin/sh -c \"${2}\""
+    
+    expect -c "set echo \"-noecho\"; set  timeout ${time}; spawn -noecho ${command}; expect timeout { exit 1 } eof { exit 0 }"
 }
 
 ############################# Generate Hosts File ##############################
@@ -743,7 +762,8 @@ getExpirationDate(){
     then
         # We call the whois server and save the result into ${whoIs}
         # cf. Default Values Section
-        whois -h ${referer} "${domain}" > ${whoIs}
+        timeout ${secondsBeforeTimeout} "whois -h ${referer} ${domain} > ${whoIs}"
+        
         # We get the content of the previously saved file
         local content=$(cat ${whoIs})
         
@@ -1047,6 +1067,7 @@ formatDate()
         #    02 Jan 2017-01
         #        Result: 0220
         # So if the last 2 digts are not 20, it's a 1 digit day
+        # Hope that I don't have to update this in 100 years ! :)
         if [[ ${dayEnd} == '20' ]]
         then
             local day=$(echo "${day}" | tr -cd '[[:digit:]]' | head -c2)
@@ -1277,23 +1298,24 @@ main()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ -nl ] [ -nu ] [ --split ]"
+    echo "Usage: ${0} [ -a|--all ] [ -ex|--execution ] [ --help ] [ -h ] [ -ip ] [ -q|--quiet ] [ -n|--noFiles ] [ -p|--percentage ] [ -nl|--noLogs ] [ -nu|--noUnified ] [ --split ] [ -t|--timeout ]"
     echo ""
     echo "       {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}"
     echo ""
-    echo "  --all                      -a              Output all information on screen (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --all                      -a              Output all information on screen (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --domain                   -d              Domain to analyze"
     echo "  --file                     -f              File with a list of domains"
-    echo "  --execution                -ex             Show the execution time (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "  --execution                -ex             Show the execution time (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --help                                     Print this screen"
-    echo "                             -ip             Change the ip to print in host file (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
-    echo "  --host                     -h              Activate the generation of host (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
-    echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
-    echo "  --percentage               -p              Show the percentage of the results (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
-    echo "  --noFiles                  -n              Deactivate the production of output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
-    echo "  --noLogs                   -nl             Deactivate the production of logs files in case we encouter some errors (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
-    echo "  --noUnified                -nu             Deactivate the production of result.txt as unified result under the outpur directory (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
-    echo "  --split                                    Split output files (${red}${bold}Must be before ${white}-d${normal} ${red}${bold}or ${white}-f${normal})"
+    echo "                             -ip             Change the ip to print in host file (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --host                     -h              Activate the generation of host (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --percentage               -p              Show the percentage of the results (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --noFiles                  -n              Deactivate the production of output files (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --noLogs                   -nl             Deactivate the production of logs files in case we encouter some errors (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --noUnified                -nu             Deactivate the production of result.txt as unified result under the outpur directory (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --split                                    Split output files (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --timeout                  -t              Seconds before timeout (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo ""
     echo "Examples:"
     echo ""
@@ -1412,6 +1434,12 @@ else
                 splitFiles=true
                 noFiles=false
                 shift 1
+            ;;
+            
+            # We set the seconds before timeout
+            -t|--timeout)
+                secondsBeforeTimeout="${2}"
+                shift 2
             ;;
             
             # catch the domain after --domain= for example: --domain=helloworld.com
