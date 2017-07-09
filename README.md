@@ -1,21 +1,48 @@
-_A script to check domains or IP accessibilities._
+# Funceble
 
-The main idea was to create a script that can **check if domain** or a **list of domains** are/is **ACTIVE** or **INACTIVE**. And, in between, **create a hosts file** based on the results.
+> A script to check domains or IP accessibilities.
 
-# Issues
+The main idea was to create a script that can check if a given domain name or a **list of domains** are/is **ACTIVE** or **INACTIVE**. And, in between, if wanted, **create a hosts file** based on the results.
 
-For all issues/bugs and others, please report [here](https://github.com/funilrys/funceble/issues/new).
+## Features
 
-# Version
+- Read an existing `hosts`file and check every domain present into it.
+- Set a timeout for `whois`
+- Deactivate logs
+- Deactivate the production of unified results
+- Silent mode available
+- Show on screen
 
-Current Version: **1.2.2**
+  - if domain name is **ACTIVE**, **INACTIVE** or **INVALID**
+  - The execution time
+  - The percentage of **ACTIVE**, **INACTIVE** and **INVALID**
+
+- Save on single file
+
+  - Result of execution
+  - Execution time
+  - The percentage of **ACTIVE**, **INACTIVE** and **INVALID**
+
+- Save on separated files (when needed)
+
+  - Logs of encountered error(s)
+  - **ACTIVE** domain name
+  - **INACTIVE** domain name
+  - **INVALID** domain name
+
+- Generate `hosts` file
+
+  - With custom IP
+  - ONLY with **ACTIVE** domain names
+
+--------------------------------------------------------------------------------
 
 # Usage
 
 ## funceble
 
-```sh
-Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] [ --split ]
+```shell
+Usage: ./funceble [ -a|--all ] [ -ex|--execution ] [ --help ] [ -h ] [ -ip ] [ -q|--quiet ] [ -n|--noFiles ] [ -p|--percentage ] [ -nl|--noLogs ] [ -nu|--noUnified ] [ --split ] [ -t|--timeout ]
 
        {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}
 
@@ -29,12 +56,15 @@ Usage: ./funceble [ -a ] [ -ex ] [ --help ] [ -h ] [ -ip ] [ -q ] [ -n ] [ -p ] 
   --quiet                    -q              Activate quiet mode (Must be before -d or -f)
   --percentage               -p              Show the percentage of the results (Must be before -d or -f)
   --noFiles                  -n              Deactivate the production of output files (Must be before -d or -f)
+  --noLogs                   -nl             Deactivate the production of logs files in case we encouter some errors (Must be before -d or -f)
+  --noUnified                -nu             Deactivate the production of result.txt as unified result under the outpur directory (Must be before -d or -f)
   --split                                    Split output files (Must be before -d or -f)
+  --timeout                  -t              Seconds before timeout (Must be before -d or -f)
 ```
 
 ## tool
 
-```sh
+```shell
 Usage: ./tool [ -d ] [ -h ]
 
        {[ -i ]} || {[ -p ]} || {[ -u ]}
@@ -46,48 +76,66 @@ Usage: ./tool [ -d ] [ -h ]
   --update                   -u              Update the script
 ```
 
+--------------------------------------------------------------------------------
+
 # Status
 
-* **ACTIVE**
-    * `whois` return the date of expiration
-    * `nslookup` don't return "**server can't find domain-name.me: NXDOMAIN**"
-* **INACTIVE**
-    * `whois` don't return anything
-    * `nslookup` return "**server can't find domain-name.me: NXDOMAIN**"
-* **INVALID**
-    * Domain extension has an invalid format or is unregistered in **[IANA](https://www.iana.org/domains/root/db) Root Zone Database**.
+## ACTIVE
+
+- `whois` let us read the date of expiration
+- `nslookup` don't return `server can't find domain-name.me: NXDOMAIN`
+
+## INACTIVE
+
+- `whois` don't let us read the date of expiration
+
+**AND**
+
+- `nslookup` return `server can't find domain-name.me: NXDOMAIN`
+
+## INVALID
+
+- Domain extension has an invalid format or is unregistered in **[IANA](https://www.iana.org/domains/root/db) Root Zone Database**.
+
+--------------------------------------------------------------------------------
 
 # How to contribute?
 
-To contribute, you have to send a new [Pull Request](https://github.com/funilrys/funceble/compare) after you [forked](https://github.com/funilrys/funceble/pulls#fork-destination-box) and edited the script(s).
+To contribute, you have to **send a new [Pull Request](https://github.com/funilrys/funceble/compare)** after you **[forked](https://github.com/funilrys/funceble/pulls#fork-destination-box)** and edited the script(s).
 
-## DO NOT FORGET
+## :warning: WARNING :warning:
 
-* To sign your commit(s) with **'Signed-off by: FirstName LastName <e at mail dot com>'** AND/OR simply sign your commit(s) with **PGP**. **Please read more [here](https://github.com/blog/2144-gpg-signature-verification)**.
-* All contributions/modifications must be done under **the `dev` branch**.
+### DO NOT FORGET
 
-____
+- To sign your commit(s) with **"Signed-off by: FirstName LastName < email at service dot com >"** _**and/or**_ simply **sign your commit(s)** with **PGP** _(Please read more [here](https://github.com/blog/2144-gpg-signature-verification))_.
+
+- All **contributions/modifications** must be done under **the `dev` or a new branch** if you plan to **send a new [Pull Request](https://github.com/funilrys/funceble/compare)**.
+
+- :warning::warning::warning: Every **contributions/modifications** which are under **master** _(exception for minor changes)_ **will not be merged**.
+
+--------------------------------------------------------------------------------
+
 # Special Thanks
+
 Thank you guys for your awesome lists which helped _(and still help)_ me build this script. :smile: :+1:
 
-* [@mitchellkrogza](https://github.com/mitchellkrogza)
-* [@PromoFaux](https://github.com/PromoFaux) with [Pi-Hole](https://github.com/pi-hole/pi-hole) hosts file.
+- [@mitchellkrogza](https://github.com/mitchellkrogza)
+- [@PromoFaux](https://github.com/PromoFaux) with [Pi-Hole](https://github.com/pi-hole/pi-hole) hosts file.
 
 # Contributors
 
-* [@WaLLy3K](https://github.com/WaLLy3K)
+- [@mitchellkrogza](https://github.com/mitchellkrogza)
+- [@WaLLy3K](https://github.com/WaLLy3K)
 
-____
+--------------------------------------------------------------------------------
+
 # `Hosts` files
 
 ## What is a hosts file?
 
-A hosts file, named `hosts` (with no file extension), is a plain-text file
-used by all operating systems to map hostnames to IP addresses.
+A hosts file, named `hosts` (with no file extension), is a plain-text file used by all operating systems to map hostnames to IP addresses.
 
-In most operating systems, the `hosts` file is preferential to `DNS`.
-Therefore if a domain name is resolved by the `hosts` file, the request never
-leaves your computer.
+In most operating systems, the `hosts` file is preferential to `DNS`. Therefore if a domain name is resolved by the `hosts` file, the request never leaves your computer.
 
 Having a smart `hosts` file goes a long way towards blocking malware, adware, ransomware, porn and other nuisance websites.
 
@@ -96,3 +144,9 @@ A hosts file like this causes any lookups to any of the listed domains to resolv
 ## Recommendations
 
 I'd personally recommend using [Steven's hosts](https://github.com/StevenBlack/hosts) or [Pi-Hole](https://github.com/pi-hole/pi-hole) which are in my opinion the best out there.
+
+--------------------------------------------------------------------------------
+
+# Logic representation
+
+![](https://funilrys.com/user/pages/projects/funceble/global.png)
