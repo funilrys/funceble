@@ -56,8 +56,8 @@ Usage: ./funceble [ -a|--all ] [ -ex|--execution ] [ --help ] [ -h ] [ -ip ] [ -
   --quiet                    -q              Activate quiet mode (Must be before -d or -f)
   --percentage               -p              Show the percentage of the results (Must be before -d or -f)
   --noFiles                  -n              Deactivate the production of output files (Must be before -d or -f)
-  --noLogs                   -nl             Deactivate the production of logs files in case we encouter some errors (Must be before -d or -f)
-  --noUnified                -nu             Deactivate the production of result.txt as unified result under the outpur directory (Must be before -d or -f)
+  --noLogs                   -nl             Deactivate the production of logs files in case we encounter some errors (Must be before -d or -f)
+  --noUnified                -nu             Deactivate the production of result.txt as unified result under the output directory (Must be before -d or -f)
   --split                                    Split output files (Must be before -d or -f)
   --timeout                  -t              Seconds before timeout (Must be before -d or -f)
 ```
