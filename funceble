@@ -1308,7 +1308,7 @@ usage()
     echo "  --execution                -ex             Show the execution time (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --help                                     Print this screen"
     echo "                             -ip             Change the ip to print in host file (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
-    echo "  --host                     -h              Activate the generation of host (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --host                     -h              Activate the generation of hosts file (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --quiet                    -q              Activate quiet mode (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --percentage               -p              Show the percentage of the results (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --noFiles                  -n              Deactivate the production of output files (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
