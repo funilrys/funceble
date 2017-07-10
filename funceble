@@ -15,15 +15,14 @@
 ################################ Contributors ##################################
 # - @mitchellkrogza, Mitchell Krog <mitchellkrog@gmail.com>
 #     - badreferslist: used along the construction of this script :)
-#       @Source: https://raw.githubusercontent.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker/master/Pull_Requests_Here_Please/badreferers.list
+#           @Source: https://git.io/vQPz8
+#     - Idea of implementation of a timeout for whois
+#           @Source: https://git.io/vQPz0
 # - @PromoFaux, Adam Warner <adamw@rner.email> with Pi-Hole <https://pi-hole.net>
 #     - Their blocking list is just awesome to test this script :)
-#       @Source:
-#           - http://sprunge.us/TiZM (Fork under lists-used-to-test)
 # - @WaLLy3K <github@firebog.net>
 #     - Idea of implementation of execution time
-#       @Source:
-#           - https://github.com/funilrys/funceble/issues/11#issuecomment-284099008
+#           @Source: https://git.io/vQPzg
 ################################################################################
 
 
