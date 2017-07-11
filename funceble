@@ -768,7 +768,7 @@ getExpirationDate(){
         
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
-        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL' 'renewal:' 'expires............:' 'expire-date:' 'Exp date:' 'Valid-date' 'Expires On:' 'Fecha de vencimiento:' 'Expiration:.........' 'Fecha de Vencimiento:' 'Registry Expiry Date:' "Date d'expiration:")
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL' 'renewal:' 'expires............:' 'expire-date:' 'Exp date:' 'Valid-date' 'Expires On:' 'Fecha de vencimiento:' 'Expiration:.........' 'Fecha de Vencimiento:' 'Registry Expiry Date:' 'Expires on..............:' "Date d'expiration:")
         
         for i in ${!toMatch[*]}
         do
@@ -984,6 +984,8 @@ formatDate()
     local regex28='[0-9]\s[A-Z]{1}[a-z]{2}\s[0-9]{4}'
     # Date in format: 02-January-2017
     local regex29='[0-9]{2}-[A-Z]{1}[a-z]*-[0-9]{4}'
+    # Date in format: 2017-Jan-05.
+    local regex30='[0-9]{4}-[A-Z]{1}[a-z]{2}-[0-9]{2}\.'
     
     if [[ "${expirationDate}" =~ ${regex1} || "${expirationDate}" =~ ${regex26} ]]
     then
@@ -991,6 +993,18 @@ formatDate()
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c2)
         local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4)
         local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]' | head -c3)
+        
+        # We assign the expiration date
+        expirationDate=${day}'-'${month}'-'${year}
+        
+        # We convert it to lower case
+        dateToLower
+    elif [[ "${expirationDate}" =~ ${regex30} ]]
+    then
+        # We split the date
+        local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c2)
+        local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c4)
+        local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]')
         
         # We assign the expiration date
         expirationDate=${day}'-'${month}'-'${year}
