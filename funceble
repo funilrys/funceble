@@ -768,7 +768,7 @@ getExpirationDate(){
         
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
-        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL' 'renewal:' 'expires............:' 'expire-date:' 'Exp date:' 'Valid-date' 'Expires On:' 'Fecha de vencimiento:' 'Expiration:.........' "Date d'expiration:")
+        local toMatch=('expire:' 'Expiration Date:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL' 'renewal:' 'expires............:' 'expire-date:' 'Exp date:' 'Valid-date' 'Expires On:' 'Fecha de vencimiento:' 'Expiration:.........' 'Fecha de Vencimiento:' "Date d'expiration:")
         
         for i in ${!toMatch[*]}
         do
