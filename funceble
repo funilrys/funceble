@@ -841,44 +841,44 @@ dateToLower(){
 #
 # @CalledBy formatDate
 ################################################################################
-getMonthInEnglish(){
+convertOrShortenMonth(){
     local numericMonth=${1}
     
     case ${numericMonth} in
-        1|01)
+        1|01|January)
             month='jan'
         ;;
-        2|02)
+        2|02|February)
             month='feb'
         ;;
-        3|03)
+        3|03|March)
             month='mar'
         ;;
-        4|04)
+        4|04|April)
             month='apr'
         ;;
-        5|05)
+        5|05|May)
             month='may'
         ;;
-        6|06)
+        6|06|June)
             month='jun'
         ;;
-        7|07)
+        7|07|July)
             month='jul'
         ;;
-        8|08)
+        8|08|August)
             month='aug'
         ;;
-        9|09)
+        9|09|September)
             month='sep'
         ;;
-        10)
+        10|October)
             month='oct'
         ;;
-        11)
+        11|November)
             month='nov'
         ;;
-        12)
+        12|December)
             month='dec'
         ;;
         *)
@@ -982,6 +982,8 @@ formatDate()
     local regex27='[0-9]{2}\.[0-9]{1}\.[0-9]{4}'
     # Date in format: 02 Jan 2017
     local regex28='[0-9]\s[A-Z]{1}[a-z]{2}\s[0-9]{4}'
+    # Date in format: 02-January-2017
+    local regex29='[0-9]{2}-[A-Z]{1}[a-z]*-[0-9]{4}'
     
     if [[ "${expirationDate}" =~ ${regex1} || "${expirationDate}" =~ ${regex26} ]]
     then
@@ -995,6 +997,19 @@ formatDate()
         
         # We convert it to lower case
         dateToLower
+    elif [[ "${expirationDate}" =~ ${regex29} ]]
+    then
+        # We split the date
+        local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c2)
+        local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | tail -c4)
+        local month=$(echo "${expirationDate}" | tr -cd '[[:alpha:]]')
+        
+        # We convert the month
+        convertOrShortenMonth "${month}"
+        
+        # We assign the expiration date
+        expirationDate=${day}'-'${month}'-'${year}
+        
     elif [[ "${expirationDate}" =~ ${regex11} ]]
     then
         # We split the date
@@ -1015,7 +1030,7 @@ formatDate()
         local year=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c8 | tail -c4)
         
         # We convert the month
-        getMonthInEnglish "${month}"
+        convertOrShortenMonth "${month}"
         
         # We assign the expiration date
         expirationDate=${day}'-'${month}'-'${year}
@@ -1027,7 +1042,7 @@ formatDate()
         local day=$(echo "${expirationDate}" | tr -cd '[[:digit:]]' | head -c8 | tail -c2)
         
         # We convert the month
-        getMonthInEnglish "${month}"
+        convertOrShortenMonth "${month}"
         
         # We assign the expiration date
         expirationDate=${day}'-'${month}'-'${year}
@@ -1054,7 +1069,7 @@ formatDate()
         convert1To2digits "${month}" "month"
         
         # We convert the month to alpha format
-        getMonthInEnglish "${month}"
+        convertOrShortenMonth "${month}"
         
         # We assign the expiration date
         expirationDate=${day}'-'${month}'-'${year}
