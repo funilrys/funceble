@@ -735,7 +735,7 @@ whoisLog(){
 dateFormatlog(){
     if [[ ${outputLogs} == true ]]
     then
-        # We save the output of whois into log directory
+        # We save the output of the captured date into log directory
         printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
         printf "\nExpiration Date:%s\n" "${expirationDate}" >> ${dateLogOutput}${referer}
         printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
