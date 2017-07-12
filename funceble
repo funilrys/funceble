@@ -186,7 +186,7 @@ numberOfInactive=0
 numberOfInvalid=0
 
 # Default seconds before timeout
-secondsBeforeTimeout=20
+secondsBeforeTimeout=60
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
