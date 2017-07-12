@@ -49,7 +49,7 @@ debug=false
 script='funceble'
 
 # Script online versionFile
-onlineScript='https://raw.githubusercontent.com/funilrys/funceble/master/funceble'
+onlineScript="https://raw.githubusercontent.com/${funilrys}/funceble/master/funceble"
 
 # Quiet mode
 quiet=false
@@ -59,6 +59,9 @@ scriptContent=$(cat ${currentDir}${script} 2> ${logOutput})
 
 # Default type
 executionType='installation'
+
+# Default seconds before timeout
+secondsBeforeTimeout=30
 ################################################################################
 
 # We log the date
@@ -171,9 +174,9 @@ status()
     if [[ "${executionType}" == 'production' ]]
     then
         # We list the variable we have to change
-        variableToCatch=('validStatus=.*' 'invalidStatus=.*' 'errorStatus=.*')
+        variableToCatch=('validStatus=.*' 'invalidStatus=.*' 'errorStatus=.*' 'secondsBeforeTimeout=[0-9].*')
         # We list the replacement we have to do
-        changeWith=('validStatus="ACTIVE"' 'invalidStatus="INVALID"' 'errorStatus="INACTIVE"')
+        changeWith=('validStatus="ACTIVE"' 'invalidStatus="INVALID"' 'errorStatus="INACTIVE"' "secondsBeforeTimeout=${secondsBeforeTimeout}")
         
         for i in ${!variableToCatch[*]}
         do
@@ -447,6 +450,7 @@ scriptsWorkDir()
         elif [[ "${executionType}" == 'production' ]]
         then
             # We log && print message
+            printf "\nDefault timeout: ${secondsBeforeTimeout} seconds" &&  printf "Default timeout: ${secondsBeforeTimeout} seconds" >> ${logOutput}
             printf "\nInstallation of default variables for production" &&  printf "Installation of default working directory for production" >> ${logOutput}
         fi
     fi
@@ -616,14 +620,15 @@ update()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ -d ] [ -h ]"
+    echo "Usage: ${0} [ -d|--debug ] [ --help ] [ -t|--timeout ]"
     echo ""
-    echo "       {[ -i ]} || {[ -p ]} || {[ -u ]}"
+    echo "       {[ -i|--installation ]} || {[ -p|--production ]} || {[ -u|--update ]}"
     echo ""
-    echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${white}-u${normal} ${red}${bold}or ${white}-i${normal})"
+    echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --help                                     Print this screen"
     echo "  --installation             -i              Execute the installation script"
     echo "  --production               -p              Prepare the repository for production"
+    echo "  --timeout                  -t              Set the default timeout in seconds (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --update                   -u              Update the script"
     echo ""
 }
@@ -654,6 +659,11 @@ while [ "$#" -gt 0 ]; do
             executionType='production'
             installation "${currentDir}${script}" false
             shift 1
+        ;;
+        # We catch the default timeout we have to set
+        -t|--timeout)
+            secondsBeforeTimeout="${2}"
+            shift 2
         ;;
         # We catch if we have to update the script
         -u|--update)
