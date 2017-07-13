@@ -316,8 +316,11 @@ timeout (){
     # type <int|string>
     time=${1}
     
+    # Create the temporary file
+    touch ${whoIs}
+    
     # start the command in a subshell in order to avoid problem with pipes
-    command="/bin/sh -c \"${2}\""
+    command="/bin/bash -c \"${2}\""
     
     expect -c "set echo \"-noecho\"; set  timeout ${time}; spawn -noecho ${command}; expect timeout { exit 1 } eof { exit 0 }"
 }
