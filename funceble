@@ -368,6 +368,8 @@ generateUnifiedFile()
     local type=${1}
     # status <string>
     local status=${2}
+    # expdate <string>
+    local expdate=${3}
     
     if [[ ${outputUnified} == true ]]
     then
@@ -379,7 +381,7 @@ generateUnifiedFile()
                 prints "Less" "${domain}" "${status}" "${type}" >> ${outputUnifiedResult}
             else
                 # We save the domain and his data to the unified file
-                prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+                prints "Generic" "${domain}" "${status}" "${expdate}" "${type}" >> ${outputUnifiedResult}
             fi
         else
             if [[ ${outputLess} == true ]]
@@ -394,7 +396,7 @@ generateUnifiedFile()
                 beforeHeader ${outputUnifiedResult}
                 printHeader "Generic" >> ${outputUnifiedResult}
                 # We save the domain and his data to the unified file
-                prints "Generic" "${domain}" "${status}" "Unknown" "${type}" >> ${outputUnifiedResult}
+                prints "Generic" "${domain}" "${status}" "${expdate}" "${type}" >> ${outputUnifiedResult}
             fi
         fi
     fi
@@ -445,7 +447,7 @@ generateInvalidFile()
     elif [[ ${noFiles} == false ]]
     then
         # We generate the unified file
-        generateUnifiedFile "${type}" "${invalidStatus}"
+        generateUnifiedFile "${type}" "${invalidStatus}" "Unknown"
     fi
 }
 
@@ -486,7 +488,7 @@ generateErrorFile()
     elif [[ ${noFiles} == false ]]
     then
         # We generate the unified files
-        generateUnifiedFile "${type}" "${errorStatus}"
+        generateUnifiedFile "${type}" "${errorStatus}" "Unknown"
     fi
 }
 
@@ -559,7 +561,7 @@ generateValidFile(){
     elif [[ ${noFiles} == false ]]
     then
         # We generate the unified file
-        generateUnifiedFile "${type}" "${validStatus}"
+        generateUnifiedFile "${type}" "${validStatus}" "${exp}"
     fi
 }
 
