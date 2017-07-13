@@ -313,6 +313,36 @@ scriptExecutable()
         exit 0
     fi
 }
+
+############################### Command Exist ##################################
+# Check if a command exist
+#
+# @CalledBy awkInstalled, whoisInstalled, sedInstalled, sha512sumInstalled,
+#           curlInstalled
+################################################################################
+commandexist()
+{
+    local commandToCheck="${1}"
+    
+    if hash ${commandToCheck} 2>/dev/null
+    then
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+        
+    else
+        if [[ ${quiet} == false ]]
+        then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Please make sure that ${red}${commandToCheck}${normal} is installed in your system."
+        fi
+        exit 0
+    fi
+}
+
 ############################# awk Installed ####################################
 # We check if awk is installed
 #
@@ -325,22 +355,8 @@ awkInstalled()
         # We log && print message
         printf "\n${bold}awk${normal} installed" && printf "awk installed" >> ${logOutput}
     fi
-    if [[ $(which awk 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
-    then
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Please make sure that awk is installed in your system"
-        fi
-        exit 0
-    else
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-        fi
-    fi
+    
+    commandexist 'awk'
 }
 
 ############################### whois Installed ################################
@@ -355,22 +371,8 @@ whoisInstalled()
         # We log && print message
         printf "${bold}whois${normal} installed" && printf "whois installed" >> ${logOutput}
     fi
-    if [[ $(which whois 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
-    then
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Please make sure that whois is installed in your system"
-        fi
-        exit 0
-    else
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-        fi
-    fi
+    
+    commandexist 'whois'
     
 }
 
@@ -386,22 +388,8 @@ sedInstalled()
         # We log && print message
         printf "${bold}sed${normal} installed" && printf "sed installed" >> ${logOutput}
     fi
-    if [[ $(which sed 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
-    then
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Please make sure that sed is installed in your system"
-        fi
-        exit 0
-    else
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-        fi
-    fi
+    
+    commandexist 'sed'
 }
 
 ############################## sha512sum Installed #############################
@@ -416,22 +404,40 @@ sha512sumInstalled()
         # We log && print message
         printf "${bold}sha512sum${normal} installed" && printf "sha512sum installed" >> ${logOutput}
     fi
-    if [[ $(which sha512sum 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
+    
+    commandexist 'sha512sum'
+}
+
+############################## curl Installed ##################################
+# We check if curl is installed
+#
+# @CalledBy installation
+################################################################################
+curlInstalled()
+{
+    if [[ ${quiet} == false ]]
     then
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Please make sure that sha512sum is installed in your system"
-        fi
-        exit 0
-    else
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-        fi
+        # We log && print message
+        printf "${bold}curl${normal} installed" && printf "curl installed" >> ${logOutput}
     fi
+    
+    commandexist 'curl'
+}
+
+############################## expect Installed ##################################
+# We check if expect is installed
+#
+# @CalledBy installation
+################################################################################
+expectInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}expect${normal} installed" && printf "expect installed" >> ${logOutput}
+    fi
+    
+    commandexist 'expect'
 }
 
 ############################## Script Work Dir #################################
@@ -508,35 +514,6 @@ scriptsWorkDir()
     fi
 }
 
-############################## curl Installed ##################################
-# We check if curl is installed
-#
-# @CalledBy installation
-################################################################################
-curlInstalled()
-{
-    if [[ ${quiet} == false ]]
-    then
-        # We log && print message
-        printf "${bold}curl${normal} installed" && printf "curl installed" >> ${logOutput}
-    fi
-    if [[ $(which curl 2> /var/tmp/install-funceble | cat /var/tmp/install-funceble ) =~ ':' ]]
-    then
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Please make sure that curl is installed in your system"
-        fi
-        exit 0
-    else
-        if [[ ${quiet} == false ]]
-        then
-            # We log && print message
-            printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
-        fi
-    fi
-}
 
 ############################### Installation ###################################
 # This part is the brain of the installation system
@@ -556,6 +533,7 @@ installation()
     # We check dependencies
     awkInstalled
     curlInstalled
+    expectInstalled
     sedInstalled
     sha512sumInstalled
     whoisInstalled
