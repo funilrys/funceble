@@ -4,7 +4,7 @@
 
 [![license](https://img.shields.io/github/license/funilrys/funceble.svg)](https://github.com/funilrys/funceble/blob/master/LICENSE) [![GitHub tag](https://img.shields.io/github/tag/funilrys/funceble.svg)](https://github.com/funilrys/funceble/tags) [![GitHub release](https://img.shields.io/github/release/funilrys/funceble.svg)](https://github.com/funilrys/funceble/releases/latest)
 
-[![GitHub issues open](https://img.shields.io/github/issues/funilrys/funceble.svg)]() [![GitHub closed issues](https://img.shields.io/github/issues-closed/funilrys/funceble.svg)](https://github.com/funilrys/) [![Issue Stats](https://img.shields.io/issuestats/i/github/funilrys/funceble.svg)](https://github.com/funilrys/funceble/issues)
+[![GitHub issues open](https://img.shields.io/github/issues/funilrys/funceble.svg)]() [![GitHub closed issues](https://img.shields.io/github/issues-closed/funilrys/funceble.svg)](https://github.com/funilrys/)
 
 [![Github file size](https://img.shields.io/github/size/funilrys/funceble/funceble.svg)](https://github.com/funilrys/funceble/blob/master/funceble)
 
@@ -52,6 +52,24 @@ git clone https://github.com/funilrys/funceble.wiki.git
 
   - With custom IP
   - ONLY with **ACTIVE** domains
+
+--------------------------------------------------------------------------------
+
+# Special Thanks
+
+Thank you for your awesome `hosts` lists, support or contributions which helped _(and/or still help)_ me build this script. :smile: :+1:
+
+- Adam Warner - [@PromoFaux](https://github.com/PromoFaux)
+- Mitchell Krog - [@mitchellkrogza](https://github.com/mitchellkrogz)
+- [Pi-Hole](https://github.com/pi-hole/pi-hole)
+
+# Contributors
+
+Thank you for your awesome ideas or contributions which make or made funceble better!! :+1: :100: :1st_place_medal:
+
+- Mitchell Krog - [@mitchellkrogza](https://github.com/mitchellkrogz)
+
+- WaLLy3K - [@WaLLy3K](https://github.com/WaLLy3K)
 
 --------------------------------------------------------------------------------
 
