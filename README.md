@@ -53,6 +53,18 @@ git clone https://github.com/funilrys/funceble.wiki.git
   - With custom IP
   - ONLY with **ACTIVE** domains
 
+## Valuable links
+
+They updated their hosts file or blocklist with the help of [Funceble](https://github.com/funilrys/funceble/) or [dead-hosts](https://github.com/funilrys/dead-hosts).
+
+Repo / List Name                         | Author                                             | Repository / Website                                                                       | Raw
+---------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------
+Badd-Boyz-Hosts                          | [Mitchell Krog](https://github.com/mitchellkrogza) | [Repository](https://github.com/mitchellkrogza/Badd-Boyz-Hosts)                            | [Raw](https://raw.githubusercontent.com/mitchellkrogza/Badd-Boyz-Hosts/master/PULL_REQUESTS/domains.txt)
+KADhosts                                 | [KAD](https://github.com/azet12)                   | [Repository](https://github.com/azet12/KADhosts)                                           | [Raw](https://raw.githubusercontent.com/azet12/KADhosts/master/KADhosts.txt)
+The Big List of Hacked Malware Web Sites | [Mitchell Krog](https://github.com/mitchellkrogza) | [Repository](https://github.com//mitchellkrogza/The-Big-List-of-Hacked-Malware-Web-Sites/) | [Raw](https://raw.githubusercontent.com/mitchellkrogza/The-Big-List-of-Hacked-Malware-Web-Sites/master/.dev-tools/_strip_domains/domains.txt)
+
+Your list or repository is not listed here ? Fill a new issue [here](https://github.com/funilrys/funceble/issues/new?title=Please%20add%20my%20list%20or%20repository%20to%20the%20valuable%20links) :smile_cat:
+
 --------------------------------------------------------------------------------
 
 # Special Thanks
