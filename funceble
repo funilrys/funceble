@@ -107,6 +107,9 @@ percentageLogOutput=${logOutput}percentage/
 # Output of execution Time log
 executionLog=${logOutput}execution.log
 
+# Ouput of no referer log
+noRefererLogOutput=${logOutput}noReferer/
+
 # Output of inactive domain
 outputInactiveHost=${inactiveHostsDir}${hostsDefault}
 
@@ -626,6 +629,23 @@ errorHandle()
     fi
 }
 
+############################## No Referers Log #################################
+# Used to generate the logs
+#
+# @CalledBy getReferer
+################################################################################
+noRefererLog(){
+    if [[ ${outputLogs} == true ]]
+    then
+        # We save the output of the captured date into log directory
+        printf "=%.0s" {1..100} >> ${noRefererLogOutput}.${domainExtension}
+        printf "\nNo referer found for: %s domains\n" "${domainExtension}" >> ${noRefererLogOutput}.${domainExtension}
+        printf "Tested domain: %s\n" "${initialDomain}" >> ${noRefererLogOutput}.${domainExtension}
+        printf "=%.0s" {1..100} >> ${noRefererLogOutput}.${domainExtension}
+        printf "\n" >> ${noRefererLogOutput}.${domainExtension}
+    fi
+}
+
 ############################### Get Referer ####################################
 # Used to generate the report issue url
 #
@@ -702,6 +722,9 @@ getReferer(){
             else
                 # We empty the referer variable
                 referer=''
+                
+                # We log the issue
+                noRefererLog
                 
                 # We handle error & check if server is up
                 errorHandle 'Error'
