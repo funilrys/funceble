@@ -130,6 +130,9 @@ outputInvalidResult=${outputDir}splited/invalid.txt
 
 # Output of error results
 outputErrorResult=${outputDir}splited/inactive.txt
+
+# Output of persentage log
+outputPercentageLog=${percentageLogOutput}percentage.txt
 ################################################################################
 ############################## Default Values ##################################
 # IP for host file
@@ -1355,9 +1358,9 @@ main()
     if [[ ${showPercentage} == true ]]
     then
         # We print on screen the percentage and its header
-        beforeHeader ${percentageLogOutput}${fileNameDate}
-        printHeader 'Percentage' && printHeader 'Percentage' > ${percentageLogOutput}${fileNameDate}
-        prints 'Percentage' && prints 'Percentage' >> ${percentageLogOutput}${fileNameDate}
+        beforeHeader ${outputPercentageLog}
+        printHeader 'Percentage' && printHeader 'Percentage' > ${outputPercentageLog}
+        prints 'Percentage' && prints 'Percentage' >> ${outputPercentageLog}
     fi
 }
 
