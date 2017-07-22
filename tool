@@ -476,6 +476,24 @@ expectInstalled()
     commandexist 'expect'
 }
 
+############################### nslookup Installed ################################
+# We check if nslookup is installed
+#
+# @CalledBy installation
+################################################################################
+nslookupInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}nslookup${normal} installed" && printf "nslookup installed" >> ${logOutput}
+    fi
+    
+    commandexist 'nslookup'
+    
+}
+
+
 ############################## Script Work Dir #################################
 # We install the working directory into the script
 #
@@ -571,6 +589,7 @@ installation()
     awkInstalled
     curlInstalled
     expectInstalled
+    nslookupInstalled
     sedInstalled
     sha512sumInstalled
     whoisInstalled
