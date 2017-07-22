@@ -89,6 +89,8 @@ Thank you for your awesome ideas or contributions which make or made funceble be
 
 - WaLLy3K - [@WaLLy3K](https://github.com/WaLLy3K)
 
+- xxcriticxx - [@xxcriticxx](https://github.com/xxcriticxx)
+
 --------------------------------------------------------------------------------
 
 # `Hosts` files
