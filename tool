@@ -669,7 +669,7 @@ uninstall()
             
             # We thank the user for using funceble
             printf "${bold}${green}Thank you for having used Funceble!!${normal}\n\n"
-            printf "${bold}${green}You're not satisfied of Funceble?\nPlease let me know there: https://github.com/funilrys/funceble/issues/new?title=Not%20satisfied%20of%20Funceble ${normal}\n\n"
+            printf "${bold}${green}You're not satisfied of Funceble?\nPlease let me know there: https://git.io/v7kAE ${normal}\n\n"
             exit 0
         ;;
         n|N|*)
