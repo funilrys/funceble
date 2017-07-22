@@ -658,45 +658,50 @@ downloadScript()
 ################################################################################
 update()
 {
-    # We get the online version and compare versions
-    checkVersion 'get'
-    
-    if [[ ${update} == true ]]
+    if [[ -d ${currentDir}.git ]]
     then
-        # We only need to execute if the versions are not the same
+        git pull
+    else
+        # We get the online version and compare versions
+        checkVersion 'get'
         
-        downloadScript
-        
-        # We install the new script
-        installation ${currentDir}${script} true
-        # We log && print message
-        printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
-        
-        # We check the version of the newly downloaded script
-        checkVersion
-        
-        if [[ ${update} == false ]]
+        if [[ ${update} == true ]]
         then
-            # If we don't need to update, here's the end
-            # We log && print message
-            printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
-            echo "${bold}${cyan}The update was successfully completed!${normal}"
-            printf '\n'
+            # We only need to execute if the versions are not the same
             
-            # We delete the temporary file and stop the script
-            rm -f "${funilrys}"
-            exit 1
+            downloadScript
+            
+            # We install the new script
+            installation ${currentDir}${script} true
+            # We log && print message
+            printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
+            
+            # We check the version of the newly downloaded script
+            checkVersion
+            
+            if [[ ${update} == false ]]
+            then
+                # If we don't need to update, here's the end
+                # We log && print message
+                printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
+                echo "${bold}${cyan}The update was successfully completed!${normal}"
+                printf '\n'
+                
+                # We delete the temporary file and stop the script
+                rm -f "${funilrys}"
+                exit 1
+            else
+                # We log && print message
+                printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+                echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
+                exit 0
+            fi
         else
             # We log && print message
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
-            exit 0
+            printf "No need to update.\n" &&  printf "No need to update." >> ${logOutput}
+            rm -f "${funilrys}"
+            exit 1
         fi
-    else
-        # We log && print message
-        printf "No need to update.\n" &&  printf "No need to update." >> ${logOutput}
-        rm -f "${funilrys}"
-        exit 1
     fi
 }
 
