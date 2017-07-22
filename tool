@@ -647,6 +647,40 @@ update()
     fi
 }
 
+################################# Delete/Uninstall #############################
+# This part is the brain of the uninstallation logic
+#
+# @CalledBy Arguments Handle section
+################################################################################
+uninstall()
+{
+    # We ask for confirmation
+    read -e -p "Do you really want to uninstall everything ? [Y/N] " uninstallConfirmation
+    
+    # We log and show message
+    printf "Deletion of funceble" &&  printf "Deletion of funceble" >> ${logOutput}
+    
+    # We filter the confirmation
+    case "${uninstallConfirmation}" in
+        n|N|*)
+            # We log and show on screen that we didn't delete anything
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            printf "\n\n${bold}${green}Thank you for keeping funceble!!${normal}\n\n"
+            exit 0
+        ;;
+        y|Y)
+            # We delete everything
+            cd "$(dirname $(echo ${currentDir}))"
+            rm -fR ${currentDir} && printf "  ${cyan}✔${normal}\n\n"
+            
+            # We thank the user for using funceble
+            printf "${bold}${green}Thank you for having used Funceble!!${normal}\n\n"
+            printf "${bold}${green}You're not satisfied of Funceble?\nPlease let me know there: https://github.com/funilrys/funceble/issues/new?title=Not%20satisfied%20of%20Funceble ${normal}\n\n"
+            exit 0
+        ;;
+    esac
+}
+
 ################################## Usage #######################################
 # Help function
 #
@@ -657,8 +691,10 @@ usage()
     echo "Usage: ${0} [ -d|--debug ] [ --help ] [ -t|--timeout ]"
     echo ""
     echo "       {[ -i|--installation ]} || {[ -p|--production ]} || {[ -u|--update ]}"
+    echo "                                      {[ --del ]}"
     echo ""
     echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
+    echo "  --del                                      Uninstall funceble and all its components"
     echo "  --help                                     Print this screen"
     echo "  --installation             -i              Execute the installation script"
     echo "  --production               -p              Prepare the repository for production"
@@ -677,6 +713,11 @@ while [ "$#" -gt 0 ]; do
         # We catch if we have to activate debug on installation
         -d|--debug)
             debug=true
+            shift 1
+        ;;
+        # We catch if we have to uninstall everything
+        --del)
+            uninstall
             shift 1
         ;;
         # We catch if we have to show usage()
