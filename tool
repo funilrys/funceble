@@ -662,12 +662,6 @@ uninstall()
     
     # We filter the confirmation
     case "${uninstallConfirmation}" in
-        n|N|*)
-            # We log and show on screen that we didn't delete anything
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            printf "\n\n${bold}${green}Thank you for keeping funceble!!${normal}\n\n"
-            exit 0
-        ;;
         y|Y)
             # We delete everything
             cd "$(dirname $(echo ${currentDir}))"
@@ -676,6 +670,12 @@ uninstall()
             # We thank the user for using funceble
             printf "${bold}${green}Thank you for having used Funceble!!${normal}\n\n"
             printf "${bold}${green}You're not satisfied of Funceble?\nPlease let me know there: https://github.com/funilrys/funceble/issues/new?title=Not%20satisfied%20of%20Funceble ${normal}\n\n"
+            exit 0
+        ;;
+        n|N|*)
+            # We log and show on screen that we didn't delete anything
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            printf "\n\n${bold}${green}Thank you for keeping funceble!!${normal}\n\n"
             exit 0
         ;;
     esac
