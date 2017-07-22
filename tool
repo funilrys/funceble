@@ -564,7 +564,7 @@ scriptsWorkDir()
 installation()
 {
     local fileToInstall="${1}"
-    quiet="${2}"
+    quiet=${2}
     
     # We check the script
     scriptExist "${fileToInstall}"
@@ -668,7 +668,7 @@ update()
         downloadScript
         
         # We install the new script
-        installation ${currentDir}${script} false
+        installation ${currentDir}${script} true
         # We log && print message
         printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
         
