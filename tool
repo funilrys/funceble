@@ -63,194 +63,63 @@ executionType='installation'
 # Default seconds before timeout
 secondsBeforeTimeout=30
 ################################################################################
-
 # We log the date
 date > ${logOutput}
 
-
-################################# Update IANA ##################################
-# Update iana-domains-db
+################################# Delete/Uninstall #############################
+# This part is the brain of the uninstallation logic
 #
-# @CalledBy installation
+# @CalledBy Arguments Handle section
 ################################################################################
-updateIANA()
+uninstall()
 {
-    # We set the url where we get the needed informations
-    local ianaURL="https://www.iana.org/domains/root/db"
+    # We ask for confirmation
+    read -e -p "Do you really want to uninstall everything ? [Y/N] " uninstallConfirmation
     
-    # Temporary file
-    local curlIANA=/var/tmp/${funilrys}-iana
+    # We log and show message
+    printf "Deletion of funceble" &&  printf "Deletion of funceble" >> ${logOutput}
     
-    # We delete old temporary files
-    rm funilrys* &> /dev/null
-    
-    # We get a copy of the page
-    curl -s ${ianaURL} -o ${curlIANA}
-    
-    while read -r line
-    do
-        # We get the valid domains extensions
-        regex="(\/domains\/root\/db\/)(.*)(\.html)"
-        
-        if [[ "${line}" =~ ${regex} ]]
-        then
-            # We put it into a temporary file
-            echo "${BASH_REMATCH[2]}" >> ${funilrys}_iana
-        fi
-    done < "${curlIANA}"
-    
-    # We move the generated file
-    mv ${funilrys}_iana iana-domains-db
-}
-
-################################ checkVersion ##################################
-# This part is where we check the version
-#
-# @CalledBy update
-################################################################################
-checkVersion()
-{
-    # We get the type
-    type="${1}"
-    
-    if [[ "${type}" == 'get' ]]
-    then
-        # We download the script
-        curl -s ${onlineScript} -o ${funilrys}
-        # we give execution permission
-        chmod +x ${funilrys}
-        
-        # We secretly execute a silent installation in the downloaded
-        # script
-        installation "${funilrys}" true
-    fi
-    
-    # We get the sha512sum of the downloaded script
-    local copiedVersion=$(sha512sum ${funilrys}|cut -d ' ' -f1)
-    # We get the sha512sum of the already exist script
-    local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
-    
-    # We compare the versions
-    if [[ ${currentVersion} == ${copiedVersion} ]]
-    then
-        # If the same == no need to update
-        update=false
-    else
-        curlInstalled
-        # If they are not the same == we need to update
-        update=true
-    fi
-}
-
-################################## Download Script #############################
-# We download the script
-#
-# @CalledBy update
-################################################################################
-downloadScript()
-{
-    # We log && print message
-    printf "\nDownload of the script" &&  printf "Download of the script" >> ${logOutput}
-    
-    # We check internet connection
-    # If no internet connections are possible, we stop this script and
-    # return a message error
-    wget -q --tries=10 --timeout=20 --spider http://google.com
-    
-    if [[ $? != 0 ]]; then
-        # We log && print message
-        printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-        echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
-        exit 0
-    else
-        # We save the online script into the existing one
-        curl -s ${onlineScript} -o "${currentDir}${script}"
-        # We log && print message
-        printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
-    fi
-}
-
-################################## Text Format #################################
-# Only for production.
-# This part is used to fix changes to text format section
-#
-# @CalledBy scriptsWorkDir
-################################################################################
-textFormat()
-{
-    if [[ "${executionType}" == 'production' ]]
-    then
-        # We list the variable we have to change
-        variableToCatch=('red=.*' 'white=.*' 'cyan=.*' 'magenta=.*' 'bold=.*' 'normal=.*')
-        # We list the replacement we have to do
-        changeWith=('red=$(tput setaf 1)' 'white=$(tput setaf 7)' 'cyan=$(tput setaf 6)' 'magenta=$(tput setaf 5)' 'bold=$(tput bold)' 'normal=$(tput sgr0)')
-        
-        for i in ${!variableToCatch[*]}
-        do
-            # We get the color
-            regexColor="${variableToCatch[${i}]}"
+    # We filter the confirmation
+    case "${uninstallConfirmation}" in
+        y|Y)
+            # We delete everything
+            cd "$(dirname $(echo ${currentDir}))"
+            rm -fR ${currentDir} && printf "  ${cyan}✔${normal}\n\n"
             
-            # We get the replacement
-            replaceBy="${changeWith[${i}]}"
-            
-            # We apply changes
-            sed -i "s|${regexColor}|${replaceBy}|g" ${fileToInstall}
-        done
-    fi
+            # We thank the user for using funceble
+            printf "${bold}${green}Thank you for having used Funceble!!${normal}\n\n"
+            printf "${bold}${green}You're not satisfied of Funceble?\nPlease let me know there: https://git.io/v7kAE ${normal}\n\n"
+            exit 0
+        ;;
+        n|N|*)
+            # We log and show on screen that we didn't delete anything
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            printf "\n\n${bold}${green}Thank you for keeping funceble!!${normal}\n\n"
+            exit 0
+        ;;
+    esac
 }
 
-##################################### Status ###################################
-# Only for production.
-# This part is used to fix changes to status section
+################################## Usage #######################################
+# Help function
 #
-# @CalledBy scriptsWorkDir
+# @CalledBy main, Arguments Handle Section
 ################################################################################
-status()
+usage()
 {
-    if [[ "${executionType}" == 'production' ]]
-    then
-        # We list the variable we have to change
-        variableToCatch=('validStatus=.*' 'invalidStatus=.*' 'errorStatus=.*' 'secondsBeforeTimeout=[0-9].*')
-        # We list the replacement we have to do
-        changeWith=('validStatus="ACTIVE"' 'invalidStatus="INVALID"' 'errorStatus="INACTIVE"' "secondsBeforeTimeout=${secondsBeforeTimeout}")
-        
-        for i in ${!variableToCatch[*]}
-        do
-            # We get the color
-            regexStatus="${variableToCatch[${i}]}"
-            
-            # We get the replacement
-            replaceBy="${changeWith[${i}]}"
-            
-            # We apply changes
-            sed -i "s|${regexStatus}|${replaceBy}|g" ${fileToInstall}
-        done
-    fi
-}
-
-################################## Debug #######################################
-# This part is the debug section
-#
-# @CalledBy scriptsWorkDir
-################################################################################
-debug()
-{
-    if [[ "${executionType}" == 'installation' ]]
-    then
-        if [[ ${debug} == true ]]
-        then
-            # Option if we want to debug
-            regexDebug='debugUnknown=false'
-            replaceBy="debugUnknown=true"
-            sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
-        fi
-    elif [[ "${executionType}" == 'production' ]]
-    then
-        # Option if we want to debug
-        regexDebug='debugUnknown=[a-z]*'
-        replaceBy="debugUnknown=false"
-        sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
-    fi
+    echo "Usage: ${0} [ -d|--debug ] [ --help ] [ -t|--timeout ]"
+    echo ""
+    echo "       {[ -i|--installation ]} || {[ -p|--production ]} || {[ -u|--update ]}"
+    echo "                                      {[ --del ]}"
+    echo ""
+    echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
+    echo "  --del                                      Uninstall funceble and all its components"
+    echo "  --help                                     Print this screen"
+    echo "  --installation             -i              Execute the installation script"
+    echo "  --production               -p              Prepare the repository for production"
+    echo "  --timeout                  -t              Set the default timeout in seconds (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
+    echo "  --update                   -u              Update the script"
+    echo ""
 }
 
 ################################## Script Exist ################################
@@ -395,55 +264,6 @@ awkInstalled()
     commandexist 'awk'
 }
 
-############################### whois Installed ################################
-# We check if whois is installed
-#
-# @CalledBy installation
-################################################################################
-whoisInstalled()
-{
-    if [[ ${quiet} == false ]]
-    then
-        # We log && print message
-        printf "${bold}whois${normal} installed" && printf "whois installed" >> ${logOutput}
-    fi
-    
-    commandexist 'whois'
-    
-}
-
-################################# sed Installed ################################
-# We check if sed is installed
-#
-# @CalledBy installation
-################################################################################
-sedInstalled()
-{
-    if [[ ${quiet} == false ]]
-    then
-        # We log && print message
-        printf "${bold}sed${normal} installed" && printf "sed installed" >> ${logOutput}
-    fi
-    
-    commandexist 'sed'
-}
-
-############################## sha512sum Installed #############################
-# We check if sha512sum is installed
-#
-# @CalledBy installation
-################################################################################
-sha512sumInstalled()
-{
-    if [[ ${quiet} == false ]]
-    then
-        # We log && print message
-        printf "${bold}sha512sum${normal} installed" && printf "sha512sum installed" >> ${logOutput}
-    fi
-    
-    commandexist 'sha512sum'
-}
-
 ############################## curl Installed ##################################
 # We check if curl is installed
 #
@@ -493,12 +313,179 @@ nslookupInstalled()
     
 }
 
+################################# sed Installed ################################
+# We check if sed is installed
+#
+# @CalledBy installation
+################################################################################
+sedInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}sed${normal} installed" && printf "sed installed" >> ${logOutput}
+    fi
+    
+    commandexist 'sed'
+}
+
+############################## sha512sum Installed #############################
+# We check if sha512sum is installed
+#
+# @CalledBy installation
+################################################################################
+sha512sumInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}sha512sum${normal} installed" && printf "sha512sum installed" >> ${logOutput}
+    fi
+    
+    commandexist 'sha512sum'
+}
+
+############################### whois Installed ################################
+# We check if whois is installed
+#
+# @CalledBy installation
+################################################################################
+whoisInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}whois${normal} installed" && printf "whois installed" >> ${logOutput}
+    fi
+    
+    commandexist 'whois'
+    
+}
+
+################################## Debug #######################################
+# This part is the debug section
+#
+# @CalledBy scriptsWorkDir
+################################################################################
+debug()
+{
+    if [[ "${executionType}" == 'installation' ]]
+    then
+        if [[ ${debug} == true ]]
+        then
+            # Option if we want to debug
+            regexDebug='debugUnknown=false'
+            replaceBy="debugUnknown=true"
+            sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
+        fi
+    elif [[ "${executionType}" == 'production' ]]
+    then
+        # Option if we want to debug
+        regexDebug='debugUnknown=[a-z]*'
+        replaceBy="debugUnknown=false"
+        sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
+    fi
+}
+
+################################## Text Format #################################
+# Only for production.
+# This part is used to fix changes to text format section
+#
+# @CalledBy scriptsWorkDir
+################################################################################
+textFormat()
+{
+    if [[ "${executionType}" == 'production' ]]
+    then
+        # We list the variable we have to change
+        variableToCatch=('red=.*' 'white=.*' 'cyan=.*' 'magenta=.*' 'bold=.*' 'normal=.*')
+        # We list the replacement we have to do
+        changeWith=('red=$(tput setaf 1)' 'white=$(tput setaf 7)' 'cyan=$(tput setaf 6)' 'magenta=$(tput setaf 5)' 'bold=$(tput bold)' 'normal=$(tput sgr0)')
+        
+        for i in ${!variableToCatch[*]}
+        do
+            # We get the color
+            regexColor="${variableToCatch[${i}]}"
+            
+            # We get the replacement
+            replaceBy="${changeWith[${i}]}"
+            
+            # We apply changes
+            sed -i "s|${regexColor}|${replaceBy}|g" ${fileToInstall}
+        done
+    fi
+}
+
+##################################### Status ###################################
+# Only for production.
+# This part is used to fix changes to status section
+#
+# @CalledBy scriptsWorkDir
+################################################################################
+status()
+{
+    if [[ "${executionType}" == 'production' ]]
+    then
+        # We list the variable we have to change
+        variableToCatch=('validStatus=.*' 'invalidStatus=.*' 'errorStatus=.*' 'secondsBeforeTimeout=[0-9].*')
+        # We list the replacement we have to do
+        changeWith=('validStatus="ACTIVE"' 'invalidStatus="INVALID"' 'errorStatus="INACTIVE"' "secondsBeforeTimeout=${secondsBeforeTimeout}")
+        
+        for i in ${!variableToCatch[*]}
+        do
+            # We get the color
+            regexStatus="${variableToCatch[${i}]}"
+            
+            # We get the replacement
+            replaceBy="${changeWith[${i}]}"
+            
+            # We apply changes
+            sed -i "s|${regexStatus}|${replaceBy}|g" ${fileToInstall}
+        done
+    fi
+}
+
+################################# Update IANA ##################################
+# Update iana-domains-db
+#
+# @CalledBy installation
+################################################################################
+updateIANA()
+{
+    # We set the url where we get the needed informations
+    local ianaURL="https://www.iana.org/domains/root/db"
+    
+    # Temporary file
+    local curlIANA=/var/tmp/${funilrys}-iana
+    
+    # We delete old temporary files
+    rm funilrys* &> /dev/null
+    
+    # We get a copy of the page
+    curl -s ${ianaURL} -o ${curlIANA}
+    
+    while read -r line
+    do
+        # We get the valid domains extensions
+        regex="(\/domains\/root\/db\/)(.*)(\.html)"
+        
+        if [[ "${line}" =~ ${regex} ]]
+        then
+            # We put it into a temporary file
+            echo "${BASH_REMATCH[2]}" >> ${funilrys}_iana
+        fi
+    done < "${curlIANA}"
+    
+    # We move the generated file
+    mv ${funilrys}_iana iana-domains-db
+}
 
 ############################## Script Work Dir #################################
 # We install the working directory into the script
 #
 # @CalledBy installation
 ################################################################################
+
 scriptsWorkDir()
 {
     if [[ ${quiet} == false ]]
@@ -569,7 +556,6 @@ scriptsWorkDir()
     fi
 }
 
-
 ############################### Installation ###################################
 # This part is the brain of the installation system
 #
@@ -596,6 +582,73 @@ installation()
     
     # We finalize installation
     scriptsWorkDir
+}
+
+################################ checkVersion ##################################
+# This part is where we check the version
+#
+# @CalledBy update
+################################################################################
+checkVersion()
+{
+    # We get the type
+    type="${1}"
+    
+    if [[ "${type}" == 'get' ]]
+    then
+        # We download the script
+        curl -s ${onlineScript} -o ${funilrys}
+        # we give execution permission
+        chmod +x ${funilrys}
+        
+        # We secretly execute a silent installation in the downloaded
+        # script
+        installation "${funilrys}" true
+    fi
+    
+    # We get the sha512sum of the downloaded script
+    local copiedVersion=$(sha512sum ${funilrys}|cut -d ' ' -f1)
+    # We get the sha512sum of the already exist script
+    local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
+    
+    # We compare the versions
+    if [[ ${currentVersion} == ${copiedVersion} ]]
+    then
+        # If the same == no need to update
+        update=false
+    else
+        curlInstalled
+        # If they are not the same == we need to update
+        update=true
+    fi
+}
+
+################################## Download Script #############################
+# We download the script
+#
+# @CalledBy update
+################################################################################
+downloadScript()
+{
+    # We log && print message
+    printf "\nDownload of the script" &&  printf "Download of the script" >> ${logOutput}
+    
+    # We check internet connection
+    # If no internet connections are possible, we stop this script and
+    # return a message error
+    wget -q --tries=10 --timeout=20 --spider http://google.com
+    
+    if [[ $? != 0 ]]; then
+        # We log && print message
+        printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+        echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
+        exit 0
+    else
+        # We save the online script into the existing one
+        curl -s ${onlineScript} -o "${currentDir}${script}"
+        # We log && print message
+        printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
+    fi
 }
 
 ################################## Update ######################################
@@ -647,61 +700,6 @@ update()
     fi
 }
 
-################################# Delete/Uninstall #############################
-# This part is the brain of the uninstallation logic
-#
-# @CalledBy Arguments Handle section
-################################################################################
-uninstall()
-{
-    # We ask for confirmation
-    read -e -p "Do you really want to uninstall everything ? [Y/N] " uninstallConfirmation
-    
-    # We log and show message
-    printf "Deletion of funceble" &&  printf "Deletion of funceble" >> ${logOutput}
-    
-    # We filter the confirmation
-    case "${uninstallConfirmation}" in
-        y|Y)
-            # We delete everything
-            cd "$(dirname $(echo ${currentDir}))"
-            rm -fR ${currentDir} && printf "  ${cyan}✔${normal}\n\n"
-            
-            # We thank the user for using funceble
-            printf "${bold}${green}Thank you for having used Funceble!!${normal}\n\n"
-            printf "${bold}${green}You're not satisfied of Funceble?\nPlease let me know there: https://git.io/v7kAE ${normal}\n\n"
-            exit 0
-        ;;
-        n|N|*)
-            # We log and show on screen that we didn't delete anything
-            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
-            printf "\n\n${bold}${green}Thank you for keeping funceble!!${normal}\n\n"
-            exit 0
-        ;;
-    esac
-}
-
-################################## Usage #######################################
-# Help function
-#
-# @CalledBy main, Arguments Handle Section
-################################################################################
-usage()
-{
-    echo "Usage: ${0} [ -d|--debug ] [ --help ] [ -t|--timeout ]"
-    echo ""
-    echo "       {[ -i|--installation ]} || {[ -p|--production ]} || {[ -u|--update ]}"
-    echo "                                      {[ --del ]}"
-    echo ""
-    echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
-    echo "  --del                                      Uninstall funceble and all its components"
-    echo "  --help                                     Print this screen"
-    echo "  --installation             -i              Execute the installation script"
-    echo "  --production               -p              Prepare the repository for production"
-    echo "  --timeout                  -t              Set the default timeout in seconds (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
-    echo "  --update                   -u              Update the script"
-    echo ""
-}
 
 ############################### Arguments Handle ###############################
 # We use this part to get arguments from command line.
