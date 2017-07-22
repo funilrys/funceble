@@ -62,6 +62,9 @@ executionType='installation'
 
 # Default seconds before timeout
 secondsBeforeTimeout=30
+
+# Version number
+versionNumber='1.4.0'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -119,6 +122,7 @@ usage()
     echo "  --production               -p              Prepare the repository for production"
     echo "  --timeout                  -t              Set the default timeout in seconds (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --update                   -u              Update the script"
+    echo "  --version                  -v              Show the current version of Funceble"
     echo ""
 }
 
@@ -747,6 +751,10 @@ while [ "$#" -gt 0 ]; do
         -u|--update)
             update
             shift 1
+        ;;
+        -v|--version)
+            echo "Current Version: ${versionNumber}"
+            exit 1
         ;;
         -*)
             echo "Unknown option: $1" >&2
