@@ -14,7 +14,7 @@ Have any question? Fill a new issue and I'll do my best to answer as soon as pos
 
 ## :book: Wiki as place to be :star2::star2::star2:
 
-Want to know more about **Funceble** ? All information to know are under the [wiki](https://github.com/funilrys/funceble/wiki)! You can also contribute there if you want! :smile:
+Want to know more about **Funceble**? All information to know are under the [wiki](https://github.com/funilrys/funceble/wiki)! You can also contribute there if you want! :smile:
 
 You can get a copy of the wiki with the following:
 
@@ -22,36 +22,29 @@ You can get a copy of the wiki with the following:
 git clone https://github.com/funilrys/funceble.wiki.git
 ```
 
-## Features
+## Main Features
 
 - Read an existing `hosts`file and check every domain present into it.
-- Change/set timeout for `whois`
-- Deactivate logs
-- Deactivate the production of unified results
-- Silent mode available
+- Generate `hosts` file
+
+  - With custom IP
+  - ONLY with **ACTIVE** domains
+
 - Show on screen
 
   - The status of a given domain is **ACTIVE**, **INACTIVE** or **INVALID** (live update)
-  - The execution time of the script (at the end)
   - The percentage of **ACTIVE**, **INACTIVE** and **INVALID** (at the end)
 
 - Save on single file
 
   - Result of execution (live update)
-  - Execution time (at the end)
   - The percentage of **ACTIVE**, **INACTIVE** and **INVALID** (at the end)
 
 - Save on separated files (when needed)
 
-  - Logs of encountered error(s)
   - **ACTIVE** domain
   - **INACTIVE** domain
   - **INVALID** domain
-
-- Generate `hosts` file
-
-  - With custom IP
-  - ONLY with **ACTIVE** domains
 
 ## Valuable links
 
@@ -70,7 +63,7 @@ SpotifyAds                                     | [Tomasz Przybył](https://githu
 The Big List of Hacked Malware Web Sites       | [Mitchell Krog](https://github.com/mitchellkrogza) | [Repository](https://github.com//mitchellkrogza/The-Big-List-of-Hacked-Malware-Web-Sites/) | [Raw](https://raw.githubusercontent.com/mitchellkrogza/The-Big-List-of-Hacked-Malware-Web-Sites/master/.dev-tools/_strip_domains/domains.txt)
 UncheckyAds                                    | [Tomasz Przybył](https://github.com/FadeMind)      | [Repository](https://github.com/FadeMind/hosts.extras/tree/master/UncheckyAds)             | [Raw](https://raw.githubusercontent.com/FadeMind/hosts.extras/master/UncheckyAds/hosts)
 
-Your list or repository is not listed here ? Fill a new issue [here](https://github.com/funilrys/funceble/issues/new?title=Please%20add%20my%20list%20or%20repository%20to%20the%20valuable%20links) :smile_cat:
+Your list or repository is not listed here? Fill a new issue [here](https://github.com/funilrys/funceble/issues/new?title=Please%20add%20my%20list%20or%20repository%20to%20the%20valuable%20links) :smile_cat:
 
 --------------------------------------------------------------------------------
 
@@ -79,18 +72,28 @@ Your list or repository is not listed here ? Fill a new issue [here](https://git
 Thank you for your awesome `hosts` lists, support or contributions which helped _(and/or still help)_ me build this script. :smile: :+1:
 
 - Adam Warner - [@PromoFaux](https://github.com/PromoFaux)
-- Mitchell Krog - [@mitchellkrogza](https://github.com/mitchellkrogz)
+- Mitchell Krog - [@mitchellkrogza](https://github.com/mitchellkrogza)
 - [Pi-Hole](https://github.com/pi-hole/pi-hole)
 
 # Contributors
 
 Thank you for your awesome ideas or contributions which make or made funceble better!! :+1: :100: :1st_place_medal:
 
-- Mitchell Krog - [@mitchellkrogza](https://github.com/mitchellkrogz)
+- Mitchell Krog - [@mitchellkrogza](https://github.com/mitchellkrogza)
 
 - WaLLy3K - [@WaLLy3K](https://github.com/WaLLy3K)
 
 - xxcriticxx - [@xxcriticxx](https://github.com/xxcriticxx)
+
+--------------------------------------------------------------------------------
+
+# Supporting the project
+
+[Funceble](https://github.com/funilrys/funceble) and [dead-hosts](https://github.com/funilrys/dead-hosts) are powered by :coffee:!
+
+This project helps you and or you like it? Why don't you buy me a cup of :coffee:? :smile_cat:
+
+[![Buy me a cup of coffee](https://img.shields.io/badge/Buy%20-me%20a%20cup%20of%20%E2%98%95-blue.svg)](https://www.paypal.me/funilrys/)
 
 --------------------------------------------------------------------------------
 
