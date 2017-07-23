@@ -752,6 +752,7 @@ while [ "$#" -gt 0 ]; do
             update
             shift 1
         ;;
+        # We catch if we have to show the version number
         -v|--version)
             echo "Current Version: ${versionNumber}"
             exit 1
