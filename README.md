@@ -72,7 +72,9 @@ Your list or repository is not listed here? Fill a new issue [here](https://gith
 Thank you for your awesome `hosts` lists, support or contributions which helped _(and/or still help)_ me build this script. :smile: :+1:
 
 - Adam Warner - [@PromoFaux](https://github.com/PromoFaux)
+
 - Mitchell Krog - [@mitchellkrogza](https://github.com/mitchellkrogza)
+
 - [Pi-Hole](https://github.com/pi-hole/pi-hole)
 
 # Contributors
@@ -91,9 +93,7 @@ Thank you for your awesome ideas or contributions which make or made funceble be
 
 [Funceble](https://github.com/funilrys/funceble) and [dead-hosts](https://github.com/funilrys/dead-hosts) are powered by :coffee:!
 
-This project helps you and or you like it? Why don't you buy me a cup of :coffee:? :smile_cat:
-
-[![Buy me a cup of coffee](https://img.shields.io/badge/Buy%20-me%20a%20cup%20of%20%E2%98%95-blue.svg)](https://www.paypal.me/funilrys/)
+This project helps you and or you like it? Why don't you [![Buy me a cup of coffee](https://img.shields.io/badge/Buy%20-me%20a%20cup%20of%20%E2%98%95-blue.svg)](https://www.paypal.me/funilrys/)? :smile_cat:
 
 --------------------------------------------------------------------------------
 
