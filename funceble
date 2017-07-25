@@ -78,7 +78,7 @@ hostsDefault='hosts'
 
 # Output directory.
 # DO NOT FORGET '/' AT THE END
-outputDir='/home/funilrys/Projects/funceble/output/'
+outputDir='%%currentDir%%/output/'
 
 # hosts directory
 hostsDir=${outputDir}hosts/
@@ -195,7 +195,7 @@ numberOfInvalid=0
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+0.0.1'
+versionNumber='dev-1.4.0+3'
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
@@ -235,8 +235,8 @@ printHeader()
     if [[ ${type} == 'Invalid' ]]
     then
         # Generation of header for invalid.txt
-        printf "\n%-100s %-17s %-10s %-8s\n" "Domain" "Status" "Source" "Analyse Date"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ---------- ----------------------------"
+        printf "\n%-100s %-17s %-10s %-8s\n" "Domain" "Status" "Source"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
     elif [[ ${type} == 'Invalid_File' ]]
     then
         # Generation of header for invalid.txt
@@ -245,8 +245,8 @@ printHeader()
     elif [[ ${type} == 'Error' ]]
     then
         # Generation of header for error.txt
-        printf "\n%-100s %-35s %-17s %10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source" "Analyse Date"
-        echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ---------- ----------------------------"
+        printf "\n%-100s %-35s %-17s %10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source"
+        echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ----------"
     elif [[ ${type} == 'Error_File' ]]
     then
         # Generation of header for error.txt
@@ -255,8 +255,8 @@ printHeader()
     elif [[ ${type} == 'Valid' ]]
     then
         # Generation of header for valid.txt
-        printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
+        printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ----------"
     elif [[ ${type} == 'Valid_File' ]]
     then
         # Generation of header for valid.txt
@@ -266,8 +266,8 @@ printHeader()
     elif [[ ${type} == 'Generic' ]]
     then
         # Generation of header
-        printf "\n%-100s %-11s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
+        printf "\n%-100s %-11s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ----------"
     elif [[ ${type} == 'Generic_File' ]]
     then
         # Generation of header
@@ -307,7 +307,7 @@ prints()
     if [[ ${type} == 'Invalid' ]]
     then
         # Print data for invalid.txt
-        printf "%-100s %-17s %-8s %-8s\n" "${2}" "${invalidStatus}" "${3}" "${dateAn}"
+        printf "%-100s %-17s %-8s\n" "${2}" "${invalidStatus}" "${3}"
     elif [[ ${type} == 'Invalid_File' ]]
     then
         # Print data for invalid.txt
@@ -315,7 +315,7 @@ prints()
     elif [[ ${type} == 'Error' ]]
     then
         # Print data for error.txt
-        printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${errorStatus}" "${4}" "${dateAn}"
+        printf "%-100s %-35s %-17s %8s\n" "${2}" "${3}" "${errorStatus}" "${4}"
     elif [[ ${type} == 'Error_File' ]]
     then
         # Print data for error.txt
@@ -323,7 +323,7 @@ prints()
     elif [[ ${type} == 'Valid' ]]
     then
         # Print data for valid.txt
-        printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}" "${dateAn}"
+        printf "%-100s %-17s %-17s %-8s\n" "${2}" "${validStatus}" "${3}" "${4}"
     elif [[ ${type} == 'Valid_File' ]]
     then
         # Print data for valid.txt
@@ -332,7 +332,7 @@ prints()
     elif [[ ${type} == 'Generic' ]]
     then
         # Print data
-        printf "%-100s %-11s %-17s %-10s %-20s\n" "${2}" "${3}" "${4}" "${5}" "${dateAn}"
+        printf "%-100s %-11s %-17s %-10s\n" "${2}" "${3}" "${4}" "${5}"
     elif [[ ${type} == 'Generic_File' ]]
     then
         # Print data
