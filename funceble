@@ -195,7 +195,7 @@ numberOfInvalid=0
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+3'
+versionNumber='dev-1.4.0+4'
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
@@ -266,8 +266,8 @@ printHeader()
     elif [[ ${type} == 'Generic' ]]
     then
         # Generation of header
-        printf "\n%-100s %-11s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ----------"
+        printf "\n%-100s %-11s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "HTTP Code"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- ----------"
     elif [[ ${type} == 'Generic_File' ]]
     then
         # Generation of header
@@ -332,7 +332,7 @@ prints()
     elif [[ ${type} == 'Generic' ]]
     then
         # Print data
-        printf "%-100s %-11s %-17s %-10s\n" "${2}" "${3}" "${4}" "${5}"
+        printf "%-100s %-11s %-17s %-10s %-15s\n" "${2}" "${3}" "${4}" "${5}" "${httpCode}"
     elif [[ ${type} == 'Generic_File' ]]
     then
         # Print data
@@ -349,7 +349,6 @@ prints()
     then
         # Print data
         printf "%-100s %-11s %-10s\n" "${2}" "${3}" "${4}"
-        
     elif [[ ${type} == 'Percentage' ]]
     then
         # We calcul the results
@@ -826,6 +825,15 @@ dateFormatlog(){
     fi
 }
 
+############################### Get HTTP Code ##################################
+# Used to get the HTTP code of the requested domain or IP
+#
+# @CalledBy getExpirationDate
+################################################################################
+getHTTPCode(){
+    httpCode=$(curl --write-out "%{http_code}\n" -s -o /dev/null "${initialDomain}")
+}
+
 ####################### Get (Domain) Expiration Date ###########################
 # Used to get the expiration date of a given domain.
 #
@@ -838,6 +846,9 @@ getExpirationDate(){
     
     # We get the whois server referenced for the given domain
     getReferer ${domain}
+    
+    # We get the HTTP code
+    getHTTPCode
     
     # Ensure that it's supported and not empty
     if [[ ${notSupported} == false && ${domain} != "" && ${referer} != "" ]]
