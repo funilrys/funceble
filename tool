@@ -64,7 +64,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='1.4.0'
+versionNumber='dev-1.4.0+1'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -119,6 +119,7 @@ usage()
     echo "  --del                                      Uninstall funceble and all its components"
     echo "  --help                                     Print this screen"
     echo "  --installation             -i              Execute the installation script"
+    echo "  --iana                                     Update `iana-domains-db`"
     echo "  --production               -p              Prepare the repository for production"
     echo "  --timeout                  -t              Set the default timeout in seconds (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --update                   -u              Update the script"
@@ -456,6 +457,11 @@ status()
 ################################################################################
 updateIANA()
 {
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "Update of iana-domains-db" && printf "Update of iana-domains-db" >> ${logOutput}
+    fi
     # We set the url where we get the needed informations
     local ianaURL="https://www.iana.org/domains/root/db"
     
@@ -482,6 +488,14 @@ updateIANA()
     
     # We move the generated file
     mv ${funilrys}_iana iana-domains-db
+    
+    
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+    fi
+    
 }
 
 ############################## Script Work Dir #################################
@@ -711,7 +725,7 @@ update()
 
 
 ############################### Arguments Handle ###############################
-# We use this part to get arguments from command line.
+# We use this part to get arguments from command line.updateIANA
 #
 # @Requiredby All
 ################################################################################
@@ -735,6 +749,11 @@ while [ "$#" -gt 0 ]; do
         # We catch if we have to install only the script
         -i|--install)
             installation "${currentDir}${script}" false
+            shift 1
+        ;;
+        # We catch if we need to update the `iana-domains-db` file
+        --iana)
+            updateIANA
             shift 1
         ;;
         -p|--production)
