@@ -136,7 +136,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+10'
+versionNumber='dev-1.4.0+11'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -183,10 +183,10 @@ executionLog=${logOutput}execution.log
 noRefererLogOutput=${logOutput}noReferer/
 
 # Output of inactive domain
-outputInactiveHost=${downHostsDir}${hostsDefault}
+outputDownHost=${downHostsDir}${hostsDefault}
 
 # Output of active domain
-outputActiveHost=${upHostsDir}${hostsDefault}
+outputUpHost=${upHostsDir}${hostsDefault}
 
 # Output of invalid domain
 outputInvalidHost=${invalidHostsDir}${hostsDefault}
@@ -195,13 +195,13 @@ outputInvalidHost=${invalidHostsDir}${hostsDefault}
 outputUnifiedResult=${outputDir}result.txt
 
 # Output of valid results
-outputValidResult=${outputDir}splited/active.txt
+outputUpResult=${outputDir}splited/active.txt
 
 # Output of invalid results
 outputInvalidResult=${outputDir}splited/invalid.txt
 
 # Output of error results
-outputErrorResult=${outputDir}splited/inactive.txt
+outputDownResult=${outputDir}splited/inactive.txt
 
 # Output of persentage log
 outputPercentageLog=${percentageLogOutput}percentage.txt
@@ -217,13 +217,13 @@ outputPercentageLog=${percentageLogOutput}percentage.txt
 # |/       (_______)|/    )_)(_______/   )_(   \_______/(_______)|/    )_)\_______)
 
 ############################### Before Header ##################################
-# Used to print some infomations before the header data comes.
+# Used to print some infomations before the header dataoutputDownResult comes.
 #
 # @CalledBy getReferer
 ################################################################################
 beforeHeader(){
     # We get the file we're gonna print into
-    # type <string>
+    # file <string>
     local file="${1}"
     
     if [[ ! -f "${file}" ]]
@@ -237,7 +237,9 @@ beforeHeader(){
 }
 
 ############################### Print Header ###################################
-# Used to print header if quiet=false and in files
+# Used to print header
+# if quiet=false it's printing in file
+#
 # @CalledBy getReferer
 ################################################################################
 printHeader()
@@ -247,7 +249,7 @@ printHeader()
     
     if [[ ${type} == 'Invalid' ]]
     then
-        # Generation of header for invalid.txt
+        # Generation of header for invalid (On screen)
         printf "\n%-100s %-17s %-10s %-8s\n" "Domain" "Status" "Source"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
     elif [[ ${type} == 'Invalid_File' ]]
@@ -255,44 +257,44 @@ printHeader()
         # Generation of header for invalid.txt
         printf "\n%-100s %-17s %-10s %-8s\n" "Domain" "Status" "Source" "Analyse Date"
         echo "---------------------------------------------------------------------------------------------------- ----------- ---------- ----------------------------"
-    elif [[ ${type} == 'Error' ]]
+    elif [[ ${type} == 'Down' ]]
     then
-        # Generation of header for error.txt
+        # Generation of header for inactive (On screen)
         printf "\n%-100s %-35s %-17s %10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source"
         echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ----------"
-    elif [[ ${type} == 'Error_File' ]]
+    elif [[ ${type} == 'Down_File' ]]
     then
-        # Generation of header for error.txt
+        # Generation of header for inactive.txt
         printf "\n%-100s %-35s %-17s %10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source" "Analyse Date"
         echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ---------- ----------------------------"
-    elif [[ ${type} == 'Valid' ]]
+    elif [[ ${type} == 'Up' ]]
     then
-        # Generation of header for valid.txt
+        # Generation of header for valid (On screen)
         printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ----------"
-    elif [[ ${type} == 'Valid_File' ]]
+    elif [[ ${type} == 'Up_File' ]]
     then
         # Generation of header for valid.txt
         printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
     elif [[ ${type} == 'Generic' ]]
     then
-        # Generation of header
+        # Generation of header (On screen)
         printf "\n%-100s %-11s %-17s %-10s %-10s\n" "Domain" "Status" "Expiration Date" "Source" "HTTP Code"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- ----------"
     elif [[ ${type} == 'Generic_File' ]]
     then
-        # Generation of header
+        # Generation of header (On file)
         printf "\n%-100s %-11s %-17s %-10s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "HTTP Code" "Analyse Date"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- ---------- -------------------------------"
     elif [[ ${type} == 'Less' ]]
     then
-        # Generation of header
+        # Generation of header (On screen)
         printf "\n%-100s %-11s %-10s\n" "Domain" "Status" "Source"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
     elif [[ ${type} == 'Less_File' ]]
     then
-        # Generation of header
+        # Generation of header (On file)
         printf "\n%-100s %-11s %-10s\n" "Domain" "Status" "Source"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
     elif [[ ${type} == 'Percentage' ]]
@@ -304,7 +306,7 @@ printHeader()
 }
 
 ################################# Prints #######################################
-# Come with printHeader(). In charge to print data
+# Come with printHeader(). In charge to print/input generated data.
 #
 # @CalledBy getReferer
 ################################################################################
@@ -313,29 +315,30 @@ prints()
     # type <string>
     local type=${1}
     
+    # We use the current full date as Analyse Date
     local dateAn=$(date)
     
     if [[ ${type} == 'Invalid' ]]
     then
-        # Print data for invalid.txt
+        # Print invalid data on screen
         printf "%-100s %-17s %-8s\n" "${2}" "${invalidStatus}" "${3}"
     elif [[ ${type} == 'Invalid_File' ]]
     then
         # Print data for invalid.txt
         printf "%-100s %-17s %-8s %-8s\n" "${2}" "${invalidStatus}" "${3}" "${dateAn}"
-    elif [[ ${type} == 'Error' ]]
+    elif [[ ${type} == 'Down' ]]
     then
-        # Print data for error.txt
+        # Print Down data on screen
         printf "%-100s %-35s %-17s %8s\n" "${2}" "${3}" "${downStatus}" "${4}"
-    elif [[ ${type} == 'Error_File' ]]
+    elif [[ ${type} == 'Down_File' ]]
     then
-        # Print data for error.txt
+        # Print data for inactive.txt
         printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${downStatus}" "${4}" "${dateAn}"
-    elif [[ ${type} == 'Valid' ]]
+    elif [[ ${type} == 'Up' ]]
     then
-        # Print data for valid.txt
+        # Print valid data on screen
         printf "%-100s %-17s %-17s %-8s\n" "${2}" "${upStatus}" "${3}" "${4}"
-    elif [[ ${type} == 'Valid_File' ]]
+    elif [[ ${type} == 'Up_File' ]]
     then
         # Print data for valid.txt
         printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${upStatus}" "${3}" "${4}" "${dateAn}"
@@ -395,25 +398,25 @@ timeout (){
 ############################# Generate Hosts File ##############################
 # In charge to print data into hosts file
 #
-# @CalledBy generateInvalidFile,generateErrorFile,generateValidFile
+# @CalledBy generateInvalidFile, generateErrorFile, generateValidFile
 ################################################################################
 generateHostsFile()
 {
     # type <string>
-    local type=${1}
+    local type="${1}"
     
     if [[ ${generateHosts} == true ]]
     then
         if [[ ${type} == 'inactive' ]]
         then
             # We print / create the inactive file
-            beforeHeader ${outputInactiveHost}
-            prints 'FullHosts' "${domain}" >> ${outputInactiveHost}
+            beforeHeader ${outputDownHost}
+            prints 'FullHosts' "${domain}" >> ${outputDownHost}
         elif [[ ${type} == 'active' ]]
         then
             # We print / create active file
-            beforeHeader ${outputActiveHost}
-            prints 'FullHosts' "${domain}" >> ${outputActiveHost}
+            beforeHeader ${outputUpHost}
+            prints 'FullHosts' "${domain}" >> ${outputUpHost}
         elif [[ ${type} == 'invalid' ]]
         then
             # We print / create invalid file
@@ -519,7 +522,7 @@ generateInvalidFile()
 }
 
 ################################# Generate Error File ##########################
-# In charge to print data into error.txt
+# In charge to print data into invalid.txt
 #
 # @CalledBy errorHandle
 ################################################################################
@@ -541,16 +544,16 @@ generateErrorFile()
             referer='Not Found'
         fi
         
-        if [[ -f ${outputErrorResult} ]]
+        if [[ -f ${outputDownResult} ]]
         then
             # We save the domain and his data
-            prints "Error_File" "${domain}" "${referer}" "${type}" >> ${outputErrorResult}
+            prints "Down_File" "${domain}" "${referer}" "${type}" >> ${outputDownResult}
         else
             # We create header into and in between, create the file
-            beforeHeader ${outputErrorResult}
-            printHeader "Error_File" >> ${outputErrorResult}
+            beforeHeader ${outputDownResult}
+            printHeader "Down_File" >> ${outputDownResult}
             # We save the domain and his data
-            prints "Error_File"  "${domain}" "${referer}" "${type}" >> ${outputErrorResult}
+            prints "Down_File"  "${domain}" "${referer}" "${type}" >> ${outputDownResult}
         fi
     elif [[ ${noFiles} == false ]]
     then
@@ -560,7 +563,7 @@ generateErrorFile()
 }
 
 ############################ Generate Valid File ###############################
-# In charge to print data into error.txt
+# In charge to print data into invalid.txt
 #
 # @CalledBy getReferer, errorHandle
 ################################################################################
@@ -598,31 +601,31 @@ generateValidFile(){
     # We execute this only if ${noFiles} == false
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
-        if [[ -f  ${outputValidResult} ]]
+        if [[ -f  ${outputUpResult} ]]
         then
             if [[ ${outputLess} == true ]]
             then
                 # We save domain and its data
-                prints "Less_File" "${domain}" "${upStatus}" "${type}"  >> ${outputValidResult}
+                prints "Less_File" "${domain}" "${upStatus}" "${type}"  >> ${outputUpResult}
             else
                 # We save domain and its data
-                prints "Valid_File" "${domain}" "${exp}" "${type}" >> ${outputValidResult}
+                prints "Up_File" "${domain}" "${exp}" "${type}" >> ${outputUpResult}
             fi
         else
             if [[ ${outputLess} == true ]]
             then
                 # We create a file and add header
-                beforeHeader ${outputValidResult}
-                printHeader "Less_File"  >> ${outputValidResult}
+                beforeHeader ${outputUpResult}
+                printHeader "Less_File"  >> ${outputUpResult}
                 # We add domain and its data to file
-                prints "Less_File" "${domain}" "${upStatus}" "${type}"  >> ${outputValidResult}
+                prints "Less_File" "${domain}" "${upStatus}" "${type}"  >> ${outputUpResult}
             else
                 # We create a file and add header
-                beforeHeader ${outputValidResult}
-                printHeader 'Valid_File' >> ${outputValidResult}
+                beforeHeader ${outputUpResult}
+                printHeader 'Up_File' >> ${outputUpResult}
                 
                 # We add domain and its data to file
-                prints "Valid_File" "${domain}" "${exp}" "${type}" >> ${outputValidResult}
+                prints "Up_File" "${domain}" "${exp}" "${type}" >> ${outputUpResult}
             fi
         fi
     elif [[ ${noFiles} == false ]]
@@ -662,15 +665,8 @@ errorHandle()
         generateValidFile "Unknown" "${sourceType}"
         return 1
     fi
-    #
-    # if [[ ${type} == 'Invalid' &&  ${issueStatus} == 'Unknown' ]]
-    # then
-    #     # We assign the status
-    #     local status="${downStatus}"
-    #
-    #     # We generate the invalid/unified file
-    #     generateErrorFile "${sourceType}"
-    if [[  ${issueStatus} == 'Unknown' && ${type} == 'Error' || ${type} == 'Invalid' || ${type} != 'Valid' ]]
+    
+    if [[  ${issueStatus} == 'Unknown' && ${type} == 'Down' || ${type} == 'Invalid' || ${type} != 'Up' ]]
     then
         # We assign the status
         local status="${downStatus}"
@@ -699,7 +695,7 @@ errorHandle()
 # @CalledBy getReferer
 ################################################################################
 noRefererLog(){
-    if [[ ${outputLogs} == true && ${debugUnknown} == true ]]
+    if [[ ${outputLogs} == true ]]
     then
         # We save the output of the captured date into log directory
         printf "=%.0s" {1..100} >> ${noRefererLogOutput}.${domainExtension}
@@ -784,7 +780,7 @@ getReferer(){
                     noRefererLog
                     
                     # We handle error & check if server is up
-                    errorHandle 'Error'
+                    errorHandle 'Down'
                 fi
             fi
         else
@@ -805,9 +801,8 @@ getReferer(){
 # @CalledBy getExpirationDate
 ################################################################################
 whoisLog(){
-    if [[ ${outputLogs} == true && ${debugUnknown} == true ]]
+    if [[ ${outputLogs} == true ]]
     then
-        
         # We save the output of whois into log directory
         printf "=%.0s" {1..100} >> ${whoisLogOutput}${referer}
         printf "\n" >> ${whoisLogOutput}${referer}
@@ -824,7 +819,7 @@ whoisLog(){
 # @CalledBy formatDate
 ################################################################################
 dateFormatlog(){
-    if [[ ${outputLogs} == true && ${debugUnknown} == true ]]
+    if [[ ${outputLogs} == true ]]
     then
         # We save the output of the captured date into log directory
         printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
@@ -934,7 +929,7 @@ getExpirationDate(){
                     whoisLog
                 fi
                 # We handle error & check if server is up
-                errorHandle 'Error'
+                errorHandle 'Down'
             fi
         done
     fi
@@ -955,6 +950,7 @@ dateToLower(){
 # @CalledBy formatDate
 ################################################################################
 convertOrShortenMonth(){
+    # numericMonth <int>
     local numericMonth=${1}
     
     case ${numericMonth} in
@@ -1007,22 +1003,30 @@ convertOrShortenMonth(){
 # @CalledBy formatDate
 ################################################################################
 convert1To2digits(){
+    # number <int>
     local number="${1}"
+    # monthOrDay <strin>
     local monthOrDay="${2}"
     
+    # We set the valid 1 digit number
     local validNumber=('1' '2' '3' '4' '5' '6' '7' '8' '9')
+    
+    # The difig we append to those 1 digit number
     local null='0'
     
     for i in ${!validNumber[*]}
     do
+        # If the number is in ${validNumber}
         if [[ ${number} == ${validNumber[${i}]} ]]
         then
             case "${monthOrDay}" in
                 month)
+                    # If we need the month, we save the 2 digit into mouth
                     month=${null}${number}
                     break
                 ;;
                 day)
+                    # If we need the day, we save the 2 digit into day
                     day=${null}${number}
                     break
                 ;;
@@ -1270,7 +1274,6 @@ startExecutionTime()
 ################################################################################
 endExecutionTime()
 {
-    
     if [[ ${showExecutionTime} == true ]]
     then
         # We get execution end time
@@ -1303,6 +1306,7 @@ endExecutionTime()
 percentage()
 {
     # We get type of the operation to do
+    # type <string>
     local type="${1}"
     # And the information to calculate (ina/inv)
     local status="${2}"
@@ -1357,12 +1361,12 @@ percentage()
 ################################################################################
 checkHostsFiles()
 {
-    if [[ -f ${outputActiveHost} || -f ${outputInvalidHost} || -f ${outputInactiveHost} ]]
+    if [[ -f ${outputUpHost} || -f ${outputInvalidHost} || -f ${outputDownHost} ]]
     then
         # We append the date to the default values
-        outputActiveHost=${outputActiveHost}${fileNameDate}
+        outputUpHost=${outputUpHost}${fileNameDate}
         outputInvalidHost=${outputInvalidHost}${fileNameDate}
-        outputInactiveHost=${outputInactiveHost}${fileNameDate}
+        outputDownHost=${outputDownHost}${fileNameDate}
     fi
 }
 ################################## Main ########################################
@@ -1374,14 +1378,11 @@ main()
 {
     startExecutionTime
     # We get the domain
+    # domain <string>
     domain=${1}
     # We get the file
+    # file <string>
     file=${2}
-    
-    if [[ -d ${outputUnifiedResult} ]]
-    then
-        rm ${outputUnifiedResult}
-    fi
     
     if [[ "${domain}" != "" ]]
     then
