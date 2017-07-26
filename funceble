@@ -37,11 +37,8 @@ whoIs="/var/tmp/whois.$$"
 ianaDB="iana-domains-db"
 ################################################################################
 ###############################  Text Format ###################################
-# Red Color
-red=$(tput setaf 1)
-
-# White Color
-white=$(tput setaf 7)
+# Bold
+bold=$(tput bold)
 
 # Cyan Color
 cyan=$(tput setaf 6)
@@ -49,21 +46,25 @@ cyan=$(tput setaf 6)
 # Magenta Color
 magenta=$(tput setaf 5)
 
-# Bold
-bold=$(tput bold)
-
 # Disable formating
 normal=$(tput sgr0)
+
+# Red Color
+red=$(tput setaf 1)
+
+# White Color
+white=$(tput setaf 7)
+
 ################################################################################
 ################################## Status ######################################
-# Valid domain status
-validStatus="ACTIVE"
+# Down domain status
+errorStatus="INACTIVE"
 
 # Invalid domain status
 invalidStatus="INVALID"
 
-# Down domain status
-errorStatus="INACTIVE"
+# Valid domain status
+validStatus="ACTIVE"
 ################################################################################
 ################################## Outputs #####################################
 # If noFiles=true, We don't any results files ==> Not applied to hosts file
@@ -120,7 +121,7 @@ outputActiveHost=${activeHostsDir}${hostsDefault}
 outputInvalidHost=${invalidHostsDir}${hostsDefault}
 
 # Output of unified results
-outputUnifiedResult=${outputDir}/result.txt
+outputUnifiedResult=${outputDir}result.txt
 
 # Output of valid results
 outputValidResult=${outputDir}splited/active.txt
@@ -195,7 +196,13 @@ numberOfInvalid=0
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+4'
+versionNumber='dev-1.4.0+5'
+
+# IPv4 match
+regexIPv4='(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
+
+# HTTP Status code timeout
+secondsBeforeHTTPTimeout=5
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
@@ -262,17 +269,16 @@ printHeader()
         # Generation of header for valid.txt
         printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
-        
     elif [[ ${type} == 'Generic' ]]
     then
         # Generation of header
-        printf "\n%-100s %-11s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "HTTP Code"
+        printf "\n%-100s %-11s %-17s %-10s %-10s\n" "Domain" "Status" "Expiration Date" "Source" "HTTP Code"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- ----------"
     elif [[ ${type} == 'Generic_File' ]]
     then
         # Generation of header
-        printf "\n%-100s %-11s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
+        printf "\n%-100s %-11s %-17s %-10s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "HTTP Code" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- ---------- -------------------------------"
     elif [[ ${type} == 'Less' ]]
     then
         # Generation of header
@@ -283,7 +289,6 @@ printHeader()
         # Generation of header
         printf "\n%-100s %-11s %-10s\n" "Domain" "Status" "Source"
         echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
-        
     elif [[ ${type} == 'Percentage' ]]
     then
         # Generation of header
@@ -328,15 +333,14 @@ prints()
     then
         # Print data for valid.txt
         printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}" "${dateAn}"
-        
     elif [[ ${type} == 'Generic' ]]
     then
         # Print data
-        printf "%-100s %-11s %-17s %-10s %-15s\n" "${2}" "${3}" "${4}" "${5}" "${httpCode}"
+        printf "%-100s %-11s %-17s %-10s %-10s\n" "${2}" "${3}" "${4}" "${5}" "${httpCode}"
     elif [[ ${type} == 'Generic_File' ]]
     then
         # Print data
-        printf "%-100s %-11s %-17s %-10s %-20s\n" "${2}" "${3}" "${4}" "${5}" "${dateAn}"
+        printf "%-100s %-11s %-17s %-10s %-10s %-20s\n" "${2}" "${3}" "${4}" "${5}" "${httpCode}" "${dateAn}"
     elif [[ ${type} == 'FullHosts' ]]
     then
         # Print host file
@@ -652,15 +656,15 @@ errorHandle()
         generateValidFile "Unknown" "${sourceType}"
         return 1
     fi
-    
-    if [[ ${type} == 'Invalid' &&  ${issueStatus} == 'Unknown' ]]
-    then
-        # We assign the status
-        local status="${invalidStatus}"
-        
-        # We generate the invalid/unified file
-        generateInvalidFile "${sourceType}"
-    elif [[  ${issueStatus} == 'Unknown' && ${type} == 'Error' || ${type} != 'Invalid' || ${type} != 'Valid' ]]
+    #
+    # if [[ ${type} == 'Invalid' &&  ${issueStatus} == 'Unknown' ]]
+    # then
+    #     # We assign the status
+    #     local status="${errorStatus}"
+    #
+    #     # We generate the invalid/unified file
+    #     generateErrorFile "${sourceType}"
+    if [[  ${issueStatus} == 'Unknown' && ${type} == 'Error' || ${type} == 'Invalid' || ${type} != 'Valid' ]]
     then
         # We assign the status
         local status="${errorStatus}"
@@ -689,7 +693,7 @@ errorHandle()
 # @CalledBy getReferer
 ################################################################################
 noRefererLog(){
-    if [[ ${outputLogs} == true ]]
+    if [[ ${outputLogs} == true && ${debugUnknown} == true ]]
     then
         # We save the output of the captured date into log directory
         printf "=%.0s" {1..100} >> ${noRefererLogOutput}.${domainExtension}
@@ -707,85 +711,84 @@ noRefererLog(){
 ################################################################################
 getReferer(){
     # initialDomain <string>
-    initialDomain=$(echo ${1} |awk '{print tolower($0)}')
+    local initialDomain="${1}"
     
-    # We get the extension of the given domain
-    domainExtension=${initialDomain##*.}
-    # We get the list of allowed extensions
-    validExtension=$(cat ${ianaDB})
-    
-    # We check if the given domain extension is in our database file
-    if [[ ${validExtension} =~ ${domainExtension} ]]
+    if [[ ! "${initialDomain}" =~ ${regexIPv4} ]]
     then
-        # We initiate this variable in order to know if ${domainExtension} pass
-        # The cases
-        notSupported=true
+        # We get the extension of the given domain
+        domainExtension=${initialDomain##*.}
+        # We get the list of allowed extensions
+        validExtension=$(cat ${ianaDB})
         
-        # Special cases domains which don't have their whois server
-        # registered to IANA.
-        # cf. https://github.com/funilrys/funceble/issues?q=is%3Aissue+Not+Found+is%3Aclosed
-        case ${domainExtension} in
-            ga)
-                # We can now use the domain
-                domain=${initialDomain}
-                # We assign the domain WHOIS referer server
-                referer="whois.my.ga"
-                # The Following is used to stop the execution of getExpirationDate
-                # in case the domain is not valid.
-                notSupported=false
-            ;;
-            za)
-                # We can now use the domain
-                domain=${initialDomain}
-                # We assign the domain WHOIS referer server
-                referer="whois.registry.net.za"
-                # The Following is used to stop the execution of getExpirationDate
-                # in case the domain is not valid.
-                notSupported=false
-            ;;
-            bz)
-                # We can now use the domain
-                domain=${initialDomain}
-                # We assign the domain WHOIS referer server
-                referer="whois.afilias-grs.info"
-                # The Following is used to stop the execution of getExpirationDate
-                # in case the domain is not valid.
-                notSupported=false
-            ;;
-        esac
-        
-        if [[ ${notSupported} == true ]]
+        # We check if the given domain extension is in our database file
+        if [[ ${validExtension} =~ ${domainExtension} ]]
         then
-            # We get the host to call.
-            # If extension have a host assigned, it's written if format
-            # refer: whois.hello.world for example
-            referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
+            # We initiate this variable in order to know if ${domainExtension} pass
+            # The cases
+            notSupported=true
             
-            # regex to pass to have a valid referer
-            regexWhois='(.*)whois(.*)'
+            # Special cases domains which don't have their whois server
+            # registered to IANA.
+            # cf. https://github.com/funilrys/funceble/issues?q=is%3Aissue+Not+Found+is%3Aclosed
+            case ${domainExtension} in
+                ga)
+                    # We assign the domain WHOIS referer server
+                    referer="whois.my.ga"
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                ;;
+                za)
+                    # We assign the domain WHOIS referer server
+                    referer="whois.registry.net.za"
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                ;;
+                bz)
+                    # We assign the domain WHOIS referer server
+                    referer="whois.afilias-grs.info"
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                ;;
+            esac
             
-            # We check if the format is valid
-            if [[ ${referer} =~ ${regexWhois} ]]
+            if [[ ${notSupported} == true ]]
             then
-                # We can now use the domain
-                domain=${initialDomain}
+                # We get the host to call.
+                # If extension have a host assigned, it's written if format
+                # refer: whois.hello.world for example
+                referer=$(whois -h "${whoisServer}" "${initialDomain}" | awk '/refer/{print $NF}')
                 
-                # The Following is used to stop the execution of getExpirationDate
-                # in case the domain is not valid.
-                notSupported=false
-            else
-                # We empty the referer variable
-                referer=''
+                # regex to pass to have a valid referer
+                regexWhois='(.*)whois(.*)'
                 
-                # We log the issue
-                noRefererLog
-                
-                # We handle error & check if server is up
-                errorHandle 'Error'
+                # We check if the format is valid
+                if [[ ${referer} =~ ${regexWhois} ]]
+                then
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                else
+                    # We empty the referer variable
+                    referer=''
+                    
+                    # We log the issue
+                    noRefererLog
+                    
+                    # We handle error & check if server is up
+                    errorHandle 'Error'
+                fi
             fi
+        else
+            # We handle error & check if server is up
+            notSupported=true
+            errorHandle 'Invalid'
         fi
     else
         # We handle error & check if server is up
+        notSupported=true
         errorHandle 'Invalid'
     fi
 }
@@ -796,7 +799,7 @@ getReferer(){
 # @CalledBy getExpirationDate
 ################################################################################
 whoisLog(){
-    if [[ ${outputLogs} == true ]]
+    if [[ ${outputLogs} == true && ${debugUnknown} == true ]]
     then
         
         # We save the output of whois into log directory
@@ -815,7 +818,7 @@ whoisLog(){
 # @CalledBy formatDate
 ################################################################################
 dateFormatlog(){
-    if [[ ${outputLogs} == true ]]
+    if [[ ${outputLogs} == true && ${debugUnknown} == true ]]
     then
         # We save the output of the captured date into log directory
         printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
@@ -831,7 +834,17 @@ dateFormatlog(){
 # @CalledBy getExpirationDate
 ################################################################################
 getHTTPCode(){
-    httpCode=$(curl --write-out "%{http_code}\n" -s -o /dev/null "${initialDomain}")
+    # We get the HTTP header
+    httpCode=$(timeout ${secondsBeforeHTTPTimeout} "wget --spider -S "${domain}:80" 2>&1 | grep "HTTP/"")
+    
+    # We format it to get the current code
+    httpCode=$(echo ${httpCode} | tr -cd '[[:digit:]]' | head -c5 | tail -c3)
+    
+    # In case of timeout we print Unknown
+    if [[ ${httpCode} == '' ]]
+    then
+        httpCode='Unknown'
+    fi
 }
 
 ####################### Get (Domain) Expiration Date ###########################
@@ -842,16 +855,16 @@ getHTTPCode(){
 getExpirationDate(){
     # domain <string>
     # Domain given by user
-    domain=${1}
-    
-    # We get the whois server referenced for the given domain
-    getReferer ${domain}
+    domain="$(echo ${1} |awk '{print tolower($0)}')"
     
     # We get the HTTP code
     getHTTPCode
     
+    # We get the whois server referenced for the given domain
+    getReferer ${domain}
+    
     # Ensure that it's supported and not empty
-    if [[ ${notSupported} == false && ${domain} != "" && ${referer} != "" ]]
+    if [[ ! "${initialDomain}" =~ ${regexIPv4} && ${notSupported} == false && ${domain} != "" && ${referer} != "" ]]
     then
         # We call the whois server and save the result into ${whoIs}
         # cf. Default Values Section
@@ -1358,6 +1371,11 @@ main()
     domain=${1}
     # We get the file
     file=${2}
+    
+    if [[ -d ${outputUnifiedResult} ]]
+    then
+        rm ${outputUnifiedResult}
+    fi
     
     if [[ "${domain}" != "" ]]
     then
