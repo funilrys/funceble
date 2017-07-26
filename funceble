@@ -136,7 +136,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+9'
+versionNumber='dev-1.4.0+10'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -223,10 +223,13 @@ outputPercentageLog=${percentageLogOutput}percentage.txt
 ################################################################################
 beforeHeader(){
     # We get the file we're gonna print into
+    # type <string>
     local file="${1}"
     
     if [[ ! -f "${file}" ]]
     then
+        # If does not exist we add informations about funceble and the Date
+        # of the generation of the file.
         printf "# File generated with %s\n" "${linkScript}" > ${file}
         printf "# Date of generation: %s\n" "${currentDate}" >> ${file}
         printf "\n" >> ${file}
