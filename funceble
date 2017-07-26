@@ -65,7 +65,7 @@ downStatus="INACTIVE"
 invalidStatus="INVALID"
 
 # Valid domain status
-validStatus="ACTIVE"
+upStatus="ACTIVE"
 ################################################################################
 ################################## Outputs #####################################
 # If noFiles=true, We don't any results files ==> Not applied to hosts file
@@ -197,7 +197,7 @@ numberOfInvalid=0
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+6'
+versionNumber='dev-1.4.0+7'
 
 # IPv4 match
 regexIPv4='(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
@@ -329,11 +329,11 @@ prints()
     elif [[ ${type} == 'Valid' ]]
     then
         # Print data for valid.txt
-        printf "%-100s %-17s %-17s %-8s\n" "${2}" "${validStatus}" "${3}" "${4}"
+        printf "%-100s %-17s %-17s %-8s\n" "${2}" "${upStatus}" "${3}" "${4}"
     elif [[ ${type} == 'Valid_File' ]]
     then
         # Print data for valid.txt
-        printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${validStatus}" "${3}" "${4}" "${dateAn}"
+        printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${upStatus}" "${3}" "${4}" "${dateAn}"
     elif [[ ${type} == 'Generic' ]]
     then
         # Print data
@@ -578,10 +578,10 @@ generateValidFile(){
         if [[ ${outputLess} == true ]]
         then
             # We save domain and its data
-            prints "Less" "${domain}" "${validStatus}" "${type}"
+            prints "Less" "${domain}" "${upStatus}" "${type}"
         else
             # We print domain and its data
-            prints "Generic" "${domain}" "${validStatus}" "${exp}" "${type}"
+            prints "Generic" "${domain}" "${upStatus}" "${exp}" "${type}"
         fi
     fi
     
@@ -598,7 +598,7 @@ generateValidFile(){
             if [[ ${outputLess} == true ]]
             then
                 # We save domain and its data
-                prints "Less_File" "${domain}" "${validStatus}" "${type}"  >> ${outputValidResult}
+                prints "Less_File" "${domain}" "${upStatus}" "${type}"  >> ${outputValidResult}
             else
                 # We save domain and its data
                 prints "Valid_File" "${domain}" "${exp}" "${type}" >> ${outputValidResult}
@@ -610,7 +610,7 @@ generateValidFile(){
                 beforeHeader ${outputValidResult}
                 printHeader "Less_File"  >> ${outputValidResult}
                 # We add domain and its data to file
-                prints "Less_File" "${domain}" "${validStatus}" "${type}"  >> ${outputValidResult}
+                prints "Less_File" "${domain}" "${upStatus}" "${type}"  >> ${outputValidResult}
             else
                 # We create a file and add header
                 beforeHeader ${outputValidResult}
@@ -623,7 +623,7 @@ generateValidFile(){
     elif [[ ${noFiles} == false ]]
     then
         # We generate the unified file
-        generateUnifiedFile "${type}" "${validStatus}" "${exp}"
+        generateUnifiedFile "${type}" "${upStatus}" "${exp}"
     fi
 }
 
