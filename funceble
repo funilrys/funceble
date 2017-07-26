@@ -136,7 +136,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+8'
+versionNumber='dev-1.4.0+9'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -217,7 +217,8 @@ outputPercentageLog=${percentageLogOutput}percentage.txt
 # |/       (_______)|/    )_)(_______/   )_(   \_______/(_______)|/    )_)\_______)
 
 ############################### Before Header ##################################
-# Used to print before header data.
+# Used to print some infomations before the header data comes.
+#
 # @CalledBy getReferer
 ################################################################################
 beforeHeader(){
