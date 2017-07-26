@@ -67,29 +67,99 @@ invalidStatus="INVALID"
 # Valid domain status
 upStatus="ACTIVE"
 ################################################################################
-################################## Outputs #####################################
-# If noFiles=true, We don't any results files ==> Not applied to hosts file
-noFiles=false
+############################## Default Values ##################################
+# Current Date
+currentDate=$(date)
+
+# IP for host file
+customIP='0.0.0.0'
 
 # Generate debug file under log
 # DO NOT USE THIS IF YOU DON'T KNOW HOW TO DEBUG FROM OUTPUTTED FILE
 debugUnknown=false
 
+# Date if we append it to file
+fileNameDate=_${currentDate// /_}
+
+# Activate/Desactivate the generation of hosts file
+generateHosts=false
+
+# Link to script
+linkScript="https://github.com/funilrys/funceble"
+
+# If noFiles=true, We don't any results files ==> Not applied to hosts file
+noFiles=false
+
+# Number of domain which returns inactive
+numberOfDown=0
+
+# Number of domain which returns invalid
+numberOfInvalid=0
+
+# Number of domain tested
+numberOfTested=0
+
+# Number of active
+numberOfUp=0
+
+# Output less data
+outputLess=false
+
+# Output logs
+outputLogs=true
+
+# Output unified file
+outputUnified=true
+
+# If set to true, we don't print anything
+quiet=false
+
+# Regex to match
+regexCurrentDir='%%currentDir%%'
+
+# IPv4 match
+regexIPv4='(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
+
+# HTTP Status code timeout
+secondsBeforeHTTPTimeout=5
+
+# Default seconds before timeout
+secondsBeforeTimeout=30
+
+# Show/hide execution time
+showExecutionTime=false
+
+# Show/hide percentage
+showPercentage=true
+
+# If set to false, we generate only one file with the results
+splitFiles=false
+
+# Version number
+versionNumber='dev-1.4.0+8'
+
+# IANA whois server. The following is there to give use the whois
+# host we have to call to get a (valid) response.
+# Note: Whois Server are different for each extension.
+whoisServer="whois.iana.org"
+################################################################################
+################################## Outputs #####################################
 # Defaut name for hosts file
 hostsDefault='hosts'
 
 # Output directory.
+# Auto updated with `tool -i`
 # DO NOT FORGET '/' AT THE END
 outputDir='%%currentDir%%/output/'
 
 # hosts directory
 hostsDir=${outputDir}hosts/
 
-# ACTIVE hosts directory
-activeHostsDir=${hostsDir}ACTIVE/
-
 # INACTIVE hosts directory
-inactiveHostsDir=${hostsDir}INACTIVE/
+downHostsDir=${hostsDir}INACTIVE/
+
+# ACTIVE hosts directory
+upHostsDir=${hostsDir}ACTIVE/
 
 # INVALID hosts directory
 invalidHostsDir=${hostsDir}INVALID/
@@ -113,10 +183,10 @@ executionLog=${logOutput}execution.log
 noRefererLogOutput=${logOutput}noReferer/
 
 # Output of inactive domain
-outputInactiveHost=${inactiveHostsDir}${hostsDefault}
+outputInactiveHost=${downHostsDir}${hostsDefault}
 
 # Output of active domain
-outputActiveHost=${activeHostsDir}${hostsDefault}
+outputActiveHost=${upHostsDir}${hostsDefault}
 
 # Output of invalid domain
 outputInvalidHost=${invalidHostsDir}${hostsDefault}
@@ -135,75 +205,6 @@ outputErrorResult=${outputDir}splited/inactive.txt
 
 # Output of persentage log
 outputPercentageLog=${percentageLogOutput}percentage.txt
-################################################################################
-############################## Default Values ##################################
-# IP for host file
-customIP='0.0.0.0'
-
-# Current Date
-currentDate=$(date)
-
-# Date if we append it to file
-fileNameDate=_${currentDate// /_}
-
-# Activate/Desactivate the generation of hosts file
-generateHosts=false
-
-# Output less data
-outputLess=false
-
-# Output unified file
-outputUnified=true
-
-# Output logs
-outputLogs=true
-
-# If set to true, we don't print anything
-quiet=false
-
-# If set to false, we generate only one file with the results
-splitFiles=false
-
-# IANA whois server. The following is there to give use the whois
-# host we have to call to get a (valid) response.
-# Note: Whois Server are different for each extension.
-whoisServer="whois.iana.org"
-
-# Regex to match
-regexCurrentDir='%%currentDir%%'
-
-# Show/hide execution time
-showExecutionTime=false
-
-# Link to script
-linkScript="https://github.com/funilrys/funceble"
-
-# Show/hide percentage
-showPercentage=true
-
-# Number of domain tested
-numberOfTested=0
-
-# Number of active
-numberOfActive=0
-
-# Number of domain which returns inactive
-numberOfInactive=0
-
-# Number of domain which returns invalid
-numberOfInvalid=0
-
-# Default seconds before timeout
-secondsBeforeTimeout=30
-
-# Version number
-versionNumber='dev-1.4.0+7'
-
-# IPv4 match
-regexIPv4='(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
-
-# HTTP Status code timeout
-secondsBeforeHTTPTimeout=5
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
@@ -362,8 +363,8 @@ prints()
         percentage 'result' 'inv'
         
         # We print data
-        printf "%-11s %-12s %-12s\n"  "ACTIVE" "${percentageOfActive}%" "${numberOfActive}"
-        printf "%-11s %-12s %-12s\n"  "INACTIVE" "${percentageOfInactive}%" "${numberOfInactive}"
+        printf "%-11s %-12s %-12s\n"  "ACTIVE" "${percentageOfActive}%" "${numberOfUp}"
+        printf "%-11s %-12s %-12s\n"  "INACTIVE" "${percentageOfInactive}%" "${numberOfDown}"
         printf "%-11s %-12s %-12s\n"  "INVALID" "${percentageOfInvalid}%" "${numberOfInvalid}"
     fi
 }
@@ -1310,7 +1311,7 @@ percentage()
         then
             # We increment the number of inactive
             ((numberOfTested=${numberOfTested}+1))
-            ((numberOfInactive=${numberOfInactive}+1))
+            ((numberOfDown=${numberOfDown}+1))
         elif [[ ${type} == 'counter' && ${status} == 'inv' ]]
         then
             # We increment the number of invalid
@@ -1320,11 +1321,11 @@ percentage()
         then
             # We increment the number of active
             ((numberOfTested=${numberOfTested}+1))
-            ((numberOfActive=${numberOfActive}+1))
+            ((numberOfUp=${numberOfUp}+1))
         elif [[ ${type} == 'result' && ${status} == 'ina' ]]
         then
             # We calculate the percentage of inactive
-            ((percentageOfInactive=${numberOfInactive}*100/${numberOfTested}))
+            ((percentageOfInactive=${numberOfDown}*100/${numberOfTested}))
         elif [[ ${type} == 'result' && ${status} == 'inv' ]]
         then
             # We calculate the percentage of invalid
@@ -1332,7 +1333,7 @@ percentage()
         elif [[ ${type} == 'result' && ${status} == 'act' ]]
         then
             # We calculate the percentage of active
-            ((percentageOfActive=${numberOfActive}*100/${numberOfTested}))
+            ((percentageOfActive=${numberOfUp}*100/${numberOfTested}))
         fi
         
         if [[ ${type} == 'results' ]]
