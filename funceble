@@ -33,6 +33,7 @@ whoIs="/var/tmp/whois.$$"
 ################################### Files ######################################
 # IANA Root Zone Database file.
 # The file is a dump of the extensions this script can accept.
+# For update use: `tool --iana`
 # Source: https://www.iana.org/domains/root/db
 ianaDB="iana-domains-db"
 ################################################################################
@@ -58,7 +59,7 @@ white=$(tput setaf 7)
 ################################################################################
 ################################## Status ######################################
 # Down domain status
-errorStatus="INACTIVE"
+downStatus="INACTIVE"
 
 # Invalid domain status
 invalidStatus="INVALID"
@@ -196,7 +197,7 @@ numberOfInvalid=0
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+5'
+versionNumber='dev-1.4.0+6'
 
 # IPv4 match
 regexIPv4='(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
@@ -320,11 +321,11 @@ prints()
     elif [[ ${type} == 'Error' ]]
     then
         # Print data for error.txt
-        printf "%-100s %-35s %-17s %8s\n" "${2}" "${3}" "${errorStatus}" "${4}"
+        printf "%-100s %-35s %-17s %8s\n" "${2}" "${3}" "${downStatus}" "${4}"
     elif [[ ${type} == 'Error_File' ]]
     then
         # Print data for error.txt
-        printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${errorStatus}" "${4}" "${dateAn}"
+        printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${downStatus}" "${4}" "${dateAn}"
     elif [[ ${type} == 'Valid' ]]
     then
         # Print data for valid.txt
@@ -549,7 +550,7 @@ generateErrorFile()
     elif [[ ${noFiles} == false ]]
     then
         # We generate the unified files
-        generateUnifiedFile "${type}" "${errorStatus}" "Unknown"
+        generateUnifiedFile "${type}" "${downStatus}" "Unknown"
     fi
 }
 
@@ -660,14 +661,14 @@ errorHandle()
     # if [[ ${type} == 'Invalid' &&  ${issueStatus} == 'Unknown' ]]
     # then
     #     # We assign the status
-    #     local status="${errorStatus}"
+    #     local status="${downStatus}"
     #
     #     # We generate the invalid/unified file
     #     generateErrorFile "${sourceType}"
     if [[  ${issueStatus} == 'Unknown' && ${type} == 'Error' || ${type} == 'Invalid' || ${type} != 'Valid' ]]
     then
         # We assign the status
-        local status="${errorStatus}"
+        local status="${downStatus}"
         
         # We generate the error/unified file
         generateErrorFile "${sourceType}"
