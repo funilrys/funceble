@@ -70,7 +70,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+4'
+versionNumber='dev-1.4.0+5'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -466,6 +466,8 @@ cleanOutput(){
     # Only for dev: We delete temporary files
     find ${currentDir} -name '*~' -type f -exec rm {} \;
     
+    # We delete the log files of wget
+    find ${currentDir} -name 'wget-log*' -type f -exec rm {} \;
     
     # We log && print message
     printf "  ${cyan}✔${normal}\n\n"
