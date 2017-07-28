@@ -10,6 +10,13 @@
 # |/       (_______)|/    )_)(_______/(_______/|/ \___/ (_______/(_______/
 
 # Written by: @Funilrys, Nissar Chababy <contact at funilrys dot com>
+# GitHub : https://github.com/funilrys/funceble
+
+################################ Contributors ##################################
+# - @xxcriticxx - https://git.io/v7Ci7
+#       - Implementation of nslookup check
+#           Source: https://git.io/v7CiA
+################################################################################
 
 ###############################  Text Format ###################################
 # Red Color
@@ -451,6 +458,30 @@ status()
     fi
 }
 
+################################## Clean Output ###################################
+# Clean all generated files
+#
+# @CalledBy Arguments Handle section
+################################################################################
+cleanOutput(){
+    # We set the directory we need to clean
+    local output=${currentDir}output/
+    
+    # We log && print message
+    printf "Cleaning generated files"
+    
+    # Search and delete everything except .gitignore
+    find ${output} ! -name '.gitignore' -type f -exec rm {} \;
+    
+    # Only for dev: We delete temporary files
+    find ${currentDir} -name '*~' -type f -exec rm {} \;
+    
+    
+    # We log && print message
+    printf "  ${cyan}✔${normal}\n\n"
+    echo "${bold}${cyan}The cleaning was successfully completed!${normal}"
+}
+
 ################################# Update IANA ##################################
 # Update iana-domains-db
 #
@@ -550,6 +581,7 @@ scriptsWorkDir()
                 printf '\n'
             elif [[ "${executionType}" == 'production' ]]
             then
+                cleanOutput
                 updateIANA
                 echo "${bold}${cyan}The production logic was successfully completed!${normal}"
                 echo "You can now distribute this repository."
@@ -722,26 +754,6 @@ update()
             exit 1
         fi
     fi
-}
-
-################################## Clean Output ###################################
-# Clean all generated files
-#
-# @CalledBy Arguments Handle section
-################################################################################
-cleanOutput(){
-    # We set the directory we need to clean
-    local output=${currentDir}output/
-    
-    # We log && print message
-    printf "Cleaning generated files"
-    
-    # Searrch and delete everything except .gitignore
-    find ${output} ! -name '.gitignore' -type f -exec rm {} \;
-    
-    # We log && print message
-    printf "  ${cyan}✔${normal}\n\n"
-    echo "${bold}${cyan}The cleaning was successfully completed!${normal}"
 }
 
 ############################### Arguments Handle ###############################
