@@ -513,137 +513,108 @@ generateUnifiedFile()
     fi
 }
 
-############################### Generate Invalid File ##########################
-# In charge to print data into invalid.txt
+############################## Generate Status File ############################
+# In charge to print print files according to their status
 #
 # @CalledBy errorHandle
 ################################################################################
-generateInvalidFile()
-{
+generateStatusFile(){
+    # We get the type of the request
     # type <string>
-    local type=${1}
+    local type="${1}"
     
-    if [[ ${activeCodes[*]} =~ ${httpCode} ]]
-    then
-        generateAnalyticFile 'Up' "${status}"
-    elif [[ ${potentiallyActiveCodes[*]} =~ ${httpCode} ]]
-    then
-        generateAnalyticFile 'Pup' "${status}"
-    elif [[ ${inactiveOrPotentiallyCodes[*]} =~ ${httpCode} ]]
-    then
-        generateAnalyticFile 'Down' "${upStatus}"
-    fi
+    # Where does the source come from
+    # source <string>
+    local source="${2}"
     
-    # We generate the host file
-    generateHostsFile 'invalid'
-    percentage 'counter' 'inv'
+    # The expiration date
+    # expiredDate <string>
+    local expiredDate="${3}"
     
-    if [[ ${noFiles} == false && ${splitFiles} == true ]]
-    then
-        if [[ -f ${outputInvalidResult} ]]
-        then
-            if [[ ${outputLess} == true ]]
+    case ${type} in
+        'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
+            # If empty, we change the expiration date to `Unknown`
+            if [[ ${expiredDate} == '' ]]
             then
-                # We save the domain and his data
-                prints "Less_File" "${domain}" "${invalidStatus}" "${type}" >> ${outputInvalidResult}
-            else
-                # We save the domain and his data
-                prints "Invalid_File" "${domain}" "${type}" >> ${outputInvalidResult}
+                expiredDate='Unknown'
             fi
-        else
-            if [[ ${outputLess} == true ]]
+            
+            # We do some analytic
+            if [[ ${inactiveOrPotentiallyCodes[*]} =~ ${httpCode} ]]
             then
-                # We create header into and in between, create the file
-                beforeHeader ${outputInvalidResult}
-                printHeader "Less_File"  >> ${outputInvalidResult}
-                # We save the domain and his data
-                prints "Less_File" "${domain}" "${invalidStatus}" "${type}"  >> ${outputInvalidResult}
-            else
-                # We create header into and in between, create the file
-                beforeHeader ${outputInvalidResult}
-                printHeader 'Invalid_File' >> ${outputInvalidResult}
-                # We save the domain and his data
-                prints "Invalid_File" "${domain}" "${type}" >> ${outputInvalidResult}
+                generateAnalyticFile 'Down' "${upStatus}"
             fi
-        fi
-    elif [[ ${noFiles} == false ]]
-    then
-        # We generate the unified file
-        generateUnifiedFile "${type}" "${invalidStatus}" "Unknown"
-    fi
-}
-
-################################# Generate Error File ##########################
-# In charge to print data into invalid.txt
-#
-# @CalledBy errorHandle
-################################################################################
-generateErrorFile()
-{
-    # type <string>
-    local type=${1}
-    
-    # We generate the host file
-    generateHostsFile 'inactive'
-    
-    percentage 'counter' 'ina'
-    
-    if [[ ${activeCodes[*]} =~ ${httpCode} ]]
-    then
-        generateAnalyticFile 'Up' "${status}"
-    elif [[ ${potentiallyActiveCodes[*]} =~ ${httpCode} ]]
-    then
-        generateAnalyticFile 'Pup' "${status}"
-    fi
-    
-    if [[ ${noFiles} == false && ${splitFiles} == true ]]
-    then
-        if [[ ${referer} == '' ]]
-        then
-            # We assign "Not Found" to prevent empty column in files
-            referer='Not Found'
-        fi
+            
+            # We assign the official status name
+            local readStatus=${upStatus}
+            
+            # We assign the location of the splited file
+            local putDataIntoMe=${outputUpResult}
+            
+            # we generate the host file
+            generateHostsFile 'active'
+            
+            # We increment the percentage
+            percentage 'counter' 'act'
+        ;;
+        'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
+            # We do some analytic
+            if [[ ${activeCodes[*]} =~ ${httpCode} ]]
+            then
+                generateAnalyticFile 'Up' "${status}"
+            elif [[ ${potentiallyActiveCodes[*]} =~ ${httpCode} ]]
+            then
+                generateAnalyticFile 'Pup' "${status}"
+            fi
+            
+            # We assign "Not Found" to prevent empty column in splited file
+            local giveMeMyRefererStatus='Not Found'
+            
+            # We assign the official status name
+            local readStatus=${downStatus}
+            
+            # We assign the location of the splited file
+            local putDataIntoMe=${outputDownResult}
+            
+            # We change the expiration date to `Unknown`
+            local expiredDate='Unknown'
+            
+            # We generate the host file
+            generateHostsFile 'inactive'
+            
+            # We increment the percentage
+            percentage 'counter' 'ina'
+        ;;
         
-        if [[ -f ${outputDownResult} ]]
-        then
-            # We save the domain and his data
-            prints "Down_File" "${domain}" "${referer}" "${type}" >> ${outputDownResult}
-        else
-            # We create header into and in between, create the file
-            beforeHeader ${outputDownResult}
-            printHeader "Down_File" >> ${outputDownResult}
-            # We save the domain and his data
-            prints "Down_File"  "${domain}" "${referer}" "${type}" >> ${outputDownResult}
-        fi
-    elif [[ ${noFiles} == false ]]
-    then
-        # We generate the unified files
-        generateUnifiedFile "${type}" "${downStatus}" "Unknown"
-    fi
-}
-
-############################ Generate Valid File ###############################
-# In charge to print data into invalid.txt
-#
-# @CalledBy getReferer, errorHandle
-################################################################################
-generateValidFile(){
-    # We get the expiration date
-    # exp <string>
-    local exp=${1}
-    # type <string>
-    local type=${2}
-    
-    # If empty, we change the data of ${exp}
-    if [[ ${exp} == '' ]]
-    then
-        exp='Unknown'
-    fi
-    
-    if [[ ${inactiveOrPotentiallyCodes[*]} =~ ${httpCode} ]]
-    then
-        generateAnalyticFile 'Down' "${upStatus}"
-    fi
+        'invalid'|'Invalid'|'INVALID')
+            # We do some analytic
+            if [[ ${activeCodes[*]} =~ ${httpCode} ]]
+            then
+                generateAnalyticFile 'Up' "${status}"
+            elif [[ ${potentiallyActiveCodes[*]} =~ ${httpCode} ]]
+            then
+                generateAnalyticFile 'Pup' "${status}"
+            elif [[ ${inactiveOrPotentiallyCodes[*]} =~ ${httpCode} ]]
+            then
+                generateAnalyticFile 'Down' "${upStatus}"
+            fi
+            
+            # We assign the official status name
+            local readStatus=${invalidStatus}
+            
+            # We assign the location of the splited file
+            local putDataIntoMe=${outputInvalidResult}
+            
+            # We change the expiration date to `Unknown`
+            local expiredDate='Unknown'
+            
+            # We generate the host file
+            generateHostsFile 'invalid'
+            
+            # We increment the percentage
+            percentage 'counter' 'inv'
+        ;;
+    esac
     
     # If ${quiet} != false, we don't print anything
     if [[ ${quiet} == false ]]
@@ -651,52 +622,81 @@ generateValidFile(){
         if [[ ${outputLess} == true ]]
         then
             # We save domain and its data
-            prints "Less" "${domain}" "${upStatus}" "${type}"
+            prints "Less" "${domain}" "${readStatus}" "${source}"
         else
             # We print domain and its data
-            prints "Generic" "${domain}" "${upStatus}" "${exp}" "${type}"
+            prints "Generic" "${domain}" "${readStatus}" "${expiredDate}" "${source}"
         fi
     fi
-    
-    # we generate the host file
-    generateHostsFile 'active'
-    
-    percentage 'counter' 'act'
     
     # We execute this only if ${noFiles} == false
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
-        if [[ -f  ${outputUpResult} ]]
+        if [[ -f  ${putDataIntoMe} ]]
         then
             if [[ ${outputLess} == true ]]
             then
                 # We save domain and its data
-                prints "Less_File" "${domain}" "${upStatus}" "${type}"  >> ${outputUpResult}
+                prints "Less_File" "${domain}" "${readStatus}" "${source}"  >> ${putDataIntoMe}
             else
-                # We save domain and its data
-                prints "Up_File" "${domain}" "${exp}" "${type}" >> ${outputUpResult}
+                case ${type} in
+                    'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
+                        # We save domain and its data
+                        prints "Up_File" "${domain}" "${expiredDate}" "${source}" >> ${putDataIntoMe}
+                    ;;
+                    'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
+                        # We save domain and its data
+                        prints "Down_File" "${domain}" "${giveMeMyRefererStatus}" "${source}" >> ${putDataIntoMe}
+                    ;;
+                    'invalid'|'Invalid'|'INVALID')
+                        # We save the domain and his data
+                        prints "Invalid_File" "${domain}" "${source}" >> ${putDataIntoMe}
+                    ;;
+                esac
             fi
         else
             if [[ ${outputLess} == true ]]
             then
                 # We create a file and add header
-                beforeHeader ${outputUpResult}
-                printHeader "Less_File"  >> ${outputUpResult}
+                beforeHeader ${putDataIntoMe}
+                printHeader "Less_File"  >> ${putDataIntoMe}
                 # We add domain and its data to file
-                prints "Less_File" "${domain}" "${upStatus}" "${type}"  >> ${outputUpResult}
+                prints "Less_File" "${domain}" "${readStatus}" "${source}"  >> ${putDataIntoMe}
             else
-                # We create a file and add header
-                beforeHeader ${outputUpResult}
-                printHeader 'Up_File' >> ${outputUpResult}
+                # We create a file
+                beforeHeader ${putDataIntoMe}
                 
-                # We add domain and its data to file
-                prints "Up_File" "${domain}" "${exp}" "${type}" >> ${outputUpResult}
+                case ${type} in
+                    'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
+                        # We add the header
+                        printHeader 'Up_File' >> ${putDataIntoMe}
+                        
+                        # We add domain and its data to file
+                        prints "Up_File" "${domain}" "${expiredDate}" "${source}" >> ${putDataIntoMe}
+                    ;;
+                    'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
+                        # We add the header
+                        printHeader 'Down_File' >> ${putDataIntoMe}
+                        
+                        # We add domain and its data to file
+                        prints "Down_File" "${domain}" "${giveMeMyRefererStatus}" "${source}" >> ${putDataIntoMe}
+                    ;;
+                    'invalid'|'Invalid'|'INVALID')
+                        # We add the header
+                        printHeader 'Invalid_File' >> ${putDataIntoMe}
+                        
+                        # We add domain and its data to file
+                        prints "Invalid_File" "${domain}" "${source}" >> ${putDataIntoMe}
+                    ;;
+                    
+                esac
+                
             fi
         fi
     elif [[ ${noFiles} == false ]]
     then
         # We generate the unified file
-        generateUnifiedFile "${type}" "${upStatus}" "${exp}"
+        generateUnifiedFile "${source}" "${readStatus}" "${expiredDate}"
     fi
 }
 
@@ -777,31 +777,26 @@ errorHandle()
     elif [[ ${issueStatus} == '' ]]
     then
         # If domain is up, We generate the valid/unified file
-        generateValidFile "Unknown" "${sourceType}"
+        generateStatusFile 'valid' "${sourceType}" ''
         return 1
     fi
     
-    if [[  ${issueStatus} == 'Unknown' && ${type} == 'Down' || ${type} == 'Invalid' || ${type} != 'Up' ]]
+    if [[  ${issueStatus} == 'Unknown' && ${type} == 'Down' ]]
     then
         # We assign the status
         local status="${downStatus}"
         
         # We generate the error/unified file
-        generateErrorFile "${sourceType}"
+        generateStatusFile 'error' "${sourceType}" ''
+    elif [[ ${issueStatus} == 'Unknown' && ${type} == 'Invalid' ]]
+    then
+        # We assign the status
+        local status="${invalidStatus}"
+        
+        # We generate the error/unified file
+        generateStatusFile 'invalid' "IANA" ''
     fi
     
-    # If quiet != false, we don't print anything
-    if [[ ${quiet} == false ]]
-    then
-        if [[ ${outputLess} == true ]]
-        then
-            # We print data to screen
-            prints "Less" "${domain}" "${status}" "${sourceType}"
-        else
-            # We print data to screen
-            prints "Generic" "${domain}" "${status}" "Unknown" "${sourceType}"
-        fi
-    fi
 }
 
 ############################## No Referers Log #################################
@@ -1022,7 +1017,7 @@ getExpirationDate(){
                     sourceType="WHOIS"
                     
                     # We generate valid/unified file
-                    generateValidFile "${expirationDate}" "${sourceType}"
+                    generateStatusFile "valid" "${sourceType}" "${expirationDate}"
                     return 1
                 elif [[ ${expirationDate} == '' && ${debugUnknown} == true ]]
                 then
