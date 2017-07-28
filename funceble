@@ -446,26 +446,21 @@ generateHostsFile()
     # type <string>
     local type="${1}"
     
-    if [[ ${generateHosts} == true ]]
-    then
-        if [[ ${type} == 'inactive' ]]
-        then
-            # We print / create the inactive file
-            beforeHeader ${outputDownHost}
-            prints 'FullHosts' "${domain}" >> ${outputDownHost}
-        elif [[ ${type} == 'active' ]]
-        then
-            # We print / create active file
-            beforeHeader ${outputUpHost}
-            prints 'FullHosts' "${domain}" >> ${outputUpHost}
-        elif [[ ${type} == 'invalid' ]]
-        then
-            # We print / create invalid file
-            ((numberOfInvalid=${numberOfInvalid}+1))
-            beforeHeader ${outputInvalidHost}
-            prints 'FullHosts' "${domain}" >> ${outputInvalidHost}
-        fi
-    fi
+    case ${type} in
+        'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
+            local outputDestination=${outputUpHost}
+        ;;
+        'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
+            local outputDestination=${outputDownHost}
+        ;;
+        'invalid'|'Invalid'|'INVALID')
+            local outputDestination=${outputInvalidHost}
+        ;;
+    esac
+    
+    # We print / create the inactive file
+    beforeHeader ${outputDestination}
+    prints 'FullHosts' "${domain}" >> ${outputDestination}
 }
 
 ########################### Generate Unified File ##############################
