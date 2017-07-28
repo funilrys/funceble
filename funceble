@@ -10,7 +10,7 @@
 # |/       (_______)|/    )_)(_______/(_______/|/ \___/ (_______/(_______/
 
 # Written by: @Funilrys, Nissar Chababy <contact at funilrys dot com>
-# Github : https://github.com/funilrys/funceble
+# GitHub : https://github.com/funilrys/funceble
 
 ################################ Contributors ##################################
 # - @mitchellkrogza, Mitchell Krog <mitchellkrog@gmail.com>
@@ -18,6 +18,8 @@
 #           @Source: https://git.io/vQPz8
 #     - Idea of implementation of a timeout for whois
 #           @Source: https://git.io/vQPz0
+#     - Idea of implementation of HTTP Code analyze
+#           @Source: https://git.io/v7Ci6
 # - @PromoFaux, Adam Warner <adamw@rner.email> with Pi-Hole <https://pi-hole.net>
 #     - Their blocking list is just awesome to test this script :)
 # - @WaLLy3K <github@firebog.net>
@@ -205,6 +207,37 @@ outputDownResult=${outputDir}splited/inactive.txt
 
 # Output of persentage log
 outputPercentageLog=${percentageLogOutput}percentage.txt
+
+# Output of HTTP codes
+outputHTTPCodes=${outputDir}HTTP_Analytic/
+
+# Output of active codes if different from "funceble" result
+outputHTTPActive=${outputHTTPCodes}ACTIVE/
+
+# Lof of output active
+logOutputHTTPActive=${outputHTTPActive}active.txt
+
+# Ouput of potentially active codes
+outputHTTPPotentiallyActive=${outputHTTPCodes}POTENTIALLY_ACTIVE/
+
+# Log of output of potentially active codes
+logOutputHTTPPotentiallyActive=${outputHTTPPotentiallyActive}potentially_active.txt
+
+# Output of inactive and potentially inactive codes
+outputHTTPInactiveOrPotentially=${outputHTTPCodes}POTENTIALLY_INACTIVE/
+
+# Log of output of inactive or potentially inactive codes
+logOutputHTTPInactiveOrPotentially=${outputHTTPInactiveOrPotentially}inactive_or_potentially.txt
+################################################################################
+############################# HTTP Code validation #############################
+# Active codes
+activeCodes=('100' '101' '200' '201' '202' '203' '204' '205' '206')
+
+# Potentially active codes
+potentiallyActiveCodes=('000' '300' '301' '302' '303' '304' '305' '307' '403' '405' '406' '407' '408' '411' '413' '417' '500' '501' '502' '503' '504' '505')
+
+# Inactive or pothentially inactive codes
+inactiveOrPotentiallyCodes=('400' '403' '402' '404' '409' '410' '412' '414' '415' '416')
 ################################################################################
 
 # _______           _        _______ __________________ _______  _        _______
@@ -302,6 +335,11 @@ printHeader()
         # Generation of header
         printf "\n%-11s %-12s %-12s\n" "Status" "Percentage" "Numbers"
         echo "----------- ------------ -------------"
+    elif [[ ${type} == 'HTTP' ]]
+    then
+        # Generation of header
+        printf "\n%-100s %-11s %-10s %-20s\n" "Domain" "Status" "HTTP Code" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ---------- -------------------------------"
     fi
 }
 
@@ -373,6 +411,9 @@ prints()
         printf "%-11s %-12s %-12s\n"  "ACTIVE" "${percentageOfActive}%" "${numberOfUp}"
         printf "%-11s %-12s %-12s\n"  "INACTIVE" "${percentageOfInactive}%" "${numberOfDown}"
         printf "%-11s %-12s %-12s\n"  "INVALID" "${percentageOfInvalid}%" "${numberOfInvalid}"
+    elif [[ ${type} == 'HTTP' ]]
+    then
+        printf "%-100s %-11s %-10s %-20s\n" "${domain}" "${2}" "${3}" "${dateAn}"
     fi
 }
 
@@ -482,6 +523,17 @@ generateInvalidFile()
     # type <string>
     local type=${1}
     
+    if [[ ${activeCodes[*]} =~ ${httpCode} ]]
+    then
+        generateAnalyticFile 'Up' "${status}"
+    elif [[ ${potentiallyActiveCodes[*]} =~ ${httpCode} ]]
+    then
+        generateAnalyticFile 'Pup' "${status}"
+    elif [[ ${inactiveOrPotentiallyCodes[*]} =~ ${httpCode} ]]
+    then
+        generateAnalyticFile 'Down' "${upStatus}"
+    fi
+    
     # We generate the host file
     generateHostsFile 'invalid'
     percentage 'counter' 'inv'
@@ -536,6 +588,14 @@ generateErrorFile()
     
     percentage 'counter' 'ina'
     
+    if [[ ${activeCodes[*]} =~ ${httpCode} ]]
+    then
+        generateAnalyticFile 'Up' "${status}"
+    elif [[ ${potentiallyActiveCodes[*]} =~ ${httpCode} ]]
+    then
+        generateAnalyticFile 'Pup' "${status}"
+    fi
+    
     if [[ ${noFiles} == false && ${splitFiles} == true ]]
     then
         if [[ ${referer} == '' ]]
@@ -578,6 +638,11 @@ generateValidFile(){
     if [[ ${exp} == '' ]]
     then
         exp='Unknown'
+    fi
+    
+    if [[ ${inactiveOrPotentiallyCodes[*]} =~ ${httpCode} ]]
+    then
+        generateAnalyticFile 'Down' "${upStatus}"
     fi
     
     # If ${quiet} != false, we don't print anything
@@ -632,6 +697,56 @@ generateValidFile(){
     then
         # We generate the unified file
         generateUnifiedFile "${type}" "${upStatus}" "${exp}"
+    fi
+}
+
+########################### Generate HTTP Analytic File ########################
+# In charge to print analytic data
+#
+# @CalledBy errorHandle
+################################################################################
+generateAnalyticFile()
+{
+    # type <string>
+    # active = Up
+    # potentially active = Pup
+    # potentially inactive or active = Down
+    local type="${1}"
+    
+    # funStatus <string>
+    # The status discovered by nslookup or whois
+    local funStatus="${2}"
+    
+    if [[ ${type} == 'Up' ]]
+    then
+        if [[ ! -f ${logOutputHTTPActive} ]]
+        then
+            beforeHeader "${logOutputHTTPActive}"
+            printHeader 'HTTP' >> ${logOutputHTTPActive}
+            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPActive}
+        else
+            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPActive}
+        fi
+    elif [[ ${type} == 'Pup' ]]
+    then
+        if [[ ! -f ${logOutputHTTPPotentiallyActive} ]]
+        then
+            beforeHeader "${logOutputHTTPPotentiallyActive}"
+            printHeader 'HTTP' >> ${logOutputHTTPPotentiallyActive}
+            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPPotentiallyActive}
+        else
+            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPPotentiallyActive}
+        fi
+    elif [[ ${type} == 'Down' ]]
+    then
+        if [[ ! -f ${logOutputHTTPInactiveOrPotentially} ]]
+        then
+            beforeHeader "${logOutputHTTPInactiveOrPotentially}"
+            printHeader 'HTTP' >> ${logOutputHTTPInactiveOrPotentially}
+            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPInactiveOrPotentially}
+        else
+            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPInactiveOrPotentially}
+        fi
     fi
 }
 
