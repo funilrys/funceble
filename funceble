@@ -708,45 +708,31 @@ generateStatusFile(){
 generateAnalyticFile()
 {
     # type <string>
-    # active = Up
-    # potentially active = Pup
-    # potentially inactive or active = Down
     local type="${1}"
     
-    # funStatus <string>
     # The status discovered by nslookup or whois
+    # funStatus <string>
     local funStatus="${2}"
     
-    if [[ ${type} == 'Up' ]]
+    case ${type} in
+        'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
+            local outputFile=${logOutputHTTPActive}
+        ;;
+        'pup'|'Pup'|'PUP')
+            local outputFile=${logOutputHTTPPotentiallyActive}
+        ;;
+        'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
+            local outputFile=${logOutputHTTPInactiveOrPotentially}
+        ;;
+    esac
+    
+    if [[ ! -f ${outputFile} ]]
     then
-        if [[ ! -f ${logOutputHTTPActive} ]]
-        then
-            beforeHeader "${logOutputHTTPActive}"
-            printHeader 'HTTP' >> ${logOutputHTTPActive}
-            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPActive}
-        else
-            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPActive}
-        fi
-    elif [[ ${type} == 'Pup' ]]
-    then
-        if [[ ! -f ${logOutputHTTPPotentiallyActive} ]]
-        then
-            beforeHeader "${logOutputHTTPPotentiallyActive}"
-            printHeader 'HTTP' >> ${logOutputHTTPPotentiallyActive}
-            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPPotentiallyActive}
-        else
-            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPPotentiallyActive}
-        fi
-    elif [[ ${type} == 'Down' ]]
-    then
-        if [[ ! -f ${logOutputHTTPInactiveOrPotentially} ]]
-        then
-            beforeHeader "${logOutputHTTPInactiveOrPotentially}"
-            printHeader 'HTTP' >> ${logOutputHTTPInactiveOrPotentially}
-            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPInactiveOrPotentially}
-        else
-            prints 'HTTP' "${funStatus}" "${httpCode}" >> ${logOutputHTTPInactiveOrPotentially}
-        fi
+        beforeHeader "${outputFile}"
+        printHeader 'HTTP' >> ${outputFile}
+        prints 'HTTP' "${funStatus}" "${httpCode}" >> ${outputFile}
+    else
+        prints 'HTTP' "${funStatus}" "${httpCode}" >> ${outputFile}
     fi
 }
 
