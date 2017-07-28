@@ -51,7 +51,6 @@ outputDir="outputDir='${currentDir}output/'"
 funilrys="funilrys"
 ################################################################################
 ############################## Default Values ##################################
-debug=false
 # The file name of the script
 script='funceble'
 
@@ -71,7 +70,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+2'
+versionNumber='dev-1.4.0+3'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -117,13 +116,12 @@ uninstall()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ -d|--debug ] [ --help ] [ -t|--timeout ]"
+    echo "Usage: ${0} [ --help ] [ -t|--timeout ]"
     echo ""
     echo "       {[ -i|--installation ]} || {[ -p|--production ]} || {[ -u|--update ]}"
     echo "                                      {[ --del ]}"
     echo ""
     echo "  --clean                    -c              Clean all files under output (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
-    echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --del                                      Uninstall funceble and all its components"
     echo "  --help                                     Print this screen"
     echo "  --installation             -i              Execute the installation script"
@@ -375,31 +373,6 @@ whoisInstalled()
     
 }
 
-################################## Debug #######################################
-# This part is the debug section
-#
-# @CalledBy scriptsWorkDir
-################################################################################
-debug()
-{
-    if [[ "${executionType}" == 'installation' ]]
-    then
-        if [[ ${debug} == true ]]
-        then
-            # Option if we want to debug
-            regexDebug='debugUnknown=false'
-            replaceBy="debugUnknown=true"
-            sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
-        fi
-    elif [[ "${executionType}" == 'production' ]]
-    then
-        # Option if we want to debug
-        regexDebug='debugUnknown=[a-z]*'
-        replaceBy="debugUnknown=false"
-        sed -i "s|${regexDebug}|${replaceBy}|g" ${fileToInstall}
-    fi
-}
-
 ################################## Text Format #################################
 # Only for production.
 # This part is used to fix changes to text format section
@@ -567,7 +540,6 @@ scriptsWorkDir()
         fi
         
         # We run some important scripts
-        debug
         textFormat
         status
         
@@ -765,11 +737,6 @@ while [ "$#" -gt 0 ]; do
         # We catch if we have to clean all generated files
         -c|--clean)
             cleanOutput
-            shift 1
-        ;;
-        # We catch if we have to activate debug on installation
-        -d|--debug)
-            debug=true
             shift 1
         ;;
         # We catch if we have to uninstall everything
