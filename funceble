@@ -138,7 +138,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+12'
+versionNumber='dev-1.4.0+18'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -152,7 +152,7 @@ hostsDefault='hosts'
 # Output directory.
 # Auto updated with `tool -i`
 # DO NOT FORGET '/' AT THE END
-outputDir='%%currentDir%%/output/'
+outputDir='/home/funilrys/Projects/funceble/output/'
 
 # hosts directory
 hostsDir=${outputDir}hosts/
@@ -282,30 +282,15 @@ printHeader()
     
     if [[ ${type} == 'Invalid' ]]
     then
-        # Generation of header for invalid (On screen)
-        printf "\n%-100s %-17s %-10s %-8s\n" "Domain" "Status" "Source"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
-    elif [[ ${type} == 'Invalid_File' ]]
-    then
         # Generation of header for invalid.txt
         printf "\n%-100s %-17s %-10s %-8s\n" "Domain" "Status" "Source" "Analyse Date"
         echo "---------------------------------------------------------------------------------------------------- ----------- ---------- ----------------------------"
     elif [[ ${type} == 'Down' ]]
     then
-        # Generation of header for inactive (On screen)
-        printf "\n%-100s %-35s %-17s %10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source"
-        echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ----------"
-    elif [[ ${type} == 'Down_File' ]]
-    then
         # Generation of header for inactive.txt
         printf "\n%-100s %-35s %-17s %10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source" "Analyse Date"
         echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ---------- ----------------------------"
     elif [[ ${type} == 'Up' ]]
-    then
-        # Generation of header for valid (On screen)
-        printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ----------"
-    elif [[ ${type} == 'Up_File' ]]
     then
         # Generation of header for valid.txt
         printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
@@ -358,25 +343,13 @@ prints()
     
     if [[ ${type} == 'Invalid' ]]
     then
-        # Print invalid data on screen
-        printf "%-100s %-17s %-8s\n" "${2}" "${invalidStatus}" "${3}"
-    elif [[ ${type} == 'Invalid_File' ]]
-    then
         # Print data for invalid.txt
         printf "%-100s %-17s %-8s %-8s\n" "${2}" "${invalidStatus}" "${3}" "${dateAn}"
     elif [[ ${type} == 'Down' ]]
     then
-        # Print Down data on screen
-        printf "%-100s %-35s %-17s %8s\n" "${2}" "${3}" "${downStatus}" "${4}"
-    elif [[ ${type} == 'Down_File' ]]
-    then
         # Print data for inactive.txt
         printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${downStatus}" "${4}" "${dateAn}"
     elif [[ ${type} == 'Up' ]]
-    then
-        # Print valid data on screen
-        printf "%-100s %-17s %-17s %-8s\n" "${2}" "${upStatus}" "${3}" "${4}"
-    elif [[ ${type} == 'Up_File' ]]
     then
         # Print data for valid.txt
         printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${upStatus}" "${3}" "${4}" "${dateAn}"
@@ -637,15 +610,15 @@ generateStatusFile(){
                 case ${type} in
                     'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
                         # We save domain and its data
-                        prints "Up_File" "${domain}" "${expiredDate}" "${source}" >> ${putDataIntoMe}
+                        prints "Up" "${domain}" "${expiredDate}" "${source}" >> ${putDataIntoMe}
                     ;;
                     'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
                         # We save domain and its data
-                        prints "Down_File" "${domain}" "${giveMeMyRefererStatus}" "${source}" >> ${putDataIntoMe}
+                        prints "Down" "${domain}" "${giveMeMyRefererStatus}" "${source}" >> ${putDataIntoMe}
                     ;;
                     'invalid'|'Invalid'|'INVALID')
                         # We save the domain and his data
-                        prints "Invalid_File" "${domain}" "${source}" >> ${putDataIntoMe}
+                        prints "Invalid" "${domain}" "${source}" >> ${putDataIntoMe}
                     ;;
                 esac
             fi
@@ -664,24 +637,24 @@ generateStatusFile(){
                 case ${type} in
                     'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
                         # We add the header
-                        printHeader 'Up_File' >> ${putDataIntoMe}
+                        printHeader 'Up' >> ${putDataIntoMe}
                         
                         # We add domain and its data to file
-                        prints "Up_File" "${domain}" "${expiredDate}" "${source}" >> ${putDataIntoMe}
+                        prints "Up" "${domain}" "${expiredDate}" "${source}" >> ${putDataIntoMe}
                     ;;
                     'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
                         # We add the header
-                        printHeader 'Down_File' >> ${putDataIntoMe}
+                        printHeader 'Down' >> ${putDataIntoMe}
                         
                         # We add domain and its data to file
-                        prints "Down_File" "${domain}" "${giveMeMyRefererStatus}" "${source}" >> ${putDataIntoMe}
+                        prints "Down" "${domain}" "${giveMeMyRefererStatus}" "${source}" >> ${putDataIntoMe}
                     ;;
                     'invalid'|'Invalid'|'INVALID')
                         # We add the header
-                        printHeader 'Invalid_File' >> ${putDataIntoMe}
+                        printHeader 'Invalid' >> ${putDataIntoMe}
                         
                         # We add domain and its data to file
-                        prints "Invalid_File" "${domain}" "${source}" >> ${putDataIntoMe}
+                        prints "Invalid" "${domain}" "${source}" >> ${putDataIntoMe}
                     ;;
                     
                 esac
