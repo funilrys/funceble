@@ -138,7 +138,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+19'
+versionNumber='dev-1.4.0+20'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -376,9 +376,9 @@ prints()
     elif [[ ${type} == 'Percentage' ]]
     then
         # We calcul the results
-        percentage 'result' 'act'
-        percentage 'result' 'ina'
-        percentage 'result' 'inv'
+        percentage 'result' 'active'
+        percentage 'result' 'inactive'
+        percentage 'result' 'invalid'
         
         # We print data
         printf "%-11s %-12s %-12s\n"  "ACTIVE" "${percentageOfActive}%" "${numberOfUp}"
@@ -523,7 +523,7 @@ generateStatusFile(){
             generateHostsFile 'active'
             
             # We increment the percentage
-            percentage 'counter' 'act'
+            percentage 'counter' 'active'
         ;;
         'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
             # We do some analytic
@@ -551,7 +551,7 @@ generateStatusFile(){
             generateHostsFile 'inactive'
             
             # We increment the percentage
-            percentage 'counter' 'ina'
+            percentage 'counter' 'inactive'
         ;;
         
         'invalid'|'Invalid'|'INVALID')
@@ -580,7 +580,7 @@ generateStatusFile(){
             generateHostsFile 'invalid'
             
             # We increment the percentage
-            percentage 'counter' 'inv'
+            percentage 'counter' 'invalid'
         ;;
     esac
     
@@ -1372,48 +1372,43 @@ percentage()
     # We get type of the operation to do
     # type <string>
     local type="${1}"
+    
     # And the information to calculate (ina/inv)
+    # status <string>
     local status="${2}"
     
     if [[ ${showPercentage} == true ]]
     then
-        # We increment the number of tested
-        
-        if [[ ${type} == 'counter' && ${status} == 'ina' ]]
-        then
-            # We increment the number of inactive
-            ((numberOfTested=${numberOfTested}+1))
-            ((numberOfDown=${numberOfDown}+1))
-        elif [[ ${type} == 'counter' && ${status} == 'inv' ]]
-        then
-            # We increment the number of invalid
-            ((numberOfTested=${numberOfTested}+1))
-            ((numberOfInvalid=${numberOfInvalid}+1))
-        elif [[ ${type} == 'counter' && ${status} == 'act' ]]
-        then
-            # We increment the number of active
-            ((numberOfTested=${numberOfTested}+1))
-            ((numberOfUp=${numberOfUp}+1))
-        elif [[ ${type} == 'result' && ${status} == 'ina' ]]
-        then
-            # We calculate the percentage of inactive
-            ((percentageOfInactive=${numberOfDown}*100/${numberOfTested}))
-        elif [[ ${type} == 'result' && ${status} == 'inv' ]]
-        then
-            # We calculate the percentage of invalid
-            ((percentageOfInvalid=${numberOfInvalid}*100/${numberOfTested}))
-        elif [[ ${type} == 'result' && ${status} == 'act' ]]
-        then
-            # We calculate the percentage of active
-            ((percentageOfActive=${numberOfUp}*100/${numberOfTested}))
-        fi
-        
-        if [[ ${type} == 'results' ]]
-        then
-            # We calculate the sum of
-            # ${percentageOfInvalid} && ${percentageOfInactive}
-            ((percentageOfInvaIna=${percentageOfInvalid}+${percentageOfInactive}))
-        fi
+        # We increment the number of tested or gt result
+        case ${type} in
+            'count'|'Count'|'COUNT'|'counter'|'Counter'|'COUNTER')
+                ((numberOfTested=${numberOfTested}+1))
+                case ${status} in
+                    'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
+                        ((numberOfUp=${numberOfUp}+1))
+                    ;;
+                    'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
+                        ((numberOfDown=${numberOfDown}+1))
+                    ;;
+                    'invalid'|'Invalid'|'INVALID')
+                        ((numberOfInvalid=${numberOfInvalid}+1))
+                    ;;
+                esac
+            ;;
+            'result'|'Result'|'RESULT')
+                case ${status} in
+                    'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
+                        ((percentageOfActive=${numberOfUp}*100/${numberOfTested}))
+                    ;;
+                    'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
+                        ((percentageOfInactive=${numberOfDown}*100/${numberOfTested}))
+                    ;;
+                    'invalid'|'Invalid'|'INVALID')
+                        ((percentageOfInvalid=${numberOfInvalid}*100/${numberOfTested}))
+                    ;;
+                esac
+            ;;
+        esac
     fi
 }
 
