@@ -1572,6 +1572,26 @@ main()
     fi
 }
 
+################################## Switch Debug ################################
+# Switch ${debugUnknown}
+#
+# @CalledBy Arguments Handle Section
+################################################################################
+switchDebug(){
+    case ${debugUnknown} in
+        true)
+            debugUnknown=false
+        ;;
+        false)
+            debugUnknown=false
+        ;;
+        *)
+            debugUnknown=false
+        ;;
+    esac
+}
+
+
 ################################## Usage #######################################
 # Help function
 #
@@ -1585,6 +1605,7 @@ usage()
     echo ""
     echo "  --all                      -a              Output all information on screen (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --domain                   -d              Domain to analyze"
+    echo "  --debug                                    Switch the default value of the debug mode to its opposite (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --file                     -f              File with a list of domains"
     echo "  --execution                -ex             Show the execution time (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --help                                     Print this screen"
@@ -1644,6 +1665,12 @@ else
             -d)
                 main "${2}" ''
                 shift 2
+            ;;
+            
+            # We catch if we need to deactivate or deactive debug mode
+            --debug)
+                switchDebug
+                shift 1
             ;;
             
             # We catch if we show the execution time
