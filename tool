@@ -70,7 +70,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+3'
+versionNumber='dev-1.4.0+4'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -356,6 +356,23 @@ sha512sumInstalled()
     commandexist 'sha512sum'
 }
 
+############################### wget Installed ################################
+# We check if wget is installed
+#
+# @CalledBy installation
+################################################################################
+wgetInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}wget${normal} installed" && printf "wget installed" >> ${logOutput}
+    fi
+    
+    commandexist 'wget'
+    
+}
+
 ############################### whois Installed ################################
 # We check if whois is installed
 #
@@ -600,6 +617,7 @@ installation()
     nslookupInstalled
     sedInstalled
     sha512sumInstalled
+    wgetInstalled
     whoisInstalled
     
     # We finalize installation
