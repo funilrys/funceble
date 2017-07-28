@@ -479,7 +479,6 @@ cleanOutput(){
     
     # We log && print message
     printf "  ${cyan}✔${normal}\n\n"
-    echo "${bold}${cyan}The cleaning was successfully completed!${normal}"
 }
 
 ################################# Update IANA ##################################
