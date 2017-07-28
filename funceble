@@ -138,7 +138,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+18'
+versionNumber='dev-1.4.0+19'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1417,6 +1417,18 @@ percentage()
     fi
 }
 
+############################### Clean WGET logs ################################
+# We use this to clean wget logs
+#
+# @CalledBy main
+################################################################################
+cleanWgetLog(){
+    if [[ -f wget-log ]]
+    then
+        rm wget* 2&> /dev/null
+    fi
+}
+
 ############################## Check Hosts File ################################
 # Used to check if hosts file already exist. The main purpose of this function
 # is to avoid collisions and overwritting
@@ -1440,6 +1452,7 @@ checkHostsFiles()
 ################################################################################
 main()
 {
+    cleanWgetLog
     startExecutionTime
     # We get the domain
     # domain <string>
@@ -1514,11 +1527,7 @@ main()
         printHeader 'Percentage' && printHeader 'Percentage' > ${outputPercentageLog}
         prints 'Percentage' && prints 'Percentage' >> ${outputPercentageLog}
     fi
-    
-    if [[ -f wget-log ]]
-    then
-        rm wget* 2&> /dev/null
-    fi
+    cleanWgetLog
 }
 
 ################################## Switch Debug ################################
