@@ -1583,10 +1583,10 @@ switchDebug(){
             debugUnknown=false
         ;;
         false)
-            debugUnknown=false
+            debugUnknown=true
         ;;
         *)
-            debugUnknown=false
+            debugUnknown=true
         ;;
     esac
 }
