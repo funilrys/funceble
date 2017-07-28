@@ -64,7 +64,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+1'
+versionNumber='dev-1.4.0+2'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -115,6 +115,7 @@ usage()
     echo "       {[ -i|--installation ]} || {[ -p|--production ]} || {[ -u|--update ]}"
     echo "                                      {[ --del ]}"
     echo ""
+    echo "  --clean                    -c              Clean all files under output (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --debug                    -d              Activate the debug mode with the installation (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --del                                      Uninstall funceble and all its components"
     echo "  --help                                     Print this screen"
@@ -723,6 +724,25 @@ update()
     fi
 }
 
+################################## Clean Output ###################################
+# Clean all generated files
+#
+# @CalledBy Arguments Handle section
+################################################################################
+cleanOutput(){
+    # We set the directory we need to clean
+    local output=${currentDir}output/
+    
+    # We log && print message
+    printf "Cleaning generated files"
+    
+    # Searrch and delete everything except .gitignore
+    find ${output} ! -name '.gitignore' -type f -exec rm {} \;
+    
+    # We log && print message
+    printf "  ${cyan}✔${normal}\n\n"
+    echo "${bold}${cyan}The cleaning was successfully completed!${normal}"
+}
 
 ############################### Arguments Handle ###############################
 # We use this part to get arguments from command line.updateIANA
@@ -731,6 +751,11 @@ update()
 ################################################################################
 while [ "$#" -gt 0 ]; do
     case "$1" in
+        # We catch if we have to clean all generated files
+        -c|--clean)
+            cleanOutput
+            shift 1
+        ;;
         # We catch if we have to activate debug on installation
         -d|--debug)
             debug=true
