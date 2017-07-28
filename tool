@@ -524,7 +524,7 @@ updateIANA()
     if [[ ${quiet} == false ]]
     then
         # We log && print message
-        printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
+        printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n\n" >> ${logOutput}
     fi
     
 }
