@@ -141,7 +141,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+23'
+versionNumber='dev-1.4.0+24'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1477,6 +1477,23 @@ printHeaderOnScreen(){
     fi
 }
 
+escapeString(){
+    # stringToEscape <string>
+    stringToEscape="${1}"
+    
+    # type <string>
+    type="${2}"
+    
+    case "${type}" in
+        'file'|'FILE')
+            echo $(echo ${stringToEscape} | sed 's/\//\\\//g' | sed 's/\./\\\./g')
+        ;;
+        'domain'|'DOMAIN')
+            echo $(echo ${stringToEscape} | sed 's/\./\\\./g')
+        ;;
+    esac
+}
+
 ################################## Main ########################################
 # Main function used to call other function
 #
@@ -1512,7 +1529,7 @@ main()
             if [[ ${autoContinue} == true && -f ${continueLog} ]]
             then
                 # We escape the file name in oder to be usable as a regex variable
-                local escapedFile=$(echo ${file} | sed 's/\//\\\//g' | sed 's/\./\\\./g')
+                local escapedFile=$(escapeString "${file}" "file")
                 # We assign the way we read the domain
                 local regexDomainToMatch="${escapedFile}\s(.*)"
                 # We get the content of ${continueLog}
@@ -1525,12 +1542,12 @@ main()
                     local matchedDomain=${BASH_REMATCH[1]}
                     
                     # We escape it in order to be usable as regex variable
-                    local escpapedDomain=$(echo ${matchedDomain} | sed 's/\./\\\./g')
+                    local escapedDomain=$(escapeString "${matchedDomain}" "domain")
                     
                     # We get the list of domain from last tested until the end
                     # and pass it to the loop where we're gonna filter and
                     # test the domain/IP.
-                    sed -ne '/^'${escpapedDomain}'/{s///; :a' -e 'n;p;ba' -e '}' ${file} | while read domain
+                    sed -ne '/^'${escapedDomain}'/{s///; :a' -e 'n;p;ba' -e '}' ${file} | while read domain
                     do
                         case "${domain}" in
                             ''|\#*|*localhost*|local|broadcasthost)
@@ -1563,13 +1580,13 @@ main()
                         then
                             # We escape the file name is order to be used as
                             # regex variable
-                            local escapedFile=$(echo ${file} | sed 's/\//\\\//g' | sed 's/\./\\\./g')
+                            local escapedFile=$(escapeString "${file}" "file")
                             # We escaoe the domain name in order to be used as
                             # regex variable
-                            local escpapedDomain=$(echo ${domain} | sed 's/\./\\\./g')
+                            local escapedDomain=$(escapeString "${matchedDomain}" "domain")
                             
                             # We update the value of the domain name
-                            sed -i "s/.*${escapedFile}.*/${escapedFile} ${escpapedDomain}/" ${continueLog}
+                            sed -i "s/.*${escapedFile}.*/${escapedFile} ${escapedDomain}/" ${continueLog}
                         else
                             # We append the new informations
                             echo "${file} ${domain}" >> ${continueLog}
