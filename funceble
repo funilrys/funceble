@@ -141,7 +141,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+24'
+versionNumber='dev-1.4.0+25'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1523,15 +1523,13 @@ main()
     then
         if [[ -f "${file}" &&  -r "${file}" ]]
         then
-            printHeaderOnScreen
-            
             # We catch if we need to continue a previous "session"
             if [[ ${autoContinue} == true && -f ${continueLog} ]]
             then
                 # We escape the file name in oder to be usable as a regex variable
                 local escapedFile=$(escapeString "${file}" "file")
                 # We assign the way we read the domain
-                local regexDomainToMatch="${escapedFile}\s(.*)"
+                local regexDomainToMatch="${escapedFile}\s(.*)\s([0-9])\s([0-9])\s([0-9])\s([0-9])"
                 # We get the content of ${continueLog}
                 local continueLogContent=$(cat ${continueLog})
                 
@@ -1541,8 +1539,22 @@ main()
                     # Then we extract the domain name of the original file
                     local matchedDomain=${BASH_REMATCH[1]}
                     
+                    # We get the last number of tested
+                    numberOfTested=${BASH_REMATCH[2]}
+                    
+                    # We get the last number of UP
+                    numberOfUp=${BASH_REMATCH[3]}
+                    
+                    # We get the last number of down
+                    numberOfDown=${BASH_REMATCH[4]}
+                    
+                    # We get the last number of invalid
+                    numberOfInvalid=${BASH_REMATCH[5]}
+                    
                     # We escape it in order to be usable as regex variable
                     local escapedDomain=$(escapeString "${matchedDomain}" "domain")
+                    
+                    printHeaderOnScreen
                     
                     # We get the list of domain from last tested until the end
                     # and pass it to the loop where we're gonna filter and
@@ -1567,6 +1579,20 @@ main()
                 # to getExpirationDate
                 while read domain
                 do
+                    # In case the file contain comment or empty line we continue to
+                    # the next line
+                    case "${domain}" in
+                        ''|\#*|*localhost*|local|broadcasthost)
+                            continue
+                        ;;
+                        '127.0.0.1'*|'0.0.0.0'*)
+                            domain=$(echo "${domain}"|cut -d ' ' -f2)
+                        ;;
+                    esac
+                    
+                    # We get the expiration date and check status in between
+                    getExpirationDate "${domain}"
+                    
                     # We save/append the current domain into ${continueLog}
                     if [[ ${autoContinue} == true && -f ${continueLog} ]]
                     then
@@ -1583,33 +1609,22 @@ main()
                             local escapedFile=$(escapeString "${file}" "file")
                             # We escaoe the domain name in order to be used as
                             # regex variable
-                            local escapedDomain=$(escapeString "${matchedDomain}" "domain")
+                            local escapedDomain=$(escapeString "${domain}" "domain")
                             
                             # We update the value of the domain name
-                            sed -i "s/.*${escapedFile}.*/${escapedFile} ${escapedDomain}/" ${continueLog}
+                            sed -i "s/.*${escapedFile}.*/${escapedFile} ${escapedDomain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}/" ${continueLog}
                         else
                             # We append the new informations
-                            echo "${file} ${domain}" >> ${continueLog}
+                            echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}"
+                            echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" >> ${continueLog}
                         fi
                     else
                         # We create the file with the informations of the
                         # current domain name
-                        echo "${file} ${domain}" > ${continueLog}
+                        echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}"
+                        echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" >> ${continueLog}
                     fi
                     
-                    # In case the file contain comment or empty line we continue to
-                    # the next line
-                    case "${domain}" in
-                        ''|\#*|*localhost*|local|broadcasthost)
-                            continue
-                        ;;
-                        '127.0.0.1'*|'0.0.0.0'*)
-                            domain=$(echo "${domain}"|cut -d ' ' -f2)
-                        ;;
-                    esac
-                    
-                    # We get the expiration date and check status in between
-                    getExpirationDate "${domain}"
                 done < ${file}
             fi
         else
@@ -1623,7 +1638,7 @@ main()
     fi
     endExecutionTime
     
-    if [[ ${showPercentage} == true ]]
+    if [[ ${showPercentage} == true && ${numberOfTested} > 0 ]]
     then
         # We print on screen the percentage and its header
         beforeHeader "${outputPercentageLog}"
