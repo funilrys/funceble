@@ -1533,6 +1533,8 @@ main()
                 # We get the content of ${continueLog}
                 local continueLogContent=$(cat ${continueLog})
                 
+                printHeaderOnScreen
+                
                 # If the content match the previously assigned regex variable
                 if [[ ${continueLogContent} =~ ${regexDomainToMatch} ]]
                 then
@@ -1553,8 +1555,6 @@ main()
                     
                     # We escape it in order to be usable as regex variable
                     local escapedDomain=$(escapeString "${matchedDomain}" "domain")
-                    
-                    printHeaderOnScreen
                     
                     # We get the list of domain from last tested until the end
                     # and pass it to the loop where we're gonna filter and
@@ -1615,13 +1615,10 @@ main()
                             sed -i "s/.*${escapedFile}.*/${escapedFile} ${escapedDomain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}/" ${continueLog}
                         else
                             # We append the new informations
-                            echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}"
                             echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" >> ${continueLog}
                         fi
                     else
-                        # We create the file with the informations of the
-                        # current domain name
-                        echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}"
+                        # We create the file with the known informations
                         echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" >> ${continueLog}
                     fi
                     
