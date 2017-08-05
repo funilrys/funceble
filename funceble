@@ -141,7 +141,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+25'
+versionNumber='dev-1.4.0+26'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1505,7 +1505,9 @@ main()
     cleanWgetLog
     cleanPercentageLog
     
+    # We save the starting time
     startExecutionTime
+    
     # We get the domain
     # domain <string>
     domain=${1}
@@ -1513,30 +1515,35 @@ main()
     # file <string>
     file=${2}
     
+    # We catch the case that only a domain is given
     if [[ "${domain}" != "" ]]
     then
+        # We print the header
         printHeaderOnScreen
         
         # We execute the getExpirationDate function
         getExpirationDate "${domain}"
+        # We catch the case that only a file path is given
     elif [[ ${file} != "" ]]
     then
+        # We check if the file exist and is readable
         if [[ -f "${file}" &&  -r "${file}" ]]
         then
+            # We disable the start from begining
+            startFromBegining=false
+            
             # We catch if we need to continue a previous "session"
             if [[ ${autoContinue} == true && -f ${continueLog} ]]
             then
                 # We escape the file name in oder to be usable as a regex variable
                 local escapedFile=$(escapeString "${file}" "file")
                 # We assign the way we read the domain
-                local regexDomainToMatch="${escapedFile}\s(.*)\s([0-9])\s([0-9])\s([0-9])\s([0-9])"
+                local regexDomainToMatch="${escapedFile}\s(.*)\s([[:digit:]]+)\s([[:digit:]]+)\s+([[:digit:]]+)\s+([[:digit:]]+)"
                 # We get the content of ${continueLog}
                 local continueLogContent=$(cat ${continueLog})
                 
-                printHeaderOnScreen
-                
                 # If the content match the previously assigned regex variable
-                if [[ ${continueLogContent} =~ ${regexDomainToMatch} ]]
+                if [[ "${continueLogContent}" =~ ${regexDomainToMatch} ]]
                 then
                     # Then we extract the domain name of the original file
                     local matchedDomain=${BASH_REMATCH[1]}
@@ -1556,11 +1563,18 @@ main()
                     # We escape it in order to be usable as regex variable
                     local escapedDomain=$(escapeString "${matchedDomain}" "domain")
                     
+                    # We use this variable in order to check if we already
+                    # printed the header. This is used to avoid repeating
+                    # header impression
+                    local headerPrinted=false
+                    
                     # We get the list of domain from last tested until the end
                     # and pass it to the loop where we're gonna filter and
                     # test the domain/IP.
                     sed -ne '/^'${escapedDomain}'/{s///; :a' -e 'n;p;ba' -e '}' ${file} | while read domain
                     do
+                        # In case the file contain comment or empty line we continue to
+                        # the next line
                         case "${domain}" in
                             ''|\#*|*localhost*|local|broadcasthost)
                                 continue
@@ -1570,11 +1584,54 @@ main()
                             ;;
                         esac
                         
+                        # If we didn't already print the header
+                        if [[ headerPrinted == false ]]
+                        then
+                            # We print the header
+                            printHeaderOnScreen
+                            
+                            # We set the variable to true in order to indicate
+                            # that we already printed it
+                            local headerPrinted=true
+                        fi
+                        
                         # We get the expiration date and check status in between
                         getExpirationDate "${domain}"
                     done
+                    
+                    # If we don't match or get the domain
+                    if [[ ${domain} == '' ]]
+                    then
+                        # We start from the begining of the file
+                        startFromBegining=true
+                    fi
+                else
+                    # We start from the begining of the file
+                    startFromBegining=true
                 fi
             else
+                # We start from the begining of the file
+                startFromBegining=true
+            fi
+            
+            # If we need to start from begining
+            if [[ ${startFromBegining} == true ]]
+            then
+                # We print the header
+                printHeaderOnScreen
+                
+                # We reset the number of tested
+                numberOfTested=0
+                
+                # We reset the number of up
+                numberOfUp=0
+                
+                # We reset the number of down
+                numberOfDown=0
+                
+                # We reset the number of invalid
+                numberOfInvalid=0
+                
                 # We read the list of the file and pass the domain (1 line = 1 domain)
                 # to getExpirationDate
                 while read domain
