@@ -141,7 +141,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+27'
+versionNumber='dev-1.4.0+28'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1477,12 +1477,17 @@ printHeaderOnScreen(){
     fi
 }
 
+################################# Escape String ################################
+# In charge to escape string for regex usage
+#
+# @CalledBy main
+################################################################################
 escapeString(){
     # stringToEscape <string>
-    stringToEscape="${1}"
+    local stringToEscape="${1}"
     
     # type <string>
-    type="${2}"
+    local type="${2}"
     
     case "${type}" in
         'file'|'FILE')
@@ -1492,6 +1497,22 @@ escapeString(){
             echo $(echo ${stringToEscape} | sed 's/\./\\\./g')
         ;;
     esac
+}
+
+################################ Update Auto Continue ##########################
+# Used to update the auto continue log file
+#
+# @CalledBy main
+################################################################################
+updateAutoContinueLog(){
+    # regexEscapedFile <string>
+    local regexEscapedFile="${1}"
+    
+    # domainOrIP <string>
+    local domainOrIP="${2}"
+    
+    # We update the value of the domain name
+    sed -i "s/.*${regexEscapedFile}.*/${regexEscapedFile} ${domainOrIP} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}/" ${continueLog}
 }
 
 ################################## Main ########################################
@@ -1596,7 +1617,7 @@ main()
                         fi
                         
                         # We update the value of the domain name
-                        sed -i "s/.*${escapedFile}.*/${escapedFile} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}/" ${continueLog}
+                        updateAutoContinueLog "${escapedFile}" "${domain}"
                         
                         # We get the expiration date and check status in between
                         getExpirationDate "${domain}"
@@ -1672,7 +1693,7 @@ main()
                             local escapedDomain=$(escapeString "${domain}" "domain")
                             
                             # We update the value of the domain name
-                            sed -i "s/.*${escapedFile}.*/${escapedFile} ${escapedDomain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}/" ${continueLog}
+                            updateAutoContinueLog "${escapedFile}" "${escapedDomain}"
                         else
                             # We append the new informations
                             echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" >> ${continueLog}
