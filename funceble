@@ -141,7 +141,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+28'
+versionNumber='dev-1.4.0+29'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -790,11 +790,13 @@ getReferer(){
         # We get the extension of the given domain
         domainExtension=${initialDomain##*.}
         # We get the list of allowed extensions
+        
         validExtension=$(cat ${ianaDB})
         
         # We check if the given domain extension is in our database file
         if [[ ${validExtension} =~ ${domainExtension} ]]
         then
+            
             # We initiate this variable in order to know if ${domainExtension} pass
             # The cases
             notSupported=true
@@ -940,6 +942,7 @@ getExpirationDate(){
         # We call the whois server and save the result into ${whoIs}
         # cf. Default Values Section
         timeout ${secondsBeforeTimeout} "whois -h ${referer} ${domain} > ${whoIs}"
+        
         
         # We get the content of the previously saved file
         local content=$(cat ${whoIs})
@@ -1589,46 +1592,55 @@ main()
                     # header impression
                     local headerPrinted=false
                     
-                    # We get the list of domain from last tested until the end
-                    # and pass it to the loop where we're gonna filter and
-                    # test the domain/IP.
-                    sed -ne '/^'${escapedDomain}'/{s///; :a' -e 'n;p;ba' -e '}' ${file} | while read domain
-                    do
-                        # In case the file contain comment or empty line we continue to
-                        # the next line
-                        case "${domain}" in
-                            ''|\#*|*localhost*|local|broadcasthost)
-                                continue
-                            ;;
-                            '127.0.0.1'*|'0.0.0.0'*)
-                                domain=$(echo "${domain}"|cut -d ' ' -f2)
-                            ;;
-                        esac
-                        
-                        # If we didn't already print the header
-                        if [[ ${headerPrinted} == false ]]
-                        then
-                            # We print the header
-                            printHeaderOnScreen
+                    if [[ $(tail -1 ${file}) != ${matchedDomain} ]]
+                    then
+                        # We get the list of domain from last tested until the end
+                        # and pass it to the loop where we're gonna filter and
+                        # test the domain/IP.
+                        sed -ne '/^'${escapedDomain}'/{s///; :a' -e 'n;p;ba' -e '}' ${file} | while read domain
+                        do
+                            # In case the file contain comment or empty line we continue to
+                            # the next line
+                            case "${domain}" in
+                                ''|\#*|*localhost*|local|broadcasthost)
+                                    continue
+                                ;;
+                                '127.0.0.1'*|'0.0.0.0'*)
+                                    domain=$(echo "${domain}"|cut -d ' ' -f2)
+                                ;;
+                            esac
                             
-                            # We set the variable to true in order to indicate
-                            # that we already printed it
-                            local headerPrinted=true
+                            # If we didn't already print the header
+                            if [[ ${headerPrinted} == false ]]
+                            then
+                                # We print the header
+                                printHeaderOnScreen
+                                
+                                # We set the variable to true in order to indicate
+                                # that we already printed it
+                                local headerPrinted=true
+                            fi
+                            
+                            # We update the value of the domain name
+                            updateAutoContinueLog "${escapedFile}" "${domain}"
+                            
+                            # We get the expiration date and check status in between
+                            getExpirationDate "${domain}"
+                        done
+                        
+                        # If we the loop is not bypassed, we deactivate the
+                        # checking from begining
+                        if [[ ${headerPrinted} == true ]]
+                        then
+                            startFromBegining=false
+                        else
+                            # We start from the begining of the file
+                            startFromBegining=true
                         fi
-                        
-                        # We update the value of the domain name
-                        updateAutoContinueLog "${escapedFile}" "${domain}"
-                        
-                        # We get the expiration date and check status in between
-                        getExpirationDate "${domain}"
-                    done
-                    
-                    # If we don't match or get the domain
-                    # if [[ ${domain} == '' ]]
-                    # then
-                    #     # We start from the begining of the file
-                    #     startFromBegining=true
-                    # fi
+                    else
+                        # We start from the begining of the file
+                        startFromBegining=true
+                    fi
                 else
                     # We start from the begining of the file
                     startFromBegining=true
@@ -1700,7 +1712,7 @@ main()
                         fi
                     else
                         # We create the file with the known informations
-                        echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" >> ${continueLog}
+                        echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" > ${continueLog}
                     fi
                     
                 done < ${file}
@@ -1711,7 +1723,7 @@ main()
             exit 0
         fi
     else
-        # If domain is empty & file file don't exist we print usage
+        # If domain is empty & file don't exist we print usage
         usage
     fi
     endExecutionTime
