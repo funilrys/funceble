@@ -141,7 +141,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+31'
+versionNumber='dev-1.4.0+32'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -425,7 +425,7 @@ generateHostsFile()
     # type <string>
     local type="${1}"
     
-    if [[ ${generateHostsFile} == true ]]
+    if [[ ${generateHosts} == true ]]
     then
         case ${type} in
             'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
