@@ -73,6 +73,9 @@ upStatus="ACTIVE"
 # Activation of the auto-continue mode
 autoContinue=true
 
+# Used to check if we already cleaned hosts file
+cleanedDone=false
+
 # Current Date
 currentDate=$(date)
 
@@ -85,6 +88,9 @@ debugUnknown=false
 
 # Date if we append it to file
 fileNameDate=_${currentDate// /_}
+
+# File already treated
+fileAlreadyTreated=false
 
 # Activate/Desactivate the generation of hosts file
 generateHosts=false
@@ -141,7 +147,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+32'
+versionNumber='dev-1.4.0+33'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -263,15 +269,15 @@ inactiveOrPotentiallyCodes=('400' '403' '402' '404' '409' '410' '412' '414' '415
 beforeHeader(){
     # We get the file we're gonna print into
     # file <string>
-    local file="${1}"
+    local fileToCreate="${1}"
     
-    if [[ ! -f "${file}" ]]
+    if [[ ! -f ${fileToCreate} ]]
     then
         # If does not exist we add informations about funceble and the Date
         # of the generation of the file.
-        printf "# File generated with %s\n" "${linkScript}" > ${file}
-        printf "# Date of generation: %s\n" "${currentDate}" >> ${file}
-        printf "\n" >> ${file}
+        printf "# File generated with %s\n" "${linkScript}" > ${fileToCreate}
+        printf "# Date of generation: %s\n" "${currentDate}" >> ${fileToCreate}
+        printf "\n" >> ${fileToCreate}
     fi
 }
 
@@ -427,21 +433,43 @@ generateHostsFile()
     
     if [[ ${generateHosts} == true ]]
     then
+        if [[ ${fileAlreadyTreated} == false || ${startFromBegining} == true && ${cleanedDone} == false  ]]
+        then
+            if [[ -f ${outputUpHost} ]]
+            then
+                rm -f ${outputUpHost}
+            fi
+            
+            if [[ -f ${outputDownHost} ]]
+            then
+                rm -f ${outputDownHost}
+            fi
+            
+            if [[ -f ${outputInvalidHost} ]]
+            then
+                rm -f ${outputInvalidHost}
+            fi
+            
+            cleanedDone=true
+        fi
+        
         case ${type} in
             'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
-                local outputDestination=${outputUpHost}
+                local outputDestination="${outputUpHost}"
             ;;
             'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
-                local outputDestination=${outputDownHost}
+                local outputDestination="${outputDownHost}"
             ;;
             'invalid'|'Invalid'|'INVALID')
-                local outputDestination=${outputInvalidHost}
+                local outputDestination="${outputInvalidHost}"
             ;;
         esac
         
+        # echo "tetetete ${domain}" >> ${outputDestination}
         # We print / create the inactive file
-        beforeHeader ${outputDestination}
+        beforeHeader "${outputDestination}"
         prints 'FullHosts' "${domain}" >> ${outputDestination}
+        
     fi
 }
 
@@ -794,10 +822,8 @@ getReferer(){
         domainExtension=${initialDomain##*.}
         # We get the list of allowed extensions
         
-        validExtension=$(cat ${ianaDB})
-        
         # We check if the given domain extension is in our database file
-        if [[ ${validExtension} =~ ${domainExtension} ]]
+        if [[ $(cat ${ianaDB}) =~ ${domainExtension} ]]
         then
             
             # We initiate this variable in order to know if ${domainExtension} pass
@@ -1448,23 +1474,6 @@ cleanPercentageLog(){
     fi
 }
 
-############################## Check Hosts File ################################
-# Used to check if hosts file already exist. The main purpose of this function
-# is to avoid collisions and overwritting
-#
-# @CalledBy Arguments Handle Section
-################################################################################
-checkHostsFiles()
-{
-    if [[ -f ${outputUpHost} || -f ${outputInvalidHost} || -f ${outputDownHost} ]]
-    then
-        # We append the date to the default values
-        outputUpHost=${outputUpHost}${fileNameDate}
-        outputInvalidHost=${outputInvalidHost}${fileNameDate}
-        outputDownHost=${outputDownHost}${fileNameDate}
-    fi
-}
-
 ############################# Print Header on Screen ###########################
 # In charge of printing on screen the table header before we start
 #
@@ -1572,6 +1581,8 @@ main()
                 # If the content match the previously assigned regex variable
                 if [[ "${continueLogContent}" =~ ${regexDomainToMatch} ]]
                 then
+                    fileAlreadyTreated=true
+                    
                     # Then we extract the domain name of the original file
                     local matchedDomain=${BASH_REMATCH[1]}
                     
@@ -1881,7 +1892,6 @@ else
             # we catch if the user want to activate the creation of hosts file
             -h|--host)
                 generateHosts=true
-                checkHostsFiles
                 shift 1
             ;;
             
