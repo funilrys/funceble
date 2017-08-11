@@ -70,7 +70,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+5'
+versionNumber='dev-1.4.0+6'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -291,7 +291,40 @@ curlInstalled()
     commandexist 'curl'
 }
 
-############################## expect Installed ##################################
+############################## date Installed ##################################
+# We check if date is installed
+#
+# @CalledBy installation
+################################################################################
+dateInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}date${normal} installed" && printf "date installed" >> ${logOutput}
+    fi
+    
+    commandexist 'date'
+}
+
+
+############################## echo Installed ###################################
+# We check if echo is installed
+#
+# @CalledBy installation
+################################################################################
+echoInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}echo${normal} installed" && printf "echo installed" >> ${logOutput}
+    fi
+    
+    commandexist 'echo'
+}
+
+############################## expect Installed ################################
 # We check if expect is installed
 #
 # @CalledBy installation
@@ -305,6 +338,22 @@ expectInstalled()
     fi
     
     commandexist 'expect'
+}
+
+############################## head Installed ##################################
+# We check if head is installed
+#
+# @CalledBy installation
+################################################################################
+headInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}head${normal} installed" && printf "head installed" >> ${logOutput}
+    fi
+    
+    commandexist 'head'
 }
 
 ############################### nslookup Installed ################################
@@ -354,6 +403,38 @@ sha512sumInstalled()
     fi
     
     commandexist 'sha512sum'
+}
+
+################################ tail Installed #################################
+# We check if tail is installed
+#
+# @CalledBy installation
+################################################################################
+tailInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}tail${normal} installed" && printf "tail installed" >> ${logOutput}
+    fi
+    
+    commandexist 'tail'
+}
+
+################################# tr Installed #################################
+# We check if tr is installed
+#
+# @CalledBy installation
+################################################################################
+trInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}tr${normal} installed" && printf "tr installed" >> ${logOutput}
+    fi
+    
+    commandexist 'tr'
 }
 
 ############################### wget Installed ################################
@@ -615,10 +696,15 @@ installation()
     # We check dependencies
     awkInstalled
     curlInstalled
+    dateInstalled
+    echoInstalled
     expectInstalled
+    headInstalled
     nslookupInstalled
     sedInstalled
     sha512sumInstalled
+    tailInstalled
+    trInstalled
     wgetInstalled
     whoisInstalled
     
