@@ -1719,13 +1719,10 @@ main()
                     # We save/append the current domain into ${continueLog}
                     if [[ ${autoContinue} == true && -f ${continueLog} ]]
                     then
-                        # We get the content of ${continueLog}
-                        continueLogContent=$(cat ${continueLog})
-                        
                         # We match the currently read filename in order to know
                         # if we have to update or append the domain name
                         # according to its file.
-                        if [[ ${continueLogContent} =~ ${file} ]]
+                        if [[ "$(cat ${continueLog})" =~ ${file} ]]
                         then
                             # We escape the file name is order to be used as
                             # regex variable
