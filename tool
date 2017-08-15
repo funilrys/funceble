@@ -57,6 +57,9 @@ script='funceble'
 # Script online versionFile
 onlineScript="https://raw.githubusercontent.com/${funilrys}/funceble/master/funceble"
 
+# Dump of the needed directories
+directoriesStructure=${currentDir}dir-structure
+
 # Quiet mode
 quiet=false
 
@@ -70,7 +73,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+6'
+versionNumber='dev-1.4.0+7'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -116,13 +119,14 @@ uninstall()
 ################################################################################
 usage()
 {
-    echo "Usage: ${0} [ --help ] [ -t|--timeout ]"
+    echo "Usage: ${0} [ -OPTION1 | --OPTION1 ] [ -OPTION2 | --OPTION2 ] [...]"
     echo ""
     echo "       {[ -i|--installation ]} || {[ -p|--production ]} || {[ -u|--update ]}"
     echo "                                      {[ --del ]}"
     echo ""
     echo "  --clean                    -c              Clean all files under output (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --del                                      Uninstall funceble and all its components"
+    echo "  --directory-structure                      Generate the directory and files that are needed and which does not exist in the current directory (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --help                                     Print this screen"
     echo "  --installation             -i              Execute the installation script"
     echo "  --iana                                     Update `iana-domains-db`"
@@ -551,7 +555,108 @@ cleanOutput(){
     find ${currentDir} -name 'wget-log*' -type f -exec rm {} \;
     
     # We log && print message
-    printf "  ${cyan}✔${normal}\n\n"
+    printf "  ${cyan}✔${normal}\n"
+}
+
+########################## Get list of directory to create #####################
+# This generate the file which is gonna be distribute in order to auto-create
+# directory
+#
+# @CalledBy scriptsWorkDir
+################################################################################
+getListOfDirectoryToCreate(){
+    local outputDirectory=output/
+    
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "Generation of dir-structure" && printf "Generation of dir-structure" >> ${logOutput}
+    fi
+    
+    # We start with the list of directories
+    printf "Directories\n\n" > ${directoriesStructure}
+    
+    # We find all directory and append them into ${directoriesStructure}
+    find ${outputDirectory} -type d >> ${directoriesStructure}
+    
+    # We start with the list of files
+    printf "\nFiles\n\n" >> ${directoriesStructure}
+    
+    # We loop throug the list of file
+    while IFS='' read -r -d '' filename
+    do
+        # We set the file to exclude
+        regex='.*install.log'
+        
+        if [[ ! ${filename} =~ ${regex} ]]
+        then
+            # We save the file path + it's content in oneline format.
+            echo "${filename} @@ $(cat ${filename} | tr '\n' '$')" >> ${directoriesStructure}
+        else
+            # We continue to the next item
+            continue
+        fi
+    done < <(find ${outputDirectory} -type f -print0)
+    
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n\n" >> ${logOutput}
+    fi
+}
+
+########################## Create directories and files ########################
+# This create the directories and files based on getListOfDirectoryToCreate()
+# outputs
+#
+# @CalledBy Arguments Handle section
+################################################################################
+createDirectoriesAndFile(){
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "Creation of non existant files and directories" && printf "Creation of non existant files and directories" >> ${logOutput}
+    fi
+    
+    # We loop through ${directoriesStructure}
+    while read toCreate
+    do
+        case ${toCreate} in
+            'Directories'|'Files'|'')
+                # We exclude the following
+                continue
+            ;;
+            *@@*)
+                # We set the regex to match in order to get all needed informations
+                regex='(.*[a-z]\/{1,5}.*)\s(@@\s(.*))'
+                
+                if [[ ${toCreate} =~ ${regex} ]]
+                then
+                    if [[ ! -f ${currentDir}${BASH_REMATCH[1]} ]]
+                    then
+                        # If the file doesn't exist we create it and put it's
+                        # content in multiline format
+                        printf ${BASH_REMATCH[3]//$/\\n} > ${currentDir}${BASH_REMATCH[1]}
+                    else
+                        continue
+                    fi
+                fi
+            ;;
+            *)
+                if [[ ! -d ${toCreate} ]]
+                then
+                    # If the diretory doesn't exist, we create it
+                    mkdir ${currentDir}${toCreate}
+                fi
+            ;;
+        esac
+    done < ${directoriesStructure}
+    
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n\n" >> ${logOutput}
+    fi
 }
 
 ################################# Update IANA ##################################
@@ -597,7 +702,7 @@ updateIANA()
     if [[ ${quiet} == false ]]
     then
         # We log && print message
-        printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n\n" >> ${logOutput}
+        printf "  ${cyan}✔${normal}\n" && printf "  ✔\n" >> ${logOutput}
     fi
     
 }
@@ -643,6 +748,9 @@ scriptsWorkDir()
         textFormat
         status
         
+        # We generate needed directories and files
+        createDirectoriesAndFile
+        
         if [[ ${quiet} == false ]]
         then
             if [[ "${executionType}" == 'installation' ]]
@@ -654,6 +762,7 @@ scriptsWorkDir()
             then
                 cleanOutput
                 updateIANA
+                getListOfDirectoryToCreate
                 echo "${bold}${cyan}The production logic was successfully completed!${normal}"
                 echo "You can now distribute this repository."
                 printf '\n'
@@ -865,6 +974,13 @@ while [ "$#" -gt 0 ]; do
             updateIANA
             shift 1
         ;;
+        
+        # We catch if we need to check the output structure
+        --directory-structure)
+            createDirectoriesAndFile
+            shift 1
+        ;;
+        
         -p|--production)
             executionType='production'
             installation "${currentDir}${script}" false
