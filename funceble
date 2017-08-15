@@ -147,7 +147,7 @@ showPercentage=true
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+39'
+versionNumber='dev-1.4.0+40'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -457,46 +457,48 @@ generateHostsFile()
     if [[ ${generateHosts} == true ]]
     then
         # We clean the files in case we need to start from begining
-        if [[ ${fileAlreadyTreated} == false || ${startFromBegining} == true && ${cleanedDone} == false  ]]
+        if [[ ${fileAlreadyTreated} == false || ${startFromBegining} == true ]]
         then
-            if [[ -f ${outputUpHost} ]]
+            if [[ ${cleanedDone} == false ]]
             then
-                rm -f ${outputUpHost}
+                if [[ -f ${outputUpHost} ]]
+                then
+                    rm -f ${outputUpHost}
+                fi
+                
+                if [[ -f ${outputDownHost} ]]
+                then
+                    rm -f ${outputDownHost}
+                fi
+                
+                if [[ -f ${outputInvalidHost} ]]
+                then
+                    rm -f ${outputInvalidHost}
+                fi
+                
+                if [[ -f ${outputUnifiedResult} ]]
+                then
+                    # We delete the result.txt file here because generateHostsFile() is
+                    # always called before generateUnifiedFile()
+                    rm -f ${outputUnifiedResult}
+                fi
+                
+                if [[ -f ${outputUpResult} ]]
+                then
+                    rm -f ${outputUpResult}
+                fi
+                
+                if [[ -f ${outputDownResult} ]]
+                then
+                    rm -f ${outputDownResult}
+                fi
+                
+                if [[ -f ${outputInvalidResult} ]]
+                then
+                    rm -f ${outputInvalidResult}
+                fi
+                cleanedDone=true
             fi
-            
-            if [[ -f ${outputDownHost} ]]
-            then
-                rm -f ${outputDownHost}
-            fi
-            
-            if [[ -f ${outputInvalidHost} ]]
-            then
-                rm -f ${outputInvalidHost}
-            fi
-            
-            if [[ -f ${outputUnifiedResult} ]]
-            then
-                # We delete the result.txt file here because generateHostsFile() is
-                # always called before generateUnifiedFile()
-                rm -f ${outputUnifiedResult}
-            fi
-            
-            if [[ -f ${outputUpResult} ]]
-            then
-                rm -f ${outputUpResult}
-            fi
-            
-            if [[ -f ${outputDownResult} ]]
-            then
-                rm -f ${outputDownResult}
-            fi
-            
-            if [[ -f ${outputInvalidResult} ]]
-            then
-                rm -f ${outputInvalidResult}
-            fi
-            
-            cleanedDone=true
         fi
         
         case ${type} in
@@ -508,6 +510,15 @@ generateHostsFile()
             ;;
             'invalid'|'Invalid'|'INVALID')
                 local outputDestination="${outputInvalidHost}"
+            ;;
+            'potentially_up'|'potentially_active')
+                local outputDestination="${outputHTTPPotentiallyActive}${hostsDefault}"
+            ;;
+            'potentially_down'|'potentially_inacative')
+                local outputDestination="${outputHTTPInactiveOrPotentially}${hostsDefault}"
+            ;;
+            'http_active'|'HTTP_ACTIVE'|'HTTP_active'|'HTTP_Active')
+                local outputDestination="${outputHTTPActive}${hostsDefault}"
             ;;
         esac
         
@@ -768,12 +779,15 @@ generateAnalyticFile()
     case ${type} in
         'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
             local outputFile=${logOutputHTTPActive}
+            generateHostsFile 'HTTP_active'
         ;;
         'pup'|'Pup'|'PUP')
             local outputFile=${logOutputHTTPPotentiallyActive}
+            generateHostsFile 'potentially_down'
         ;;
         'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
             local outputFile=${logOutputHTTPInactiveOrPotentially}
+            generateHostsFile 'potentially_inacative'
         ;;
     esac
     
