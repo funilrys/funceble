@@ -65,7 +65,7 @@ directoriesStructureName=dir-structure
 directoriesStructure=${currentDir}${directoriesStructureName}
 
 # dir-structure online version
-directoriesStructureLink="https://raw.githubusercontent.com/${funilrys}/${script}/dev/${directoriesStructureName}"
+directoriesStructureLink="https://raw.githubusercontent.com/${funilrys}/${script}/master/${directoriesStructureName}"
 
 # Quiet mode
 quiet=false
@@ -80,7 +80,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+8'
+versionNumber='dev-1.4.0+9'
 ################################################################################
 # We log the date
 date > ${logOutput}
