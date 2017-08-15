@@ -80,7 +80,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+9'
+versionNumber='dev-1.4.0+10'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -775,13 +775,12 @@ scriptsWorkDir()
         textFormat
         status
         
-        # We generate needed directories and files
-        createDirectoriesAndFile
-        
         if [[ ${quiet} == false ]]
         then
             if [[ "${executionType}" == 'installation' ]]
             then
+                # We generate needed directories and files
+                createDirectoriesAndFile
                 echo "${bold}${cyan}The installation was successfully completed!${normal}"
                 echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
                 printf '\n'
