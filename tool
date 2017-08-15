@@ -55,10 +55,17 @@ funilrys="funilrys"
 script='funceble'
 
 # Script online versionFile
-onlineScript="https://raw.githubusercontent.com/${funilrys}/funceble/master/funceble"
+onlineScript="https://raw.githubusercontent.com/${funilrys}/${script}/master/funceble"
+
+
+# Directory structure file name
+directoriesStructureName=dir-structure
 
 # Dump of the needed directories
-directoriesStructure=${currentDir}dir-structure
+directoriesStructure=${currentDir}${directoriesStructureName}
+
+# dir-structure online version
+directoriesStructureLink="https://raw.githubusercontent.com/${funilrys}/${script}/dev/${directoriesStructureName}"
 
 # Quiet mode
 quiet=false
@@ -73,7 +80,7 @@ executionType='installation'
 secondsBeforeTimeout=30
 
 # Version number
-versionNumber='dev-1.4.0+7'
+versionNumber='dev-1.4.0+8'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -618,6 +625,26 @@ createDirectoriesAndFile(){
         printf "Creation of non existant files and directories" && printf "Creation of non existant files and directories" >> ${logOutput}
     fi
     
+    if [[ ! -f ${directoriesStructure} ]]
+    then
+        
+        # We check internet connection
+        # If no internet connections are possible, we stop this script and
+        # return a message error
+        wget -q --tries=10 --timeout=20 --spider http://google.com
+        
+        if [[ $? != 0 ]]; then
+            # We log && print message
+            printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
+            echo "Impossible to get ${directoriesStructure}. Please report issue." >> ${logOutput}
+            exit 0
+        else
+            # We save the online script into the existing one
+            curl -s ${directoriesStructureLink} -o "${directoriesStructure}"
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
+        fi
+    fi
     # We loop through ${directoriesStructure}
     while read toCreate
     do
