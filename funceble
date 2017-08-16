@@ -143,11 +143,17 @@ showExecutionTime=false
 # Show/hide percentage
 showPercentage=true
 
+# Activation/deactivation of travis mode
+travisMode=false
+
+# Minimum of minutes before we start commiting to upstream under travis
+travisAutoSaveMinutes=30
+
 # If set to false, we generate only one file with the results
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+41'
+versionNumber='dev-1.4.0+42'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1417,7 +1423,7 @@ formatDate()
 ################################################################################
 startExecutionTime()
 {
-    if [[ ${showExecutionTime} == true ]]
+    if [[ ${showExecutionTime} == true || ${autoContinue} == true ]]
     then
         #We log the execution
         echo "Execution Time log of" $(date) >> ${executionLog}
@@ -1429,7 +1435,7 @@ startExecutionTime()
     fi
 }
 
-########################### End Execution Time ###############################
+############################# End Execution Time ###############################
 # Used to catch the execution time
 #
 # @CalledBy main
@@ -1457,6 +1463,31 @@ endExecutionTime()
         # We display + log message
         printf "\n${magenta}Execution Time:${normal}\n" && printf "Execution Time:" >> ${executionLog}
         printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} && printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} >> ${executionLog}
+    fi
+}
+
+################################ Travis autosave ###############################
+# Used to commit to upstream after a given time
+#
+# @CalledBy main
+################################################################################
+travisAutoSave()
+{
+    if [[ ${travisMode} == true ]]
+    then
+        # We get the current date
+        local currentTimes=$(date +%s)
+        
+        # We calculate the time before commit is possible
+        local timeOfStart=$(((${executionStart}+${travisAutoSaveMinutes}*60)))
+        
+        if [[ ${currentTimes} -ge ${timeOfStart} ]]
+        then
+            # We commit and push every changes
+            git add -A
+            git commit -am "Funceble autosave [ci skip]"
+            git push
+        fi
     fi
 }
 
@@ -1689,6 +1720,9 @@ main()
                             
                             # We update the value of the domain name
                             updateAutoContinueLog "${escapedFile}" "${domain}"
+                            
+                            # We commit if time += ${travisAutoSaveMinutes}
+                            travisAutoSave
                         done
                         
                         # If we the loop is not bypassed, we deactivate the
@@ -1772,12 +1806,14 @@ main()
                         echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" > ${continueLog}
                     fi
                     
+                    # We commit if time += ${travisAutoSaveMinutes}
+                    travisAutoSave
                 done < ${file}
             fi
         else
             # We exit in case file don't exit or is not readable
             echo "File not found or unreadable"
-            exit 0
+            exit 1
         fi
     else
         # If domain is empty & file don't exist we print usage
@@ -1894,7 +1930,7 @@ then
     # We print the following to avoid the use of this script without
     # dependencies check
     printf "${bold}${red}Please run the installation script first. \nYou can run it with: %s\n" "${cyan}${PWD}/tool -i${normal}"
-    exit 0
+    exit 1
 else
     while [ "$#" -gt 0 ]; do
         case "$1" in
@@ -1999,10 +2035,16 @@ else
                 shift 2
             ;;
             
+            # We activate the "travis mode"
+            --travis)
+                travisMode=true
+                shift 1
+            ;;
+            
             # We catch if we have to show the version number
             -v|--version)
                 echo "Current Version: ${versionNumber}"
-                exit 1
+                exit 0
             ;;
             
             # catch the domain after --domain= for example: --domain=helloworld.com
