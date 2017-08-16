@@ -153,7 +153,7 @@ travisAutoSaveMinutes=30
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+42'
+versionNumber='dev-1.4.0+44'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -301,18 +301,18 @@ printHeader()
     if [[ ${type} == 'Invalid' ]]
     then
         # Generation of header for invalid.txt
-        printf "\n%-100s %-17s %-10s %-8s\n" "Domain" "Status" "Source" "Analyse Date"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ---------- ----------------------------"
+        printf "\n%-100s %-17s %-10s %-10s %-8s\n" "Domain" "Status" "Source" "HTTP Code" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ---------- ---------- ----------------------------"
     elif [[ ${type} == 'Down' ]]
     then
         # Generation of header for inactive.txt
-        printf "\n%-100s %-35s %-17s %10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source" "Analyse Date"
-        echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ---------- ----------------------------"
+        printf "\n%-100s %-35s %-17s %10s %-10s %-20s\n" "Domain" "WHOIS Server" "Status" "Source" "HTTP Code" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------------------------------- ----------- ---------- ---------- ----------------------------"
     elif [[ ${type} == 'Up' ]]
     then
         # Generation of header for valid.txt
-        printf "\n%-100s %-17s %-17s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "Analyse Date"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- -------------------------------"
+        printf "\n%-100s %-17s %-17s %-10s %-10s %-20s\n" "Domain" "Status" "Expiration Date" "Source" "HTTP Code" "Analyse Date"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ----------------- ---------- ---------- -------------------------------"
     elif [[ ${type} == 'Generic' ]]
     then
         # Generation of header (On screen)
@@ -326,13 +326,13 @@ printHeader()
     elif [[ ${type} == 'Less' ]]
     then
         # Generation of header (On screen)
-        printf "\n%-100s %-11s %-10s\n" "Domain" "Status" "Source"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
+        printf "\n%-100s %-11s %-10s %-10s\n" "Domain" "Status" "Source" "HTTP Code"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ---------- ----------"
     elif [[ ${type} == 'Less_File' ]]
     then
         # Generation of header (On file)
-        printf "\n%-100s %-11s %-10s\n" "Domain" "Status" "Source"
-        echo "---------------------------------------------------------------------------------------------------- ----------- ----------"
+        printf "\n%-100s %-11s %-10s %-10s\n" "Domain" "Status" "Source" "HTTP Code"
+        echo "---------------------------------------------------------------------------------------------------- ----------- ---------- ----------"
     elif [[ ${type} == 'Percentage' ]]
     then
         # Generation of header
@@ -362,15 +362,15 @@ prints()
     if [[ ${type} == 'Invalid' ]]
     then
         # Print data for invalid.txt
-        printf "%-100s %-17s %-8s %-8s\n" "${2}" "${invalidStatus}" "${3}" "${dateAn}"
+        printf "%-100s %-17s %-8s %-10s %-8s\n" "${2}" "${invalidStatus}" "${3}" "${httpCode}" "${dateAn}"
     elif [[ ${type} == 'Down' ]]
     then
         # Print data for inactive.txt
-        printf "%-100s %-35s %-17s %8s %-20s\n" "${2}" "${3}" "${downStatus}" "${4}" "${dateAn}"
+        printf "%-100s %-35s %-17s %8s %-10s %-20s\n" "${2}" "${3}" "${downStatus}" "${4}" "${httpCode}" "${dateAn}"
     elif [[ ${type} == 'Up' ]]
     then
         # Print data for valid.txt
-        printf "%-100s %-17s %-17s %-8s %-20s\n" "${2}" "${upStatus}" "${3}" "${4}" "${dateAn}"
+        printf "%-100s %-17s %-17s %-8s %-10s %-20s\n" "${2}" "${upStatus}" "${3}" "${4}" "${httpCode}" "${dateAn}"
     elif [[ ${type} == 'Generic' ]]
     then
         # Print data
@@ -386,11 +386,11 @@ prints()
     elif [[ ${type} == 'Less' ]]
     then
         # Print data
-        printf "%-100s %-11s %-10s\n" "${2}" "${3}" "${4}"
+        printf "%-100s %-11s %-10s %-10s\n" "${2}" "${3}" "${4}" "${httpCode}"
     elif [[ ${type} == 'Less_File' ]]
     then
         # Print data
-        printf "%-100s %-11s %-10s\n" "${2}" "${3}" "${4}"
+        printf "%-100s %-11s %-10s %-10s\n" "${2}" "${3}" "${4}" "${httpCode}"
     elif [[ ${type} == 'Percentage' ]]
     then
         # Please consider the following as a hack because I had some headache
