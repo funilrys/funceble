@@ -153,7 +153,7 @@ travisAutoSaveMinutes=30
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+44'
+versionNumber='dev-1.4.0+45'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1425,13 +1425,17 @@ startExecutionTime()
 {
     if [[ ${showExecutionTime} == true || ${autoContinue} == true ]]
     then
-        #We log the execution
-        echo "Execution Time log of" $(date) >> ${executionLog}
-        echo "----------------------------------------------------------------" >> ${executionLog}
         # We get execution start time
         executionStart=$(date +%s)
-        # We log the start time
-        printf "Start: %s\n" "${executionStart}" >> ${executionLog}
+        
+        if [[ ${outputLogs} == true ]]
+        then
+            #We log the execution
+            echo "Execution Time log of" $(date) >> ${executionLog}
+            echo "----------------------------------------------------------------" >> ${executionLog}
+            # We log the start time
+            printf "Start: %s\n" "${executionStart}" >> ${executionLog}
+        fi
     fi
 }
 
@@ -1447,9 +1451,6 @@ endExecutionTime()
         # We get execution end time
         executionEnd=$(date +%s)
         
-        # We log end time
-        printf "End: %s\n" "${executionEnd}" >> ${executionLog}
-        
         # We get the difference between end and start
         ((timeDifference=${executionEnd}-${executionStart}))
         
@@ -1460,9 +1461,16 @@ endExecutionTime()
         # We get the seconds
         ((seconds=${timeDifference}%60))
         
-        # We display + log message
-        printf "\n${magenta}Execution Time:${normal}\n" && printf "Execution Time:" >> ${executionLog}
-        printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} && printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} >> ${executionLog}
+        
+        
+        if [[ ${outputLogs} == true ]]
+        then
+            # We log end time
+            printf "End: %s\n" "${executionEnd}" >> ${executionLog}
+            # We display + log message
+            printf "\n${magenta}Execution Time:${normal}\n" && printf "Execution Time:" >> ${executionLog}
+            printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} && printf "%02d:%02d:%02d\n \n" ${hours} ${minutes} ${seconds} >> ${executionLog}
+        fi
     fi
 }
 
