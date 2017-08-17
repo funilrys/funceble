@@ -416,11 +416,12 @@ prints()
             
             # We get the last number of invalid
             local numberOfInvalid=${BASH_REMATCH[5]}
-            
-            ((percentageOfActive=${numberOfUp}*100/${numberOfTested}))
-            ((percentageOfInactive=${numberOfDown}*100/${numberOfTested}))
-            ((percentageOfInvalid=${numberOfInvalid}*100/${numberOfTested}))
         fi
+        
+        # We calculate the percentage
+        ((percentageOfActive=${numberOfUp}*100/${numberOfTested}))
+        ((percentageOfInactive=${numberOfDown}*100/${numberOfTested}))
+        ((percentageOfInvalid=${numberOfInvalid}*100/${numberOfTested}))
         
         printf "%-11s %-12s %-12s\n"  "ACTIVE" "${percentageOfActive}%" "${numberOfUp}"
         printf "%-11s %-12s %-12s\n"  "INACTIVE" "${percentageOfInactive}%" "${numberOfDown}"
