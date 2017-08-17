@@ -1038,30 +1038,29 @@ getExpirationDate(){
         # cf. Default Values Section
         timeout ${secondsBeforeTimeout} "whois -h ${referer} ${domain} > ${whoIs}"
         
-        
-        # We get the content of the previously saved file
-        local content=$(cat ${whoIs})
-        
         # Here's a list of words the ${content} have to match to get the
         # expiration date from the whois record of domain
         local toMatch=('expire:' 'expire on:' 'Expiry Date:' 'free-date' 'expires:' 'Expiration date:' 'Expiry date:' 'Expire Date:' 'renewal date:' 'Expires:' 'validity:' 'Expiration Date             :' 'Expiry :' 'expires at:' 'domain_datebilleduntil:' 'Data de expiração \/ Expiration Date \(dd\/mm\/yyyy\):' 'Fecha de expiración \(Expiration date\):' '\[Expires on\]' 'Record expires on' 'status:      OK-UNTIL' 'renewal:' 'expires............:' 'expire-date:' 'Exp date:' 'Valid-date' 'Expires On:' 'Fecha de vencimiento:' 'Expiration:.........' 'Fecha de Vencimiento:' 'Registry Expiry Date:' 'Expires on..............:' 'Expiration Time:' 'Expiration Date:' 'Expired:' "Date d'expiration:")
         
         for i in ${!toMatch[*]}
         do
-            if [[ ${content} =~ ${toMatch[${i}]} ]]
+            # We create a regex group with the expiration date
+            toMatch[${i}]="${toMatch[${i}]}(.*)"
+            
+            if [[ $(cat ${whoIs}) =~ ${toMatch[${i}]} ]]
             then
                 # We get the expiration date
                 if [[ ${toMatch[${i}]} == '\[Expires on\]' ]]
                 then
-                    expirationDate=$(cat ${whoIs} | awk "/${toMatch[${i}]}/{print $NC}" | sed "s/\] /]:/")
+                    expirationDate=$(${BASH_REMATCH[1]} | sed "s/\] /]:/")
                 elif [[ ${toMatch[${i}]} == 'Record expires on' ]]
                 then
-                    expirationDate=$(cat ${whoIs} | awk "/${toMatch[${i}]}/{print $NC}" | sed "s/on/on:/" | sed "s/\s(YYYY-MM-DD)//")
+                    expirationDate=$(${BASH_REMATCH[1]} | sed "s/on/on:/" | sed "s/\s(YYYY-MM-DD)//")
                 else
-                    expirationDate=$(cat ${whoIs} | awk "/${toMatch[${i}]}/{print $NC}")
+                    expirationDate=${BASH_REMATCH[1]}
                 fi
                 
-                expirationDate=${expirationDate#*:}
+                # We delete space before the date
                 expirationDate=$(echo -e "${expirationDate}" | sed -e 's/^[[:space:]]*//')
                 
                 # Regex to pass in order to be reconized as a date
