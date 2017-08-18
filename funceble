@@ -86,9 +86,6 @@ customIP='0.0.0.0'
 # DO NOT USE THIS IF YOU DON'T KNOW HOW TO DEBUG FROM OUTPUTTED FILE
 debugUnknown=false
 
-# Date if we append it to file
-fileNameDate=_${currentDate// /_}
-
 # File already treated
 fileAlreadyTreated=false
 
@@ -153,7 +150,7 @@ travisAutoSaveMinutes=30
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+54'
+versionNumber='dev-1.4.0+55'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
