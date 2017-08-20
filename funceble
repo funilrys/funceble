@@ -150,13 +150,13 @@ showPercentage=true
 travisMode=false
 
 # Minimum of minutes before we start commiting to upstream under travis
-travisAutoSaveMinutes=30
+travisAutoSaveMinutes=35
 
 # If set to false, we generate only one file with the results
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+72'
+versionNumber='dev-1.4.0+73'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1668,8 +1668,16 @@ travisAutoSave()
         then
             # We commit and push every changes
             git add -A
-            git commit -a -m "Funceble autosave [ci skip]"
+            
+            if [[ $(tail -1 ${file}) == "${domain}" ]]
+            then
+                git commit -a -m "Funceble autosave [ci skip]"
+            else
+                git commit -a -m "Funceble autosave"
+            fi
+            
             git push
+            travis_terminate 0
         fi
     fi
 }
