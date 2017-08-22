@@ -156,7 +156,7 @@ travisAutoSaveMinutes=35
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+77'
+versionNumber='dev-1.4.0+78'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1086,6 +1086,13 @@ getReferer(){
                 bz)
                     # We assign the domain WHOIS referer server
                     referer="whois.afilias-grs.info"
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                ;;
+                cd)
+                    # We assign the domain WHOIS referer server
+                    referer="whois.nic.cd"
                     # The Following is used to stop the execution of getExpirationDate
                     # in case the domain is not valid.
                     notSupported=false
