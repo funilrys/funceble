@@ -156,7 +156,7 @@ travisAutoSaveMinutes=35
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+79'
+versionNumber='dev-1.4.0+80'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1107,6 +1107,13 @@ getReferer(){
                 lk)
                     # We assign the domain WHOIS referer server
                     referer="whois.nic.lk"
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                ;;
+                pe)
+                    # We assign the domain WHOIS referer server
+                    referer="kero.yachay.pe"
                     # The Following is used to stop the execution of getExpirationDate
                     # in case the domain is not valid.
                     notSupported=false
