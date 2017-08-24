@@ -156,7 +156,7 @@ travisAutoSaveMinutes=35
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+86'
+versionNumber='dev-1.4.0+87'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1835,18 +1835,6 @@ percentage()
     fi
 }
 
-############################### Clean WGET logs ################################
-# We use this to clean wget logs
-#
-# @CalledBy main
-################################################################################
-cleanWgetLog(){
-    if [[ -f wget-log ]]
-    then
-        rm wget* 2&> /dev/null
-    fi
-}
-
 ############################## Clean Percentage Log ############################
 # We use this to clean the percentage logs
 #
@@ -1923,7 +1911,6 @@ updateAutoContinueLog(){
 main()
 {
     # We start the cleaning of the previous session
-    cleanWgetLog
     cleanPercentageLog
     
     # We save the starting time
@@ -2133,7 +2120,6 @@ main()
         printHeader 'Percentage' && printHeader 'Percentage' >> ${outputPercentageLog}
         prints 'Percentage' && prints 'Percentage' >> ${outputPercentageLog}
     fi
-    cleanWgetLog
 }
 
 ################################## Switch Debug ################################
