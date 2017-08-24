@@ -159,7 +159,7 @@ travisCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+88'
+versionNumber='dev-1.4.0+89'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1789,6 +1789,7 @@ travisAutoSave()
             if [[ $(tail -1 ${file}) =~ "${domain}" ]]
             then
                 git commit -a -m "${travisCommitMessage} [ci skip]"
+                percentageLog
             else
                 git commit -a -m "${travisCommitMessage}"
             fi
@@ -1904,6 +1905,21 @@ updateAutoContinueLog(){
     
     # We update the value of the domain name
     sed -i "s/.*${regexEscapedFile}.*/${regexEscapedFile} ${domainOrIP} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}/" ${continueLog}
+}
+
+################################ Percentage Log ################################
+# Used to generate the percentage.txt and to show percentage on screen
+#
+# @CalledBy main
+################################################################################
+percentageLog(){
+    if [[ ${showPercentage} == true && ${numberOfTested} > 0 ]]
+    then
+        # We print on screen the percentage and its header
+        beforeHeader "${outputPercentageLog}"
+        printHeader 'Percentage' && printHeader 'Percentage' >> ${outputPercentageLog}
+        prints 'Percentage' && prints 'Percentage' >> ${outputPercentageLog}
+    fi
 }
 
 ################################## Main ########################################
@@ -2116,13 +2132,7 @@ main()
     fi
     endExecutionTime
     
-    if [[ ${showPercentage} == true && ${numberOfTested} > 0 ]]
-    then
-        # We print on screen the percentage and its header
-        beforeHeader "${outputPercentageLog}"
-        printHeader 'Percentage' && printHeader 'Percentage' >> ${outputPercentageLog}
-        prints 'Percentage' && prints 'Percentage' >> ${outputPercentageLog}
-    fi
+    percentageLog
 }
 
 ################################## Switch Debug ################################
