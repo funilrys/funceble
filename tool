@@ -83,7 +83,7 @@ secondsBeforeTimeout=1
 travisCommitMessage='Funceble Test - Autosave'
 
 # Version number
-versionNumber='dev-1.4.0+16'
+versionNumber='dev-1.4.0+17'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -140,7 +140,7 @@ usage()
     echo "  --directory-structure                      Generate the directory and files that are needed and which does not exist in the current directory (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --help                                     Print this screen"
     echo "  --installation             -i              Execute the installation script"
-    echo "  --iana                                     Update `iana-domains-db`"
+    echo "  --iana                                     Update 'iana-domains-db'"
     echo "  --production               -p              Prepare the repository for production"
     echo "  --timeout                  -t              Set the default timeout in seconds (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --update                   -u              Update the script"
