@@ -79,8 +79,11 @@ executionType='installation'
 # Default seconds before timeout
 secondsBeforeTimeout=1
 
+# Default travis commit message
+travisCommitMessage='Funceble Test - Autosave'
+
 # Version number
-versionNumber='dev-1.4.0+15'
+versionNumber='dev-1.4.0+16'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -132,6 +135,7 @@ usage()
     echo "                                      {[ --del ]}"
     echo ""
     echo "  --clean                    -c              Clean all files under output (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
+    echo "  --commit-message                           Replace the default commit message. Current value: ${magenta}${travisCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --del                                      Uninstall funceble and all its components"
     echo "  --directory-structure                      Generate the directory and files that are needed and which does not exist in the current directory (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --help                                     Print this screen"
@@ -762,7 +766,14 @@ scriptsWorkDir()
         then
             outputDir="outputDir='%%currentDir%%/output/'"
         fi
+        
+        # We replace the commit message
+        regexCommitMessage="travisCommitMessage=.*"
+        replaceWithCommitMessage="travisCommitMessage='${travisCommitMessage}'"
+        
         sed -i "s|${regex}|${outputDir}|g" ${fileToInstall}
+        sed -i "s|${regexCommitMessage}|${replaceWithCommitMessage}|g" ${fileToInstall}
+        
         if [[ ${quiet} == false ]]
         then
             printf "  ${cyan}✔${normal}\n \n" && printf "  ✔\n" >> ${logOutput}
@@ -977,6 +988,11 @@ while [ "$#" -gt 0 ]; do
         -c|--clean)
             cleanOutput
             shift 1
+        ;;
+        # We catch if we have to change the default commit message
+        --commit-message)
+            travisCommitMessage=${2}
+            shift 2
         ;;
         # We catch if we have to uninstall everything
         --del)
