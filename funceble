@@ -159,7 +159,7 @@ travisCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+89'
+versionNumber='dev-1.4.0+90'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1766,6 +1766,9 @@ travisAutoSave()
         
         if [[ ${currentTimes} -ge ${timeOfStart} || $(tail -1 ${file}) =~ ${domain} ]]
         then
+            # We print the percentage into percentage.txt
+            percentageLog
+            
             # We make sure we are under master
             git checkout master
             
@@ -1789,7 +1792,6 @@ travisAutoSave()
             if [[ $(tail -1 ${file}) =~ "${domain}" ]]
             then
                 git commit -a -m "${travisCommitMessage} [ci skip]"
-                percentageLog
             else
                 git commit -a -m "${travisCommitMessage}"
             fi
@@ -1915,6 +1917,8 @@ updateAutoContinueLog(){
 percentageLog(){
     if [[ ${showPercentage} == true && ${numberOfTested} > 0 ]]
     then
+        # We clean it before generating
+        cleanPercentageLog
         # We print on screen the percentage and its header
         beforeHeader "${outputPercentageLog}"
         printHeader 'Percentage' && printHeader 'Percentage' >> ${outputPercentageLog}
@@ -1929,9 +1933,6 @@ percentageLog(){
 ################################################################################
 main()
 {
-    # We start the cleaning of the previous session
-    cleanPercentageLog
-    
     # We save the starting time
     startExecutionTime
     
