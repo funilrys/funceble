@@ -80,7 +80,7 @@ executionType='installation'
 secondsBeforeTimeout=1
 
 # Version number
-versionNumber='dev-1.4.0+14'
+versionNumber='dev-1.4.0+15'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -448,23 +448,6 @@ trInstalled()
     commandexist 'tr'
 }
 
-############################### wget Installed ################################
-# We check if wget is installed
-#
-# @CalledBy installation
-################################################################################
-wgetInstalled()
-{
-    if [[ ${quiet} == false ]]
-    then
-        # We log && print message
-        printf "${bold}wget${normal} installed" && printf "wget installed" >> ${logOutput}
-    fi
-    
-    commandexist 'wget'
-    
-}
-
 ############################### whois Installed ################################
 # We check if whois is installed
 #
@@ -557,9 +540,6 @@ cleanOutput(){
     
     # Only for dev: We delete temporary files
     find ${currentDir} -name '*~' -type f -exec rm {} \;
-    
-    # We delete the log files of wget
-    find ${currentDir} -name 'wget-log*' -type f -exec rm {} \;
     
     # We log && print message
     printf "  ${cyan}✔${normal}\n"
@@ -859,7 +839,6 @@ installation()
     sha512sumInstalled
     tailInstalled
     trInstalled
-    wgetInstalled
     whoisInstalled
     
     # We finalize installation
