@@ -156,7 +156,7 @@ travisAutoSaveMinutes=35
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+85'
+versionNumber='dev-1.4.0+86'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -998,8 +998,9 @@ errorHandle()
     # We save output of nslookup
     local lookup=$(nslookup ${domain})
     regexNxDomain='NXDOMAIN'
+    regexServfail='SERVFAIL'
     
-    if [[ ${lookup} =~ ${regexNxDomain} ]]
+    if [[ ${lookup} =~ ${regexNxDomain} || ${lookup} =~ ${regexServfail} ]]
     then
         # If domain is down
         issueStatus='Unknown'
