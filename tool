@@ -82,8 +82,11 @@ secondsBeforeTimeout=1
 # Default travis commit message
 travisCommitMessage='Funceble Test - Autosave'
 
+# Minimum of minutes before we start commiting to upstream under travis
+travisAutoSaveMinutes=35
+
 # Version number
-versionNumber='dev-1.4.0+17'
+versionNumber='dev-1.4.0+18'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -134,6 +137,7 @@ usage()
     echo "       {[ -i|--installation ]} || {[ -p|--production ]} || {[ -u|--update ]}"
     echo "                                      {[ --del ]}"
     echo ""
+    echo "  --autosave-minutes                         Replace the  minimum of minutes before we start commiting to upstream under travis. Current value: ${magenta}${travisAutoSaveMinutes}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --clean                    -c              Clean all files under output (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --commit-message                           Replace the default commit message. Current value: ${magenta}${travisCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --del                                      Uninstall funceble and all its components"
@@ -771,8 +775,14 @@ scriptsWorkDir()
         regexCommitMessage="travisCommitMessage=.*"
         replaceWithCommitMessage="travisCommitMessage='${travisCommitMessage}'"
         
+        # We replace the travisAutoSaveMinutes
+        # Minimum of minutes before we start commiting to upstream under travis
+        regexAutoSaveMinutes="travisAutoSaveMinutes=.*"
+        replaceWithAutoSaveMinutes="travisAutoSaveMinutes=${travisAutoSaveMinutes}"
+        
         sed -i "s|${regex}|${outputDir}|g" ${fileToInstall}
         sed -i "s|${regexCommitMessage}|${replaceWithCommitMessage}|g" ${fileToInstall}
+        sed -i "s|${regexAutoSaveMinutes}|${replaceWithAutoSaveMinutes}|g" ${fileToInstall}
         
         if [[ ${quiet} == false ]]
         then
@@ -1029,6 +1039,12 @@ while [ "$#" -gt 0 ]; do
         # We catch the default timeout we have to set
         -t|--timeout)
             secondsBeforeTimeout="${2}"
+            shift 2
+        ;;
+        # We catch the  Minimum of minutes before we start commiting to upstream
+        # under travis
+        --autosave-minutes)
+            travisAutoSaveMinutes="${2}"
             shift 2
         ;;
         # We catch if we have to update the script
