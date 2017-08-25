@@ -86,7 +86,7 @@ travisCommitMessage='Funceble Test - Autosave'
 travisAutoSaveMinutes=35
 
 # Version number
-versionNumber='dev-1.4.0+18'
+versionNumber='dev-1.4.0+19'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -139,7 +139,7 @@ usage()
     echo ""
     echo "  --autosave-minutes                         Replace the  minimum of minutes before we start commiting to upstream under travis. Current value: ${magenta}${travisAutoSaveMinutes}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --clean                    -c              Clean all files under output (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
-    echo "  --commit-message                           Replace the default commit message. Current value: ${magenta}${travisCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
+    echo "  --commit-final-message                     Replace the default commit message. Current value: ${magenta}${travisCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --del                                      Uninstall funceble and all its components"
     echo "  --directory-structure                      Generate the directory and files that are needed and which does not exist in the current directory (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --help                                     Print this screen"
@@ -999,8 +999,8 @@ while [ "$#" -gt 0 ]; do
             cleanOutput
             shift 1
         ;;
-        # We catch if we have to change the default commit message
-        --commit-message)
+        # We catch if we have to change the default final commit message
+        --commit-final-message)
             travisCommitMessage=${2}
             shift 2
         ;;

@@ -28,7 +28,7 @@
 ################################################################################
 
 
-################################# Temporary ####################################&&
+################################# Temporary ####################################
 # Path to temporary file
 whoIs="/var/tmp/whois.$$"
 ################################################################################
@@ -159,7 +159,7 @@ travisCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+90'
+versionNumber='dev-1.4.0+91'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1793,7 +1793,7 @@ travisAutoSave()
             then
                 git commit -a -m "${travisCommitMessage} [ci skip]"
             else
-                git commit -a -m "${travisCommitMessage}"
+                git commit -a -m "Funceble Autosave"
             fi
             
             git push origin master
