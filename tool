@@ -79,14 +79,17 @@ executionType='installation'
 # Default seconds before timeout
 secondsBeforeTimeout=1
 
-# Default travis commit message
-travisCommitMessage='Funceble Test - Autosave'
+# Default travis final commit message
+travisResultsCommitMessage='Funceble Test - Results'
+
+# Default travis autosave commit message
+travisAutoSaveCommitMessage='Funceble Test - Autosave'
 
 # Minimum of minutes before we start commiting to upstream under travis
 travisAutoSaveMinutes=35
 
 # Version number
-versionNumber='dev-1.4.0+19'
+versionNumber='dev-1.4.0+20'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -139,7 +142,8 @@ usage()
     echo ""
     echo "  --autosave-minutes                         Replace the  minimum of minutes before we start commiting to upstream under travis. Current value: ${magenta}${travisAutoSaveMinutes}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --clean                    -c              Clean all files under output (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
-    echo "  --commit-final-message                     Replace the default commit message. Current value: ${magenta}${travisCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
+    echo "  --commit-autosave-message                  Replace the default autosave commit message. Current value: ${magenta}${travisAutoSaveCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
+    echo "  --commit-results-message                   Replace the default results (final) commit message. Current value: ${magenta}${travisResultsCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --del                                      Uninstall funceble and all its components"
     echo "  --directory-structure                      Generate the directory and files that are needed and which does not exist in the current directory (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --help                                     Print this screen"
@@ -772,8 +776,10 @@ scriptsWorkDir()
         fi
         
         # We replace the commit message
-        regexCommitMessage="travisCommitMessage=.*"
-        replaceWithCommitMessage="travisCommitMessage='${travisCommitMessage}'"
+        regexFinalCommitMessage="travisResultsCommitMessage=.*"
+        replaceWithFinalCommitMessage="travisResultsCommitMessage='${travisResultsCommitMessage}'"
+        regexAutoSaveCommitMessage="travisAutoSaveCommitMessage=.*"
+        replaceWithAutoSaveCommitMessage="travisAutoSaveCommitMessage='${travisAutoSaveCommitMessage}'"
         
         # We replace the travisAutoSaveMinutes
         # Minimum of minutes before we start commiting to upstream under travis
@@ -781,7 +787,8 @@ scriptsWorkDir()
         replaceWithAutoSaveMinutes="travisAutoSaveMinutes=${travisAutoSaveMinutes}"
         
         sed -i "s|${regex}|${outputDir}|g" ${fileToInstall}
-        sed -i "s|${regexCommitMessage}|${replaceWithCommitMessage}|g" ${fileToInstall}
+        sed -i "s|${regexAutoSaveCommitMessage}|${replaceWithAutoSaveCommitMessage}|g" ${fileToInstall}
+        sed -i "s|${regexFinalCommitMessage}|${replaceWithFinalCommitMessage}|g" ${fileToInstall}
         sed -i "s|${regexAutoSaveMinutes}|${replaceWithAutoSaveMinutes}|g" ${fileToInstall}
         
         if [[ ${quiet} == false ]]
@@ -1000,8 +1007,13 @@ while [ "$#" -gt 0 ]; do
             shift 1
         ;;
         # We catch if we have to change the default final commit message
-        --commit-final-message)
-            travisCommitMessage=${2}
+        --commit-results-message)
+            travisResultsCommitMessage=${2}
+            shift 2
+        ;;
+        # We catch if we have to change the default autosave commit message
+        --commit-autosave-message)
+            travisAutoSaveCommitMessage=${2}
             shift 2
         ;;
         # We catch if we have to uninstall everything
