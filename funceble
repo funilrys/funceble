@@ -73,6 +73,10 @@ upStatus="ACTIVE"
 # Activation of the auto-continue mode
 autoContinue=true
 
+# We use this variable in order to pass some command before the final commit
+# into travisAutoSave()
+commandBeforeEnd=''
+
 # Used to check if we already cleaned hosts file
 cleanedDone=false
 
@@ -162,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+92'
+versionNumber='dev-1.4.0+93'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1794,6 +1798,11 @@ travisAutoSave()
             
             if [[ $(tail -1 ${file}) =~ "${domain}" ]]
             then
+                if [[ ${commandBeforeEnd} != '' ]]
+                then
+                    $(${commandBeforeEnd})
+                fi
+                
                 git commit -a -m "${travisResultsCommitMessage} [ci skip]"
             else
                 git commit -a -m "${travisAutoSaveCommitMessage}"
@@ -2256,6 +2265,7 @@ usage()
     echo "       {[ -d domain-name.me ]} || {[ -f listOfDomainInAFile ]}"
     echo ""
     echo "  --all                      -a              Output all information on screen (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
+    echo "  --cmd-before-end                           Pass a command before the results (final) commit of travis mode (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --continue                 -c              Switch the default value of the auto continue mode to its opposite. Current value: ${magenta}${autoContinue}${normal} (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
     echo "  --domain                   -d              Domain to analyze"
     echo "  --debug                                    Switch the default value of the debug mode to its opposite. Current value: ${magenta}${debugUnknown}${normal} (${red}${bold}Must be before ${cyan}-d${normal} ${red}${bold}or ${cyan}-f${normal})"
@@ -2321,6 +2331,12 @@ else
             -c|--continue)
                 switchAutoContinue
                 shift 1
+            ;;
+            
+            # We catch if we need to pass a command before the final commit
+            --cmd-before-end)
+                commandBeforeEnd="${2}"
+                shift 2
             ;;
             
             # We catch domain
