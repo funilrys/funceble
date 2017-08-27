@@ -57,7 +57,6 @@ script='funceble'
 # Script online versionFile
 onlineScript="https://raw.githubusercontent.com/${funilrys}/${script}/master/funceble"
 
-
 # Directory structure file name
 directoriesStructureName=dir-structure
 
@@ -88,8 +87,14 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 # Minimum of minutes before we start commiting to upstream under travis
 travisAutoSaveMinutes=35
 
+# Enable the usage of the stable version of Funceble
+stableVersion=false
+
+# Enable the usage of the developement version of Funceble
+devVersion=true
+
 # Version number
-versionNumber='dev-1.4.0+23'
+versionNumber='dev-1.4.0+24'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -145,11 +150,13 @@ usage()
     echo "  --commit-autosave-message                  Replace the default autosave commit message. Current value: ${magenta}${travisAutoSaveCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --commit-results-message                   Replace the default results (final) commit message. Current value: ${magenta}${travisResultsCommitMessage}${normal} (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --del                                      Uninstall funceble and all its components"
+    echo "  --dev                                      Activate the download of the developement version of Funceble. Current value: ${magenta}${devVersion}${normal} (${red}${bold}Must be before ${cyan}-u${normal})"
     echo "  --directory-structure                      Generate the directory and files that are needed and which does not exist in the current directory (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --help                                     Print this screen"
     echo "  --installation             -i              Execute the installation script"
     echo "  --iana                                     Update 'iana-domains-db'"
     echo "  --production               -p              Prepare the repository for production"
+    echo "  --stable                                   Activate the download of the stable version of Funceble. Current value: ${magenta}${stableVersion}${normal} (${red}${bold}Must be before ${cyan}-u${normal})"
     echo "  --timeout                  -t              Set the default timeout in seconds (${red}${bold}Must be before ${cyan}-u${normal} ${red}${bold}or ${cyan}-i${normal})"
     echo "  --update                   -u              Update the script"
     echo "  --version                  -v              Show the current version of Funceble"
@@ -899,9 +906,7 @@ checkVersion()
     if [[ "${type}" == 'get' ]]
     then
         # We download the script
-        curl -s ${onlineScript} -o ${funilrys}
-        # we give execution permission
-        chmod +x ${funilrys}
+        downloadScript
         
         # We secretly execute a silent installation in the downloaded
         # script
@@ -946,6 +951,27 @@ downloadScript()
         echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
         exit 0
     else
+        if [[ ${stableVersion} == true ]]
+        then
+            # We save the online script into the existing one
+            curl -s ${onlineScript} -o "${funilrys}"
+            chmod +x ${funilrys}
+            
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
+            
+            return 1
+        elif [[ ${devVersion} == true ]]
+        then
+            # We save the online script into the existing one
+            curl -s ${onlineScript/master/dev} -o "${funilrys}"
+            chmod +x ${funilrys}
+            
+            # We log && print message
+            printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
+            
+            return 1
+        fi
         # We save the online script into the existing one
         curl -s ${onlineScript} -o "${currentDir}${script}"
         # We log && print message
@@ -962,7 +988,15 @@ update()
 {
     if [[ -d ${currentDir}.git ]]
     then
-        git pull
+        if [[ ${stableVersion} == true ]]
+        then
+            git checkout master
+            git pull
+        elif [[ ${devVersion} == true ]]
+        then
+            git checkout dev
+            git pull
+        fi
     else
         # We get the online version and compare versions
         checkVersion 'get'
@@ -971,7 +1005,7 @@ update()
         then
             # We only need to execute if the versions are not the same
             
-            downloadScript
+            mv ${funilrys} ${currentDir}${script}
             
             # We install the new script
             installation ${currentDir}${script} true
@@ -1034,6 +1068,12 @@ while [ "$#" -gt 0 ]; do
             uninstall
             shift 1
         ;;
+        # We catch if we have to get the dev version of funceble
+        --dev)
+            devVersion=true
+            stableVersion=false
+            shift 1
+        ;;
         # We catch if we have to show usage()
         -h|--help)
             usage
@@ -1061,6 +1101,14 @@ while [ "$#" -gt 0 ]; do
             installation "${currentDir}${script}" false
             shift 1
         ;;
+        
+        # We catch if we need to get the stable version of funceble
+        --stable)
+            stableVersion=true
+            devVersion=false
+            shift 1
+        ;;
+        
         # We catch the default timeout we have to set
         -t|--timeout)
             secondsBeforeTimeout="${2}"
