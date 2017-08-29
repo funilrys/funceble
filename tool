@@ -94,7 +94,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+26'
+versionNumber='dev-1.4.0+27'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -1091,6 +1091,7 @@ while [ "$#" -gt 0 ]; do
             shift 1
         ;;
         
+        # We catch if we have to prepare the repository for production
         -p|--production)
             executionType='production'
             installation "${currentDir}${script}" false
