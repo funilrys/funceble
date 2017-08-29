@@ -94,7 +94,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+24'
+versionNumber='dev-1.4.0+25'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -192,7 +192,7 @@ scriptExist()
             printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
             echo "The file ${fileToInstall} is not found"
         fi
-        exit 0
+        exit 1
     fi
 }
 
@@ -224,7 +224,7 @@ scriptReadable()
             printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
             echo "Impossible to read ${fileToInstall}" >> ${logOutput}
         fi
-        exit 0
+        exit 1
     fi
 }
 
@@ -256,7 +256,7 @@ scriptExecutable()
             printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
             echo "Please make sure that ${fileToInstall} is executable. You can execute 'chmod +x ${fileToInstall}' to make it executable" >> ${logOutput}
         fi
-        exit 0
+        exit 1
     fi
 }
 
@@ -285,7 +285,7 @@ commandexist()
             printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
             echo "Please make sure that ${red}${commandToCheck}${normal} is installed in your system."
         fi
-        exit 0
+        exit 1
     fi
 }
 
@@ -638,7 +638,7 @@ createDirectoriesAndFile(){
             # We log && print message
             printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
             echo "Impossible to get ${directoriesStructure}. Please report issue." >> ${logOutput}
-            exit 0
+            exit 1
         else
             # We save the online script into the existing one
             curl -s ${directoriesStructureLink} -o "${directoriesStructure}"
@@ -856,7 +856,7 @@ scriptsWorkDir()
                 echo "Impossible to finalize the poduction preparation."
             fi
         fi
-        exit 0
+        exit 1
     fi
 }
 
@@ -913,13 +913,18 @@ checkVersion()
         installation "${funilrys}" true
     fi
     
-    # We get the sha512sum of the downloaded script
-    local copiedVersion=$(sha512sum ${funilrys}|cut -d ' ' -f1)
+    if [[ -f ${currentDir}${funilrys} ]]
+    then
+        # We get the sha512sum of the downloaded script
+        local copiedVersion=$(sha512sum ${currentDir}${funilrys}|cut -d ' ' -f1)
+    else
+        local copiedVersion=''
+    fi
     # We get the sha512sum of the already exist script
     local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
     
     # We compare the versions
-    if [[ ${currentVersion} == ${copiedVersion} ]]
+    if [[ ${currentVersion} == ${copiedVersion} || ! -f ${currentDir}${funilrys} ]]
     then
         # If the same == no need to update
         update=false
@@ -949,7 +954,7 @@ downloadScript()
         # We log && print message
         printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
         echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
-        exit 0
+        exit 1
     else
         if [[ ${stableVersion} == true ]]
         then
@@ -972,10 +977,6 @@ downloadScript()
             
             return 1
         fi
-        # We save the online script into the existing one
-        curl -s ${onlineScript} -o "${currentDir}${script}"
-        # We log && print message
-        printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
     fi
 }
 
@@ -1023,20 +1024,17 @@ update()
                 echo "${bold}${cyan}The update was successfully completed!${normal}"
                 printf '\n'
                 
-                # We delete the temporary file and stop the script
-                rm -f "${funilrys}"
-                exit 1
+                exit 0
             else
                 # We log && print message
                 printf "  ${red}✘${normal}\n" && printf "  ✘\n" >> ${logOutput}
                 echo "Impossible to update ${currentDir}${script}. Please report issue." >> ${logOutput}
-                exit 0
+                exit 1
             fi
         else
             # We log && print message
             printf "No need to update.\n" &&  printf "No need to update." >> ${logOutput}
-            rm -f "${funilrys}"
-            exit 1
+            exit 0
         fi
     fi
 }
