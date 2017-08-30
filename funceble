@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+96'
+versionNumber='dev-1.4.0+97'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -657,12 +657,15 @@ generateHostsFile()
             ;;
             'potentially_up'|'potentially_active')
                 local outputDestination="${outputHTTPPotentiallyActive}${hostsDefault}"
+                local domainOutput="${outputHTTPPotentiallyActive}${domainsDefault}"
             ;;
-            'potentially_down'|'potentially_inacative')
+            'potentially_down'|'potentially_inactive')
                 local outputDestination="${outputHTTPInactiveOrPotentially}${hostsDefault}"
+                local domainOutput="${outputHTTPInactiveOrPotentially}${domainsDefault}"
             ;;
             'http_active'|'HTTP_ACTIVE'|'HTTP_active'|'HTTP_Active')
                 local outputDestination="${outputHTTPActive}${hostsDefault}"
+                local domainOutput="${outputHTTPActive}${domainsDefault}"
             ;;
         esac
         
@@ -971,11 +974,11 @@ generateAnalyticFile()
         ;;
         'pup'|'Pup'|'PUP')
             local outputFile=${logOutputHTTPPotentiallyActive}
-            generateHostsFile 'potentially_down'
+            generateHostsFile 'potentially_active'
         ;;
         'down'|'Down'|'DOWN'|'inactive'|'Inactive'|'INACTIVE'|'error'|'Error'|'ERROR')
             local outputFile=${logOutputHTTPInactiveOrPotentially}
-            generateHostsFile 'potentially_inacative'
+            generateHostsFile 'potentially_inactive'
         ;;
     esac
     
