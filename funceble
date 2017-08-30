@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+94'
+versionNumber='dev-1.4.0+95'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -790,6 +790,9 @@ generateStatusFile(){
                 # We do some analytic
                 if [[ ${activeCodes[*]} =~ ${httpCode} ]]
                 then
+                    # We update the source
+                    local source='HTTP CODE'
+                    
                     generateAnalyticFile 'Up' "${status}"
                     
                     # We generate the host file
@@ -830,6 +833,9 @@ generateStatusFile(){
                 # We do some analytic
                 if [[ ${activeCodes[*]} =~ ${httpCode} ]]
                 then
+                    # We update the source
+                    local source='HTTP CODE'
+                    
                     generateAnalyticFile 'Up' "${status}"
                     
                     # We generate the host file
@@ -1014,14 +1020,14 @@ errorHandle()
     then
         # If domain is down
         issueStatus='Unknown'
-    elif [[ ${issueStatus} == '' ]]
+    elif [[ ${issueStatus} == '' && ${type} != 'Invalid' ]]
     then
         # If domain is up, We generate the valid/unified file
         generateStatusFile 'valid' "${sourceType}" ''
         return 1
     fi
     
-    if [[ ${issueStatus} == 'Unknown' ]]
+    if [[ ${type} == 'Invalid' || ${issueStatus} == 'Unknown' ]]
     then
         
         case ${type} in
@@ -1073,10 +1079,12 @@ getReferer(){
     then
         # We get the extension of the given domain
         domainExtension=${initialDomain##*.}
-        # We get the list of allowed extensions
+        
+        # We set the regex to check for point
+        regexCheckPoint='\.'
         
         # We check if the given domain extension is in our database file
-        if [[ $(cat ${ianaDB}) =~ ${domainExtension} ]]
+        if [[ ${initialDomain} =~ ${regexCheckPoint} && $(cat ${ianaDB}) =~ ${domainExtension} ]]
         then
             
             case ${domainExtension} in
