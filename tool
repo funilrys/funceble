@@ -94,7 +94,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+27'
+versionNumber='dev-1.4.0+28'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -987,7 +987,7 @@ downloadScript()
 ################################################################################
 update()
 {
-    if [[ -d ${currentDir}.git ]]
+    if [[ -d ${currentDir}.git && $(git remote show origin | grep funceble) != '' ]]
     then
         if [[ ${stableVersion} == true ]]
         then
