@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+109'
+versionNumber='dev-1.4.0+110'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1174,6 +1174,13 @@ getReferer(){
                 cf)
                     # We assign the domain WHOIS referer server
                     referer="whois.dot.cf"
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                ;;
+                ch)
+                    # We assign the domain WHOIS referer server
+                    referer="whois.nic.ch"
                     # The Following is used to stop the execution of getExpirationDate
                     # in case the domain is not valid.
                     notSupported=false
