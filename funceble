@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+110'
+versionNumber='dev-1.4.0+111'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -183,7 +183,7 @@ domainsDefault='list'
 # Output directory.
 # Auto updated with `tool -i`
 # DO NOT FORGET '/' AT THE END
-outputDir='%%currentDir%%/output/'
+outputDir='/home/funilrys/Projects/funceble/output/'
 
 # Autocontinue log file
 continueLog=${outputDir}continue.txt
@@ -1181,6 +1181,13 @@ getReferer(){
                 ch)
                     # We assign the domain WHOIS referer server
                     referer="whois.nic.ch"
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                ;;
+                cm)
+                    # We assign the domain WHOIS referer server
+                    referer="whois.netcom.cm"
                     # The Following is used to stop the execution of getExpirationDate
                     # in case the domain is not valid.
                     notSupported=false
