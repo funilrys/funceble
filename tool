@@ -94,7 +94,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+28'
+versionNumber='dev-1.4.0+29'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -823,9 +823,12 @@ scriptsWorkDir()
         then
             if [[ "${executionType}" == 'installation' ]]
             then
-                # We delete all .gitignore
-                find "${currentDir}output" -name '.gitignore' -type f -exec rm {} \;
                 
+                if [[ $(git remote show origin | grep funceble) == '' || ! -d ${currentDir}.git  ]]
+                then
+                    # We delete all .gitignore
+                    find "${currentDir}output" -name '.gitignore' -type f -exec rm {} \;
+                fi
                 # We generate needed directories and files
                 createDirectoriesAndFile
                 echo "${bold}${cyan}The installation was successfully completed!${normal}"
