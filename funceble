@@ -1072,7 +1072,7 @@ noRefererLog(){
         # We save the output of the captured date into log directory
         printf "=%.0s" {1..100} >> ${noRefererLogOutput}.${domainExtension}
         printf "\nNo referer found for: %s domains\n" "${domainExtension}" >> ${noRefererLogOutput}.${domainExtension}
-        printf "Tested domain: %s\n" "${initialDomain}" >> ${noRefererLogOutput}.${domainExtension}
+        printf "Tested domain: %s\n" "${domain}" >> ${noRefererLogOutput}.${domainExtension}
         printf "=%.0s" {1..100} >> ${noRefererLogOutput}.${domainExtension}
         printf "\n" >> ${noRefererLogOutput}.${domainExtension}
     fi
@@ -1255,6 +1255,7 @@ dateFormatlog(){
         # We save the output of the captured date into log directory
         printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
         printf "\nExpiration Date:%s\n" "${expirationDate}" >> ${dateLogOutput}${referer}
+        printf "Tested domain: %s\n" "${domain}" >> ${dateLogOutput}${referer}
         printf "=%.0s" {1..100} >> ${dateLogOutput}${referer}
         printf "\n" >> ${dateLogOutput}${referer}
     fi
