@@ -91,7 +91,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+33'
+versionNumber='dev-1.4.0+34'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -535,8 +535,8 @@ cleanOutput(){
     # We log && print message
     printf "Cleaning generated files"
     
-    # Search and delete everything except .gitignore
-    find ${output} ! -name '.gitignore' -type f -exec rm {} \;
+    # Search and delete everything except .gitignore and .keep
+    find ${output} ! -name '.gitignore' ! -name '.keep' -type f -exec rm {} \;
     
     # Only for dev: We delete temporary files
     find ${currentDir} -name '*~' -type f -exec rm {} \;
