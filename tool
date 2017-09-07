@@ -69,9 +69,6 @@ directoriesStructureLink="https://raw.githubusercontent.com/${funilrys}/${script
 # Quiet mode
 quiet=false
 
-# We get the content of the script
-scriptContent=$(cat ${currentDir}${script} 2> ${logOutput})
-
 # Default type
 executionType='installation'
 
@@ -94,7 +91,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+30'
+versionNumber='dev-1.4.0+32'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -754,6 +751,7 @@ updateIANA()
 
 scriptsWorkDir()
 {
+    local fileToInstall="${1}"
     if [[ ${quiet} == false ]]
     then
         if [[ "${executionType}" == 'installation' ]]
@@ -769,7 +767,7 @@ scriptsWorkDir()
     fi
     
     regex="outputDir='.*\/output\/'"
-    if [[ ${scriptContent} =~ ${regex} ]]
+    if [[ $(cat ${fileToInstall}) =~ ${regex} ]]
     then
         # We replace with the current working
         # directory an we print message
@@ -876,7 +874,7 @@ installation()
     whoisInstalled
     
     # We finalize installation
-    scriptsWorkDir
+    scriptsWorkDir "${fileToInstall}"
 }
 
 ################################ checkVersion ##################################
@@ -906,8 +904,14 @@ checkVersion()
     else
         local copiedVersion=''
     fi
-    # We get the sha512sum of the already exist script
-    local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
+    
+    if [[ -f ${currentDir}${script} ]]
+    then
+        # We get the sha512sum of the already exist script
+        local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
+    else
+        local currentVersion='1'
+    fi
     
     # We compare the versions
     if [[ ${currentVersion} == ${copiedVersion} || ! -f ${currentDir}${funilrys} ]]
@@ -988,7 +992,7 @@ update()
         # We get the online version and compare versions
         checkVersion 'get'
         
-        if [[ ${update} == true ]]
+        if [[ ${update} == true || ! -f ${currentDir}${script} ]]
         then
             # We only need to execute if the versions are not the same
             
