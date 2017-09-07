@@ -91,7 +91,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+32'
+versionNumber='dev-1.4.0+33'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -621,8 +621,15 @@ createDirectoriesAndFile(){
             echo "Impossible to get ${directoriesStructure}. Please report issue." >> ${logOutput}
             exit 1
         else
-            # We save the online script into the existing one
-            curl -s ${directoriesStructureLink} -o "${directoriesStructure}"
+            if [[ ${stableVersion} == true ]]
+            then
+                # We save the online script into the existing one
+                curl -s ${directoriesStructureLink} -o "${directoriesStructure}"
+            elif [[ ${devVersion} == true ]]
+            then
+                # We save the online script into the existing one
+                curl -s ${directoriesStructureLink/master/dev} -o "${directoriesStructure}"
+            fi
             # We log && print message
             printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
         fi
@@ -812,7 +819,9 @@ scriptsWorkDir()
                     find "${currentDir}output" -name '.gitignore' -type f -exec rm {} \;
                 fi
                 # We generate needed directories and files
+                updateIANA
                 createDirectoriesAndFile
+                
                 echo "${bold}${cyan}The installation was successfully completed!${normal}"
                 echo "You can now use the script with '${bold}./${script} [-OPTIONS]${normal}' or learn how to use it with '${green}${bold}./${script} --help${normal}'"
                 printf '\n'
