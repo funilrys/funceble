@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+121'
+versionNumber='dev-1.4.0+124'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1122,6 +1122,13 @@ getReferer(){
             # registered to IANA.
             # cf. https://github.com/funilrys/funceble/issues?q=is%3Aissue+Not+Found+is%3Aclosed
             case ${domainExtension} in
+                biz)
+                    # We assign the domain WHOIS referer server
+                    referer="whois.biz"
+                    # The Following is used to stop the execution of getExpirationDate
+                    # in case the domain is not valid.
+                    notSupported=false
+                ;;
                 bm)
                     # We assign the domain WHOIS referer server
                     referer="whois.afilias-srs.net"
