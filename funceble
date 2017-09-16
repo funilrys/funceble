@@ -1103,7 +1103,7 @@ getReferer(){
                 # We handle here the list of extension which are known as
                 # [Not Found] Please report to https://git.io/v5tgo for more
                 # informations
-                ad|al|an|ao|arpa|az|ba|bd|bf|bh|eg|fm|ge|gr|mil|mt|np|ph|pn|pk|py|vn|zw)
+                ad|al|an|ao|arpa|az|ba|bd|bf|bh|bs|eg|fm|ge|gr|mil|mt|np|ph|pn|pk|py|vn|zw)
                     # We empty the referer variable
                     referer=''
                     
