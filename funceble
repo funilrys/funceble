@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+139'
+versionNumber='dev-1.4.0+140'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1103,7 +1103,7 @@ getReferer(){
                 # We handle here the list of extension which are known as
                 # [Not Found] Please report to https://git.io/v5tgo for more
                 # informations
-                ad|al|an|ao|arpa|az|ba|bd|bf|bh|bs|comm|cu|dj|eg|fm|ge|gh|gm|gp|gr|gt|jo|mil|mt|np|ph|pn|pk|py|vn|zw)
+                ad|al|an|ao|arpa|az|ba|bd|bf|bh|bs|comm|cu|dj|eg|fm|ge|gh|gm|gp|gr|gt|jo|kh|mil|mt|np|ph|pn|pk|py|vn|zw)
                     # We empty the referer variable
                     referer=''
                     
