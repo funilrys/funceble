@@ -51,11 +51,17 @@ outputDir="outputDir='${currentDir}output/'"
 funilrys="funilrys"
 ################################################################################
 ############################## Default Values ##################################
-# The file name of the script
+# The filename of the script
 script='funceble'
 
-# Script online versionFile
-onlineScript="https://raw.githubusercontent.com/${funilrys}/${script}/master/funceble"
+# The filename of the tool
+tool='tool'
+
+# Script online version file
+onlineScript="https://raw.githubusercontent.com/${funilrys}/${script}/master/${script}"
+
+# Tool online version file
+onlineTool="https://raw.githubusercontent.com/${funilrys}/${script}/master/${tool}"
 
 # Directory structure file name
 directoriesStructureName=dir-structure
@@ -91,7 +97,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+34'
+versionNumber='dev-1.4.0+35'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -906,32 +912,30 @@ checkVersion()
         installation "${funilrys}" true
     fi
     
-    if [[ -f ${currentDir}${funilrys} ]]
-    then
-        # We get the sha512sum of the downloaded script
-        local copiedVersion=$(sha512sum ${currentDir}${funilrys}|cut -d ' ' -f1)
-    else
-        local copiedVersion=''
-    fi
+    local downloadedFiles=("${funilrys}" "${funilrys}.tool")
     
-    if [[ -f ${currentDir}${script} ]]
-    then
-        # We get the sha512sum of the already exist script
-        local currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
-    else
-        local currentVersion='1'
-    fi
-    
-    # We compare the versions
-    if [[ ${currentVersion} == ${copiedVersion} || ! -f ${currentDir}${funilrys} ]]
-    then
-        # If the same == no need to update
-        update=false
-    else
-        curlInstalled
-        # If they are not the same == we need to update
-        update=true
-    fi
+    for downloadedFile in ${downloadedFiles}
+    do
+        if [[ -f ${currentDir}${downloadedFile} ]]
+        then
+            # We get the sha512sum of the downloaded script
+            local copiedVersion=$(sha512sum ${currentDir}${downloadedFile}|cut -d ' ' -f1)
+        else
+            local copiedVersion=''
+        fi
+        
+        # We compare the versions
+        if [[ ${currentVersion} == ${copiedVersion} || ! -f ${currentDir}${funilrys} ]]
+        then
+            # If the same == no need to update
+            update=false
+        else
+            curlInstalled
+            # If they are not the same == we need to update
+            update=true
+            return 1
+        fi
+    done
 }
 
 ################################## Download Script #############################
@@ -957,9 +961,13 @@ downloadScript()
     else
         if [[ ${stableVersion} == true ]]
         then
-            # We save the online script into the existing one
+            # We save the online script into a temporary file
             curl -s ${onlineScript} -o "${funilrys}"
-            chmod +x ${funilrys}
+            
+            # We save the online tool script into a temporary file
+            curl -s ${onlineTool/master/dev} -o "${funilrys}.tool"
+            
+            chmod +x ${funilrys}*
             
             # We log && print message
             printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
@@ -969,7 +977,11 @@ downloadScript()
         then
             # We save the online script into the existing one
             curl -s ${onlineScript/master/dev} -o "${funilrys}"
-            chmod +x ${funilrys}
+            
+            # We save the online tool script into a temporary file
+            curl -s ${onlineTool/master/dev} -o "${funilrys}.tool"
+            
+            chmod +x ${funilrys}*
             
             # We log && print message
             printf "  ${cyan}✔${normal}\n\n" && printf "  ✔\n" >> ${logOutput}
@@ -1006,9 +1018,12 @@ update()
             # We only need to execute if the versions are not the same
             
             mv ${funilrys} ${currentDir}${script}
+            mv ${funilrys}.tool ${currentDir}${tool}
+            
             
             # We install the new script
-            installation ${currentDir}${script} true
+            ${currentDir}${tool} -i
+            
             # We log && print message
             printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
             
