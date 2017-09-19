@@ -97,7 +97,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+35'
+versionNumber='dev-1.4.0+36'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -916,6 +916,24 @@ checkVersion()
     
     for downloadedFile in ${downloadedFiles}
     do
+        if [[ ${downloadedFile} == ${funilrys} ]]
+        then
+            if [[ -f ${currentDir}${script} ]]
+            then
+                currentVersion=$(sha512sum ${currentDir}${script}|cut -d ' ' -f1)
+            else
+                currentVersion='1'
+            fi
+        elif [[ ${downloadedFile} =~ ${tool}  ]]
+        then
+            if [[ -f ${currentDir}${tool} ]]
+            then
+                currentVersion=$(sha512sum ${currentDir}${tool}|cut -d ' ' -f1)
+            else
+                currentVersion='2'
+            fi
+        fi
+        
         if [[ -f ${currentDir}${downloadedFile} ]]
         then
             # We get the sha512sum of the downloaded script
@@ -925,7 +943,7 @@ checkVersion()
         fi
         
         # We compare the versions
-        if [[ ${currentVersion} == ${copiedVersion} || ! -f ${currentDir}${funilrys} ]]
+        if [[ ${currentVersion} == ${copiedVersion} ]]
         then
             # If the same == no need to update
             update=false
