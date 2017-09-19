@@ -97,7 +97,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+39'
+versionNumber='dev-1.4.0+40'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -1064,6 +1064,7 @@ update()
         else
             # We log && print message
             printf "No need to update.\n" &&  printf "No need to update." >> ${logOutput}
+            rm ${funilrys}*
         fi
     fi
 }
