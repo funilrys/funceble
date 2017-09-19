@@ -97,7 +97,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+36'
+versionNumber='dev-1.4.0+38'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -912,9 +912,9 @@ checkVersion()
         installation "${funilrys}"
     fi
     
-    local downloadedFiles=("${funilrys}" "${funilrys}.tool")
+    local downloadedFiles="${funilrys} ${funilrys}.tool"
     
-    for downloadedFile in ${downloadedFiles}
+    for downloadedFile in $(echo ${downloadedFiles})
     do
         if [[ ${downloadedFile} == ${funilrys} ]]
         then
