@@ -97,7 +97,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+38'
+versionNumber='dev-1.4.0+39'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -943,7 +943,7 @@ checkVersion()
         fi
         
         # We compare the versions
-        if [[ ${currentVersion} == ${copiedVersion} ]]
+        if [[ ${copiedVersion} == '' || ${currentVersion} == ${copiedVersion} ]]
         then
             # If the same == no need to update
             update=false
