@@ -868,7 +868,6 @@ scriptsWorkDir()
 installation()
 {
     local fileToInstall="${1}"
-    quiet=${2}
     
     # We check the script
     scriptExist "${fileToInstall}"
@@ -909,7 +908,8 @@ checkVersion()
         
         # We secretly execute a silent installation in the downloaded
         # script
-        installation "${funilrys}" true
+        quiet=true
+        installation "${funilrys}"
     fi
     
     local downloadedFiles=("${funilrys}" "${funilrys}.tool")
@@ -1040,7 +1040,7 @@ update()
             
             
             # We install the new script
-            ${currentDir}${tool} -i
+            ${currentDir}${tool} -q -i
             
             # We log && print message
             printf "Checking Version" &&  printf "Checking Version" >> ${logOutput}
@@ -1108,7 +1108,7 @@ while [ "$#" -gt 0 ]; do
         ;;
         # We catch if we have to install only the script
         -i|--install)
-            installation "${currentDir}${script}" false
+            installation "${currentDir}${script}"
             shift 1
         ;;
         # We catch if we need to update the `iana-domains-db` file
@@ -1126,7 +1126,7 @@ while [ "$#" -gt 0 ]; do
         # We catch if we have to prepare the repository for production
         -p|--production)
             executionType='production'
-            installation "${currentDir}${script}" false
+            installation "${currentDir}${script}"
             shift 1
         ;;
         
@@ -1151,6 +1151,11 @@ while [ "$#" -gt 0 ]; do
         # We catch if we have to update the script
         -u|--update)
             update
+            shift 1
+        ;;
+        # We catch if we have to quiet the script
+        -q|--quiet)
+            quiet=true
             shift 1
         ;;
         # We catch if we have to show the version number
