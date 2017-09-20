@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+175'
+versionNumber='dev-1.4.0+176'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -754,10 +754,6 @@ generateStatusFile(){
     # expiredDate <string>
     local expiredDate="${3}"
     
-    # We use this variable in order to know if we changes the status with th results
-    # of httpCode()
-    local notActive=true
-    
     case ${type} in
         'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
             # If empty, we change the expiration date to `Unknown`
@@ -813,18 +809,17 @@ generateStatusFile(){
                     # We update the status
                     local type='ACTIVE'
                     
-                    # We update notActive
-                    local notActive=false
+                    # We increment the percentage
+                    percentage 'counter' 'active'
+                    
+                    break
                 elif [[ ${potentiallyActiveCodes[*]} =~ ${httpCode} ]]
                 then
                     generateAnalyticFile 'Pup' "${status}"
                 fi
                 
-                if [[ ${notActive} == true ]]
-                then
-                    # We generate the host file
-                    generateHostsFile 'inactive'
-                fi
+                # We generate the host file
+                generateHostsFile 'inactive'
             fi
             # We increment the percentage
             percentage 'counter' 'inactive'
@@ -856,8 +851,10 @@ generateStatusFile(){
                     # We update the status
                     local type='ACTIVE'
                     
-                    # We update notActive
-                    local notActive=false
+                    # We increment the percentage
+                    percentage 'counter' 'active'
+                    
+                    break
                 elif [[ ${potentiallyActiveCodes[*]} =~ ${httpCode} ]]
                 then
                     generateAnalyticFile 'Pup' "${status}"
@@ -867,11 +864,8 @@ generateStatusFile(){
                 fi
             fi
             
-            if [[ ${notActive} == true ]]
-            then
-                # We generate the host file
-                generateHostsFile 'invalid'
-            fi
+            # We generate the host file
+            generateHostsFile 'invalid'
             
             # We increment the percentage
             percentage 'counter' 'invalid'
