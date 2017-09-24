@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+180'
+versionNumber='dev-1.4.0+181'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -827,7 +827,7 @@ generateStatusFile(){
             then
                 generateAnalyticFile 'Down' "${upStatus}"
                 case ${domain} in
-                    *.doubleclick.net|*.liveadvert.com)
+                    *.doubleclick.net|*.liveadvert.com|*.tumblr.com)
                         # We update the source
                         local source='SPECIAL'
                         # We generate the host file
