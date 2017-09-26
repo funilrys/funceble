@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+183'
+versionNumber='dev-1.4.0+184'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -840,7 +840,7 @@ generateStatusFile(){
                         local readStatus=${downStatus}
                         
                         # We assign the location of the splited file
-                        local putDataIntoMe=${outputUpResult}
+                        local putDataIntoMe=${outputDownResult}
                         
                         # We increment the percentage
                         percentage 'counter' 'inactive'
@@ -865,7 +865,7 @@ generateStatusFile(){
                             local readStatus=${downStatus}
                             
                             # We assign the location of the splited file
-                            local putDataIntoMe=${outputUpResult}
+                            local putDataIntoMe=${outputDownResult}
                             
                             # We increment the percentage
                             percentage 'counter' 'inactive'
@@ -893,7 +893,7 @@ generateStatusFile(){
                     local readStatus=${downStatus}
                     
                     # We assign the location of the splited file
-                    local putDataIntoMe=${outputUpResult}
+                    local putDataIntoMe=${outputDownResult}
                     
                     # We increment the percentage
                     percentage 'counter' 'inactive'
