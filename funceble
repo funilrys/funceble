@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+186'
+versionNumber='dev-1.4.0+187'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1989,14 +1989,8 @@ travisAutoSave()
             # We print the percentage into percentage.txt
             percentageLog
             
-            # We make sure we are under master
-            git checkout master
-            
             # We check/change files permissions
             travisPermissions
-            
-            # We commit and push every changes
-            git add -A
             
             if [[ ${domain} =~ ${regexCheckPoint} && $(tail -1 ${file}) =~ "${domain}" ]]
             then
@@ -2194,14 +2188,8 @@ bypass(){
         # We print the percentage into percentage.txt
         percentageLog
         
-        # We make sure we are under master
-        git checkout master
-        
         # We check/change files permissions
         travisPermissions
-        
-        # We commit and push every changes
-        git add -A
         
         if [[ ${commandBeforeEnd} != '' ]]
         then
