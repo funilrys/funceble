@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+187'
+versionNumber='dev-1.4.0+188'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -2342,6 +2342,9 @@ main()
                             
                             # We update the value of the domain name
                             updateAutoContinueLog "${escapedFile}" "${domain}"
+                            
+                            # We commit if time += ${travisAutoSaveMinutes}
+                            travisAutoSave
                         done
                         
                         # If we the loop is not bypassed, we deactivate the
@@ -2435,6 +2438,9 @@ main()
                         # We create the file with the known informations
                         echo "${file} ${domain} ${numberOfTested} ${numberOfUp} ${numberOfDown} ${numberOfInvalid}" > ${continueLog}
                     fi
+                    
+                    # We commit if time += ${travisAutoSaveMinutes}
+                    travisAutoSave
                 done < ${file}
             fi
             
