@@ -97,7 +97,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+42'
+versionNumber='dev-1.4.0+43'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -436,6 +436,22 @@ tailInstalled()
     fi
     
     commandexist 'tail'
+}
+
+############################### touch Installed #################################
+# We check if touch is installed
+#
+# @CalledBy installation
+################################################################################
+touchInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}touch${normal} installed" && printf "touch installed" >> ${logOutput}
+    fi
+    
+    commandexist 'touch'
 }
 
 ################################# tr Installed #################################
@@ -891,6 +907,7 @@ installation()
     sedInstalled
     sha512sumInstalled
     tailInstalled
+    touchInstalled
     trInstalled
     whoisInstalled
     
