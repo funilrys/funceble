@@ -97,7 +97,7 @@ stableVersion=false
 devVersion=true
 
 # Version number
-versionNumber='dev-1.4.0+43'
+versionNumber='dev-1.4.0+44'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -371,6 +371,22 @@ expectInstalled()
     fi
     
     commandexist 'expect'
+}
+
+############################### head Installed #################################
+# We check if head is installed
+#
+# @CalledBy installation
+################################################################################
+headInstalled()
+{
+    if [[ ${quiet} == false ]]
+    then
+        # We log && print message
+        printf "${bold}head${normal} installed" && printf "head installed" >> ${logOutput}
+    fi
+    
+    commandexist 'head'
 }
 
 ############################### nslookup Installed ################################
@@ -903,6 +919,7 @@ installation()
     dateInstalled
     echoInstalled
     expectInstalled
+    headInstalled
     nslookupInstalled
     sedInstalled
     sha512sumInstalled
