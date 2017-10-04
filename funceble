@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+189'
+versionNumber='dev-1.4.0+190'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1984,7 +1984,7 @@ travisAutoSave()
         # We calculate the time before commit is possible
         local timeOfStart=$(((${executionStart}+${travisAutoSaveMinutes}*60)))
         
-        if [[ ${currentTimes} -ge ${timeOfStart} || $(tail -1 ${file}) =~ ${domain} ]]
+        if [[ ${currentTimes} -ge ${timeOfStart} || $(tail -1 ${file}) == ${domain} ]]
         then
             # We print the percentage into percentage.txt
             percentageLog
@@ -1992,7 +1992,7 @@ travisAutoSave()
             # We check/change files permissions
             travisPermissions
             
-            if [[ ${domain} =~ ${regexCheckPoint} && $(tail -1 ${file}) =~ "${domain}" ]]
+            if [[ ${domain} =~ ${regexCheckPoint} && $(tail -1 ${file}) == "${domain}" ]]
             then
                 if [[ ${commandBeforeEnd} != '' ]]
                 then
