@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+194'
+versionNumber='dev-1.4.0+195'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -2198,6 +2198,22 @@ percentageLog(){
     fi
 }
 
+############################# Format domain ####################################
+# This function if there to apply DRY.
+# Between it's purpose it to get a script-readable domain
+#
+# @CalledBy Arguments Handle Section
+################################################################################
+formatDomain(){
+    # Domain we read from file <string>
+    local readDomain="${1}"
+    
+    domain=$(echo "${readDomain}"|cut -d ' ' -f2)
+    
+    # We manage the case of a comment at the end of a line
+    domain=$(echo "${domain}" | cut -d '#' -f1)
+}
+
 ################################## Main ########################################
 # Main function used to call other function
 #
@@ -2286,12 +2302,9 @@ main()
                                     continue
                                 ;;
                                 '127.0.0.1'*|'0.0.0.0'*)
-                                    domain=$(echo "${domain}"|cut -d ' ' -f2)
+                                    formatDomain "${domain}"
                                 ;;
                             esac
-                            
-                            # We manage the case of a comment at the end of a line
-                            domain=$(echo "${domain}" | cut -d '#' -f1)
                             
                             # We escape our filter in order to hava a valid regex format
                             regexFilter=$(escapeString ${toFilter} 'domain')
@@ -2374,12 +2387,9 @@ main()
                             continue
                         ;;
                         '127.0.0.1'*|'0.0.0.0'*)
-                            domain=$(echo "${domain}" | cut -d ' ' -f2)
+                            formatDomain "${domain}"
                         ;;
                     esac
-                    
-                    # We manage the case of a comment at the end of a line
-                    domain=$(echo "${domain}" | cut -d '#' -f1)
                     
                     # We escape our filter in order to hava a valid regex format
                     regexFilter=$(escapeString ${toFilter} 'domain')
