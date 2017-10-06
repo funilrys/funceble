@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+197'
+versionNumber='dev-1.4.0+199'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -2218,7 +2218,7 @@ percentageLog()
 }
 
 ############################# Format domain ####################################
-# This function if there to apply DRY.
+# This function is there to apply DRY.
 # Between it's purpose it to get a script-readable domain
 #
 # @CalledBy main
@@ -2232,6 +2232,34 @@ formatDomain()
     
     # We manage the case of a comment at the end of a line
     domain=$(echo "${domain}" | cut -d '#' -f1)
+}
+
+############################# Keep Comments ####################################
+# This function is there to avoid copyright or other comments breaking.
+#
+# @CalledBy main
+################################################################################
+keepComments()
+{
+    local originalComment="${1}"
+    
+    local fileToAppend=""
+    
+    if [[ ${generateHosts} == true ]]
+    then
+        local fileToAppend="${fileToAppend} ${outputUpHost} ${outputDownHost} ${outputInvalidHost} ${outputHTTPPotentiallyActive}${hostsDefault} ${outputHTTPInactiveOrPotentially}${hostsDefault} ${outputHTTPActive}${hostsDefault}"
+    fi
+    
+    if [[ ${plainListDomain} == true ]]
+    then
+        local fileToAppend="${fileToAppend} ${outputUpDomain} ${outputDownDomain} ${outputInvalidDomain} ${outputHTTPPotentiallyActive}${domainsDefault} ${outputHTTPInactiveOrPotentially}${domainsDefault} ${outputHTTPActive}${domainsDefault}"
+    fi
+    
+    for data in $(echo ${fileToAppend})
+    do
+        beforeHeader "${data}"
+        printf "%s\n" "${originalComment}" >> ${data}
+    done
 }
 
 ################################## Main ########################################
@@ -2318,7 +2346,11 @@ main()
                             # In case the file contain comment or empty line we continue to
                             # the next line
                             case "${domain}" in
-                                ''|\#*|*localhost*|local|broadcasthost)
+                                \#*|'')
+                                    keepComments "${domain}"
+                                    continue
+                                ;;
+                                *localhost*|local|broadcasthost)
                                     continue
                                 ;;
                                 '127.0.0.1'*|'0.0.0.0'*)
@@ -2403,7 +2435,11 @@ main()
                     # In case the file contain comment or empty line we continue to
                     # the next line
                     case "${domain}" in
-                        ''|\#*|*localhost*|local|broadcasthost)
+                        \#*|'')
+                            keepComments "${domain}"
+                            continue
+                        ;;
+                        *localhost*|local|broadcasthost)
                             continue
                         ;;
                         '127.0.0.1'*|'0.0.0.0'*)
