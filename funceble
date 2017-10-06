@@ -166,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+195'
+versionNumber='dev-1.4.0+196'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -309,7 +309,8 @@ inactiveOrPotentiallyCodes=('400' '403' '402' '404' '409' '410' '412' '414' '415
 #
 # @CalledBy getReferer
 ################################################################################
-beforeHeader(){
+beforeHeader()
+{
     # We get the file we're gonna print into
     # file <string>
     local fileToCreate="${1}"
@@ -594,7 +595,8 @@ prints()
 #
 # @CalledBy timeout, getExpirationDate
 ################################################################################
-timeout (){
+timeout ()
+{
     # type <int|string>
     time=${1}
     
@@ -779,7 +781,8 @@ generateUnifiedFile()
 #
 # @CalledBy errorHandle
 ################################################################################
-generateStatusFile(){
+generateStatusFile()
+{
     # We get the type of the request
     # type <string>
     local type="${1}"
@@ -1214,7 +1217,8 @@ errorHandle()
 #
 # @CalledBy getReferer
 ################################################################################
-noRefererLog(){
+noRefererLog()
+{
     if [[ ${outputLogs} == true ]]
     then
         # We save the output of the captured date into log directory
@@ -1231,7 +1235,8 @@ noRefererLog(){
 #
 # @CalledBy getExpirationDate
 ################################################################################
-getReferer(){
+getReferer()
+{
     # initialDomain <string>
     local initialDomain="${1}"
     
@@ -1449,7 +1454,8 @@ getReferer(){
 #
 # @CalledBy getExpirationDate
 ################################################################################
-whoisLog(){
+whoisLog()
+{
     if [[ ${outputLogs} == true ]]
     then
         # We save the output of whois into log directory
@@ -1467,7 +1473,8 @@ whoisLog(){
 #
 # @CalledBy formatDate
 ################################################################################
-dateFormatlog(){
+dateFormatlog()
+{
     if [[ ${outputLogs} == true ]]
     then
         # We save the output of the captured date into log directory
@@ -1484,7 +1491,8 @@ dateFormatlog(){
 #
 # @CalledBy getExpirationDate
 ################################################################################
-getHTTPCode(){
+getHTTPCode()
+{
     if [[ ${httpCodeStatus} == true ]]
     then
         # We get the HTTP header
@@ -1505,7 +1513,8 @@ getHTTPCode(){
 #
 # @CalledBy None
 ################################################################################
-getExpirationDate(){
+getExpirationDate()
+{
     # domain <string>
     # Domain given by user
     domain="$(echo ${1} |awk '{print tolower($0)}')"
@@ -1601,7 +1610,8 @@ getExpirationDate(){
 #
 # @CalledBy formatDate
 ################################################################################
-dateToLower(){
+dateToLower()
+{
     expirationDate=$(echo "${expirationDate}" | awk '{print tolower($0)}')
 }
 
@@ -1610,7 +1620,8 @@ dateToLower(){
 #
 # @CalledBy formatDate
 ################################################################################
-convertOrShortenMonth(){
+convertOrShortenMonth()
+{
     # numericMonth <int>
     local numericMonth=${1}
     
@@ -1663,7 +1674,8 @@ convertOrShortenMonth(){
 #
 # @CalledBy formatDate
 ################################################################################
-convert1To2digits(){
+convert1To2digits()
+{
     # number <int>
     local number="${1}"
     # monthOrDay <strin>
@@ -2032,7 +2044,8 @@ percentage()
 #
 # @CalledBy Arguments Handle
 ################################################################################
-testLogOutput(){
+testLogOutput()
+{
     # domain <string>
     # The domain to checl
     local domain="${1}"
@@ -2089,7 +2102,8 @@ testLogOutput(){
 #
 # @CalledBy main
 ################################################################################
-cleanPercentageLog(){
+cleanPercentageLog()
+{
     if [[ -f ${outputPercentageLog} ]]
     then
         rm ${outputPercentageLog} 2&> /dev/null
@@ -2101,7 +2115,8 @@ cleanPercentageLog(){
 #
 # @CalledBy main
 ################################################################################
-printHeaderOnScreen(){
+printHeaderOnScreen()
+{
     # We only print message if ${quiet} == false
     if [[ ${quiet} == false ]]
     then
@@ -2119,7 +2134,8 @@ printHeaderOnScreen(){
 #
 # @CalledBy main
 ################################################################################
-escapeString(){
+escapeString()
+{
     # stringToEscape <string>
     local stringToEscape="${1}"
     
@@ -2141,7 +2157,8 @@ escapeString(){
 #
 # @CalledBy main
 ################################################################################
-updateAutoContinueLog(){
+updateAutoContinueLog()
+{
     # regexEscapedFile <string>
     local regexEscapedFile="${1}"
     
@@ -2157,7 +2174,8 @@ updateAutoContinueLog(){
 #
 # @CalledBy main
 ################################################################################
-bypass(){
+bypass()
+{
     # This is use to match [funceble skip]
     local regexBypass='\[funceble\sskip\]'
     
@@ -2186,7 +2204,8 @@ bypass(){
 #
 # @CalledBy main
 ################################################################################
-percentageLog(){
+percentageLog()
+{
     if [[ ${showPercentage} == true && ${numberOfTested} > 0 ]]
     then
         # We clean it before generating
@@ -2204,7 +2223,8 @@ percentageLog(){
 #
 # @CalledBy Arguments Handle Section
 ################################################################################
-formatDomain(){
+formatDomain()
+{
     # Domain we read from file <string>
     local readDomain="${1}"
     
@@ -2452,7 +2472,8 @@ main()
 #
 # @CalledBy Arguments Handle Section
 ################################################################################
-switchDebug(){
+switchDebug()
+{
     case ${debugUnknown} in
         true)
             debugUnknown=false
@@ -2473,7 +2494,8 @@ switchDebug(){
 #
 # @CalledBy Arguments Handle Section
 ################################################################################
-switchAutoContinue(){
+switchAutoContinue()
+{
     case ${autoContinue} in
         true)
             autoContinue=false
@@ -2494,7 +2516,8 @@ switchAutoContinue(){
 #
 # @CalledBy Arguments Handle Section
 ################################################################################
-switchPercentage(){
+switchPercentage()
+{
     case ${showPercentage} in
         true)
             showPercentage=false
@@ -2515,7 +2538,8 @@ switchPercentage(){
 #
 # @CalledBy Arguments Handle Section
 ################################################################################
-switchHttpCodeStatus(){
+switchHttpCodeStatus()
+{
     case ${httpCodeStatus} in
         true)
             httpCodeStatus=false
@@ -2536,7 +2560,8 @@ switchHttpCodeStatus(){
 #
 # @CalledBy Arguments Handle Section
 ################################################################################
-switchPlainListDomain(){
+switchPlainListDomain()
+{
     case ${plainListDomain} in
         true)
             plainListDomain=false
