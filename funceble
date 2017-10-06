@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+202'
+versionNumber='dev-1.4.0+203'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -2385,6 +2385,11 @@ main()
                                     continue
                                 ;;
                                 *localhost*|local|broadcasthost)
+                                    keepComments "${domain}"
+                                    
+                                    formatDomain ${domain}
+                                    # We update the value of the domain name
+                                    updateAutoContinueLog "${escapedFile}" "${domain}"
                                     continue
                                 ;;
                                 '127.0.0.1'*|'0.0.0.0'*)
@@ -2462,6 +2467,10 @@ main()
                 # We reset the number of invalid
                 numberOfInvalid=0
                 
+                # We escape the file name is order to be used as
+                # regex variable
+                local escapedFile=$(escapeString "${file}" "file")
+                
                 # We read the list of the file and pass the domain (1 line = 1 domain)
                 # to getExpirationDate
                 while read domain
@@ -2474,6 +2483,11 @@ main()
                             continue
                         ;;
                         *localhost*|local|broadcasthost)
+                            keepComments "${domain}"
+                            
+                            formatDomain ${domain}
+                            # We update the value of the domain name
+                            updateAutoContinueLog "${escapedFile}" "${domain}"
                             continue
                         ;;
                         '127.0.0.1'*|'0.0.0.0'*)
@@ -2500,9 +2514,6 @@ main()
                         # according to its file.
                         if [[ "$(cat ${continueLog})" =~ ${file} ]]
                         then
-                            # We escape the file name is order to be used as
-                            # regex variable
-                            local escapedFile=$(escapeString "${file}" "file")
                             # We escaoe the domain name in order to be used as
                             # regex variable
                             local escapedDomain=$(escapeString "${domain}" "domain")
