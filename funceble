@@ -90,9 +90,6 @@ customIP='0.0.0.0'
 # DO NOT USE THIS IF YOU DON'T KNOW HOW TO DEBUG FROM OUTPUTTED FILE
 debugUnknown=false
 
-# File already treated
-fileAlreadyTreated=false
-
 # Domain to filter
 toFilter=''
 
@@ -169,7 +166,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+193'
+versionNumber='dev-1.4.0+194'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -626,25 +623,6 @@ generateHostsFile()
     
     if [[ ${generateHosts} == true || ${plainListDomain} == true ]]
     then
-        # We clean the files in case we need to start from begining
-        if [[ ${fileAlreadyTreated} == false || ${startFromBegining} == true ]]
-        then
-            if [[ ${cleanedDone} == false ]]
-            then
-                toClean=("${outputUpHost}" "${outputUpDomain}" "${outputDownHost}" "${outputDownDomain}" "${outputInvalidHost}" "${outputInvalidDomain}" "${outputUnifiedResult}" "${outputUpResult}" "${outputDownResult}" "${outputInvalidResult}")
-                
-                # We delete the result.txt file here because generateHostsFile() is
-                # always called before generateUnifiedFile()
-                for toDelete in ${toClean[*]}
-                do
-                    if [[ -f ${toDelete} ]]
-                    then
-                        rm -f ${toDelete}
-                    fi
-                done
-                cleanedDone=true
-            fi
-        fi
         
         case ${type} in
             'up'|'Up'|'UP'|'active'|'Active'|'ACTIVE'|'valid'|'Valid'|'VALID')
@@ -2271,8 +2249,6 @@ main()
                 # If the content match the previously assigned regex variable
                 if [[ "${continueLogContent}" =~ ${regexDomainToMatch} ]]
                 then
-                    fileAlreadyTreated=true
-                    
                     # Then we extract the domain name of the original file
                     local matchedDomain=${BASH_REMATCH[1]}
                     
@@ -2371,6 +2347,9 @@ main()
             then
                 # We print the header
                 printHeaderOnScreen
+                
+                # We clean the files from last sessions
+                ./tool -q -c
                 
                 # We reset the number of tested
                 numberOfTested=0
