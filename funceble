@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+205'
+versionNumber='dev-1.4.0+206'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -2537,6 +2537,8 @@ main()
                 travisAutoSave
             fi
             
+            # We commit if time += ${travisAutoSaveMinutes}
+            travisAutoSave
         else
             # We exit in case file don't exit or is not readable
             echo "File not found or unreadable"
