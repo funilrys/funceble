@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+200'
+versionNumber='dev-1.4.0+201'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1977,7 +1977,9 @@ travisAutoSave()
         # We calculate the time before commit is possible
         local timeOfStart=$(((${executionStart}+${travisAutoSaveMinutes}*60)))
         
-        if [[ ${currentTimes} -ge ${timeOfStart} || $(tail -1 ${file}) =~ ${domain} ]]
+        local escapedDomain=$(escapedDomain "${domain}" "domain")
+        
+        if [[ ${currentTimes} -ge ${timeOfStart} || $(grep -v \# ${file} | tail -1) =~ ${escapedDomain} ]]
         then
             # We print the percentage into percentage.txt
             percentageLog
@@ -1985,7 +1987,7 @@ travisAutoSave()
             # We check/change files permissions
             travisPermissions
             
-            if [[ ${domain} =~ ${regexCheckPoint} && $(tail -1 ${file}) =~ "${domain}" ]]
+            if [[ ${domain} =~ ${regexCheckPoint} && $(grep -v \# ${file} | tail -1) =~ ${escapedDomain} ]]
             then
                 if [[ ${commandBeforeEnd} != '' ]]
                 then
@@ -2340,7 +2342,7 @@ main()
                     # header impression
                     local headerPrinted=false
                     
-                    if [[ $(tail -1 ${file}) != ${matchedDomain} ]]
+                    if [[ ! $(grep -v \# ${file} | tail -1) =~ ${escapedDomain} ]]
                     then
                         # We get the list of domain from last tested until the end
                         # and pass it to the loop where we're gonna filter and
