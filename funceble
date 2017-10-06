@@ -169,7 +169,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+206'
+versionNumber='dev-1.4.0+207'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -1977,7 +1977,7 @@ travisAutoSave()
         # We calculate the time before commit is possible
         local timeOfStart=$(((${executionStart}+${travisAutoSaveMinutes}*60)))
         
-        local escapedDomain=$(escapedDomain "${domain}" "domain")
+        local escapedDomain=$(escapeString "${domain}" "domain")
         
         if [[ ${currentTimes} -ge ${timeOfStart} || $(grep -v \# ${file} | tail -1) =~ ${escapedDomain} ]]
         then
