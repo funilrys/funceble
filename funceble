@@ -157,7 +157,7 @@ showPercentage=true
 travisMode=false
 
 # Minimum of minutes before we start commiting to upstream under travis
-travisAutoSaveMinutes=35
+travisAutoSaveMinutes=15
 
 # Default travis final commit message
 travisResultsCommitMessage='Funceble Test - Results'
