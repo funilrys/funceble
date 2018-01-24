@@ -172,7 +172,7 @@ travisAutoSaveCommitMessage='Funceble Test - Autosave'
 splitFiles=false
 
 # Version number
-versionNumber='dev-1.4.0+215'
+versionNumber='dev-1.4.0+216'
 
 # IANA whois server. The following is there to give use the whois
 # host we have to call to get a (valid) response.
@@ -2199,7 +2199,7 @@ bypass()
     # This is use to match [funceble skip]
     local regexBypass='\[funceble\sskip\]'
     
-    if [[ $(git log 2> /dev/null | head -6 | tail -2 | head -1) =~ ${regexBypass} && ${travisMode} == true ]]
+    if [[ ${travisMode} == true && $(git log -1 | tail -1) =~ ${regexBypass} ]]
     then
         # We print the percentage into percentage.txt
         percentageLog
