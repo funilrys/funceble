@@ -57,11 +57,17 @@ script='funceble'
 # The filename of the tool
 tool='tool'
 
+#The filename of IANA-domains-db
+ianaFile='iana-domains-db'
+
 # Script online version file
 onlineScript="https://raw.githubusercontent.com/${funilrys}/${script}/master/${script}"
 
 # Tool online version file
 onlineTool="https://raw.githubusercontent.com/${funilrys}/${script}/master/${tool}"
+
+# Online version of iana-domains-db
+onlineIANA="https://raw.githubusercontent.com/${funilrys}/${script}/master/${ianaFile}"
 
 # Directory structure file name
 directoriesStructureName=dir-structure
@@ -100,7 +106,7 @@ devVersion=true
 whoisServer="whois.iana.org"
 
 # Version number
-versionNumber='dev-1.4.0+47'
+versionNumber='dev-1.4.0+48'
 ################################################################################
 # We log the date
 date > ${logOutput}
@@ -1142,10 +1148,15 @@ downloadScript()
         if [[ ${stableVersion} == true ]]
         then
             # We save the online script into a temporary file
-            curl -s ${onlineScript} -o "${funilrys}"
+            curl -s ${onlineScript/dev/master} -o "${funilrys}"
             
             # We save the online tool script into a temporary file
-            curl -s ${onlineTool/master/dev} -o "${funilrys}.tool"
+            curl -s ${onlineTool/dev/master} -o "${funilrys}.tool"
+            
+            # We save the online version of the iana-domains-db
+            curl -s ${onlineTool/dev/master} -o "${funilrys}.${ianaFile}"
+            mv "${funilrys}.${ianaFile}" ${ianaFile}
+            
             
             chmod +x ${funilrys}*
             
@@ -1160,6 +1171,10 @@ downloadScript()
             
             # We save the online tool script into a temporary file
             curl -s ${onlineTool/master/dev} -o "${funilrys}.tool"
+            
+            # We save the online version of the iana-domains-db
+            curl -s ${onlineTool/master/dev} -o "${funilrys}.${ianaFile}"
+            mv "${funilrys}.${ianaFile}" ${ianaFile}
             
             chmod +x ${funilrys}*
             
