@@ -1,3 +1,7 @@
+# PLEASE CONSIDER THIS REPOSITORY AS ARCHIVED.
+If you want a more up to date script, please report to **[PyFunceble](https://github.com/funilrys/PyFunceble)**.
+
+
 # Funceble
 
 > A script to check domains or IP accessibility.
